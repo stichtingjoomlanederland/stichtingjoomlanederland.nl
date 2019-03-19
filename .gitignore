@@ -1,0 +1,68 @@
+# Joomla System Files (i.e. cache, etc.) #
+/public_html/administrator/cache/*
+/public_html/administrator/logs/*
+/public_html/cache/*
+/public_html/images/*
+/public_html/tmp/*
+/public_html/.htaccess
+/public_html/configuration.php
+/public_html/LICENSE.txt
+/public_html/README.txt
+/public_html/htaccess.txt
+/public_html/robots.txt.dist
+/public_html/web.config.txt
+
+# Make sure folders are being created on git clone
+!/public_html/administrator/cache/index.html
+!/public_html/administrator/logs/index.html
+!/public_html/cache/index.html
+!/public_html/images/index.html
+!/public_html/tmp/index.html
+
+# Backup Files
+/public_html/administrator/components/com_akeeba/backup/
+
+# IDE & System Related Files #
+.buildpath
+.project
+.settings
+.DS_Store
+.idea
+
+# OSX #
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows #
+Thumbs.db
+Desktop.ini
+
+# Watchful.li #
+/public_html/administrator/components/com_watchfulli/restauration.php
+/public_html/administrator/components/com_watchfulli/restoration.php
+
+# MyJoomla BFNetwork #
+/public_html/plugins/system/bfnetwork/*
+!/public_html/plugins/system/bfnetwork/index.htnml
+
+# Admintools security backend #
+/public_html/administrator/.htaccess
+/public_html/.htpasswd
+/public_html/administrator/.htpasswd
+
+# Tools #
+/node_modules
+/hooks/config
+
+# RSForm Pro uploads
+/public_html/components/com_rsform/uploads/*
+!/public_html/components/com_rsform/uploads/index.html
+
+# Regular Labs Cache Cleaner log
+/public_html/plugins/system/cachecleaner/*.log
+
+# DOCMan
+/public_html/joomlatools-files/docman-files/*
+!/public_html/joomlatools-files/docman-files/index.html
+
