@@ -66,3 +66,6 @@ Desktop.ini
 /public_html/joomlatools-files/docman-files/*
 !/public_html/joomlatools-files/docman-files/index.html
 
+# MyJoomla
+.myjoomla.configuration.php.md5
+
