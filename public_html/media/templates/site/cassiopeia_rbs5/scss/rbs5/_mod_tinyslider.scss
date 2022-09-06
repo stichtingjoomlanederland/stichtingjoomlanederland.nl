@@ -1,0 +1,57 @@
+/**
+ * RBS5
+ *
+ * @author       R2H <post@r2h.nl>
+ * @copyright    R2H Marketing & Internet Solutions
+ * @license      GNU/GPLv3
+*/
+
+.img-fluid {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tns-outer {
+  position: relative;
+}
+
+.tns-controls {
+
+  button {
+    position: absolute;
+    height: 100%;
+    top: 0;
+    border: none;
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(0,0,0,.3);
+    transition: all 250ms ease-in;
+    padding: .5rem;
+
+    &:hover, &:focus {
+      color: rgba(255, 255, 255, 1);
+      background-color: rgba(0,0,0,.5);
+    }
+  }
+
+  button[data-controls="next"] {
+    right: 0;
+  }
+    button[data-controls="prev"] {
+    left: 0;
+  }
+}
+
+.my-slider__title {
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-family: var(--cassiopeia-font-family-headings);
+  background-color: rgba(0,0,0,.3);
+  padding: 1rem;
+}

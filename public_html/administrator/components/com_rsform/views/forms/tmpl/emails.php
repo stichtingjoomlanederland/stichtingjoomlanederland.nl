@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSForm! Pro
- * @copyright  (c) 2007 - 2016 RSJoomla!
+ * @copyright  (c) 2007-2019 www.rsjoomla.com
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -48,6 +48,10 @@ defined('_JEXEC') or die('Restricted access');
 	<tr>
 		<td width="25%" align="right" nowrap="nowrap" class="key"><?php echo JText::_('RSFP_EMAILS_REPLY_TO'); ?>:</td>
 		<td><input data-delimiter="," data-placeholders="display" data-filter-type="include" data-filter="value,global" name="replyto" placeholder="<?php echo JText::_('RSFP_EMAILS_REPLY_TO_PLACEHOLDER'); ?>" class="rs_inp rs_80" id="replyto" value="<?php echo $this->escape($this->row->replyto); ?>" /></td>
+	</tr>
+	<tr>
+		<td width="25%" align="right" nowrap="nowrap" class="key"><?php echo RSFormProHelper::translateIcon(); ?> <?php echo JText::_('RSFP_EMAILS_REPLY_TO_NAME'); ?>:</td>
+		<td><input data-delimiter="," data-placeholders="display" data-filter-type="include" data-filter="value,global" name="replytoname" placeholder="<?php echo JText::_('RSFP_EMAILS_REPLY_TO_NAME_PLACEHOLDER'); ?>" class="rs_inp rs_80" id="replytoname" value="<?php echo $this->escape($this->row->replytoname); ?>" /></td>
 	</tr>
 	<tr>
 		<td width="25%" align="right" nowrap="nowrap" class="key"><?php echo JText::_('RSFP_EMAILS_CC'); ?></td>

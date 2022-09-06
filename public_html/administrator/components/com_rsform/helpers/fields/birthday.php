@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -15,9 +15,8 @@ class RSFormProFieldBirthDay extends RSFormProFieldSelectList
 	protected $processing;
 	
 	// backend preview
-	public function getPreviewInput() {
-		$caption 	= $this->getProperty('CAPTION', '');
-		
+	public function getPreviewInput()
+	{
 		$ordering 	= $this->getProperty('DATEORDERING');
 		$separator	= $this->getProperty('DATESEPARATOR');
 		$day   		= strpos($ordering, 'D');
@@ -61,8 +60,7 @@ class RSFormProFieldBirthDay extends RSFormProFieldSelectList
 		
 		ksort($items);
 		
-		$html = '<td>'.$caption.'</td><td>'.implode($separator, $items).'</td>';
-		return $html;
+		return implode($separator, $items);
 	}
 	
 	// functions used for rendering in front view
@@ -211,6 +209,28 @@ class RSFormProFieldBirthDay extends RSFormProFieldSelectList
 		// Check for invalid here so that we can add 'rsform-error'
 		if ($this->invalid[$this->processing]) {
 			$attr['class'] .= ' ' . $this->fieldErrorClass;
+			$attr['aria-invalid'] = 'true';
+			$attr['aria-describedby'] = 'component' . $this->componentId;
+		}
+
+		if ($this->isRequired())
+		{
+			$attr['aria-required'] = 'true';
+		}
+
+		switch ($this->processing)
+		{
+			case 'd':
+				$attr['aria-label'] = JText::_('COM_RSFORM_BIRTHDAY_DAY_LABEL');
+				break;
+
+			case 'm':
+				$attr['aria-label'] = JText::_('COM_RSFORM_BIRTHDAY_MONTH_LABEL');
+				break;
+
+			case 'y':
+				$attr['aria-label'] = JText::_('COM_RSFORM_BIRTHDAY_YEAR_LABEL');
+				break;
 		}
 		
 		// Must add an onchange event when we don't allow incorrect dates eg. 31 feb
@@ -248,7 +268,7 @@ class RSFormProFieldBirthDay extends RSFormProFieldSelectList
 		$items = array();
 		if ($showDay)
 		{
-			if ($storeLeadingZero)
+			if ($storeLeadingZero && strlen($value['d']))
 			{
 				$value['d'] = str_pad($value['d'], 2, '0', STR_PAD_LEFT);
 			}
@@ -256,7 +276,7 @@ class RSFormProFieldBirthDay extends RSFormProFieldSelectList
 		}
 		if ($showMonth)
 		{
-			if ($storeLeadingZero)
+			if ($storeLeadingZero && strlen($value['m']))
 			{
 				$value['m'] = str_pad($value['m'], 2, '0', STR_PAD_LEFT);
 			}
@@ -287,5 +307,126 @@ class RSFormProFieldBirthDay extends RSFormProFieldSelectList
 		}
 
 		$post[$this->name] = $value;
+	}
+
+	public function processValidation($validationType = 'form', $submissionId = 0)
+	{
+		$value 		= $this->getValue();
+		$showDay 	= $this->getProperty('SHOWDAY', false);
+		$showMonth 	= $this->getProperty('SHOWMONTH', false);
+		$showYear 	= $this->getProperty('SHOWYEAR', false);
+
+		// flag to check if we need to run the validation functions
+		$runValidations = false;
+
+		if ($validationType == 'directory')
+		{
+			// Split the field...
+			$dateParts = explode($this->getProperty('DATESEPARATOR'), $value);
+			$dateOrdering = $this->getProperty('DATEORDERING');
+
+			if (!$showDay)
+			{
+				$dateOrdering = str_replace('D', '', $dateOrdering);
+			}
+
+			if (!$showMonth)
+			{
+				$dateOrdering = str_replace('M', '', $dateOrdering);
+			}
+
+			if (!$showYear)
+			{
+				$dateOrdering = str_replace('Y', '', $dateOrdering);
+			}
+
+			$day   = strpos($dateOrdering, 'D');
+			$month = strpos($dateOrdering, 'M');
+			$year  = strpos($dateOrdering, 'Y');
+
+			$value = array();
+
+			if ($showDay && isset($dateParts[$day]))
+			{
+				$value['d'] = $dateParts[$day];
+			}
+
+			if ($showMonth && isset($dateParts[$month]))
+			{
+				$value['m'] = $dateParts[$month];
+			}
+
+			if ($showYear && isset($dateParts[$year]))
+			{
+				$value['y'] = $dateParts[$year];
+			}
+		}
+
+		if ($this->isRequired())
+		{
+			if (($showDay && empty($value['d'])) || ($showMonth && empty($value['m'])) || ($showYear && empty($value['y'])))
+			{
+				return false;
+			}
+
+			$runValidations = true;
+		}
+		else
+		{
+			// the field is not required, but if a selection is made it needs to be valid
+			$selections = array();
+
+			if ($showDay)
+			{
+				$selections[] = !empty($value['d']) ? $value['d'] : '';
+			}
+
+			if ($showMonth)
+			{
+				$selections[] = !empty($value['m']) ? $value['m'] : '';
+			}
+
+			if ($showYear)
+			{
+				$selections[] = !empty($value['y']) ? $value['y'] : '';
+			}
+
+			$selectionsFiltered = array_filter($selections);
+
+			// If we've selected something
+			if ($selectionsFiltered)
+			{
+				// We've found empty values, fail validation
+				if (count($selections) !== count($selectionsFiltered))
+				{
+					return false;
+				}
+
+				$runValidations = true;
+			}
+		}
+
+		// We have all the info we need, validations only work when all fields are selected
+		if ($runValidations && $showDay && $showMonth && $showYear)
+		{
+			if ($validationRule = $this->getProperty('VALIDATIONRULE_DATE'))
+			{
+				$day 	= $value['d'];
+				$month 	= $value['m'];
+				$year 	= $value['y'];
+
+				// load validation rules
+				$dateValidations 	 = array_flip(RSFormProHelper::getDateValidationRules(true));
+				$dateValidationClass = RSFormProHelper::getDateValidationClass();
+
+				// start checking validation rules
+				if (isset($dateValidations[$validationRule]) && !call_user_func(array($dateValidationClass, $validationRule), $day, $month, $year, $this->data))
+				{
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
 }

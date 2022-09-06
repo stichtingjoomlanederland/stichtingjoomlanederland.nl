@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -26,9 +26,14 @@ foreach ($fields as $field) {
 		} else {
 			$placeholders['caption'] = '{'.$field->FieldName.':caption}';
 			$placeholders['value'] 	 = '{'.$field->FieldName.':value}';
+
+			if ($showGoogleMap && $field->FieldType == RSFORM_FIELD_GMAPS)
+			{
+				$placeholders['value'] = '{' . $field->FieldName . ':map}';
+			}
 		}
 
-		$mainframe->triggerEvent('rsfp_b_onManageDirectoriesAfterCreatedPlaceholders', array($field, & $placeholders));
+		$mainframe->triggerEvent('onRsformBackendManageDirectoriesAfterCreatedPlaceholders', array($field, & $placeholders));
 
 		// Add to titles
 		if (count($titles) < 3) {
@@ -49,32 +54,90 @@ foreach ($fields as $field) {
 	}
 }
 
-if ($titles) {
-	if (isset($titles[0])) {
+if ($titles)
+{
+	if (isset($titles[0]))
+	{
+		if ($hideEmptyValues)
+		{
+			$out .= "\t" . '{if ' . $titles[0] . '}' . "\n";
+		}
+
 		$out .= "\t".'<p class="rsform-main-title rsform-title">'.$titles[0].'</p>'."\n";
+
+		if ($hideEmptyValues)
+		{
+			$out .= "\t" . '{/if}' . "\n";
+		}
 	}
-	if (isset($titles[1])) {
+	if (isset($titles[1]))
+	{
+		if ($hideEmptyValues)
+		{
+			$out .= "\t" . '{if ' . $titles[1] . '}' . "\n";
+		}
+
 		$out .= "\t".'<p class="rsform-big-subtitle rsform-title">'.$titles[1].'</p>'."\n";
+
+		if ($hideEmptyValues)
+		{
+			$out .= "\t" . '{/if}' . "\n";
+		}
 	}
-	if (isset($titles[2])) {
+	if (isset($titles[2]))
+	{
+		if ($hideEmptyValues)
+		{
+			$out .= "\t" . '{if ' . $titles[2] . '}' . "\n";
+		}
+
 		$out .= "\t".'<p class="rsform-small-subtitle rsform-title">'.$titles[2].'</p>'."\n";
+
+		if ($hideEmptyValues)
+		{
+			$out .= "\t" . '{/if}' . "\n";
+		}
 	}
 }
 
-if (!empty($imagefields)) {
-	foreach ($imagefields as $image) {
-		$out .= "\t\t".'{if {'.$image.':value}}<div class="rsform-gallery"><a href="javascript:void(0)" class="modal" rel="{handler: \'clone\'}"><img src="{'.$image.':path}" alt="" /></a></div>{/if}'."\n";
+if (!empty($imagefields))
+{
+	foreach ($imagefields as $image)
+	{
+		if ($hideEmptyValues)
+		{
+			$out .= "\t\t" . '{if {' . $image . ':path}}' . "\n";
+		}
+
+		$out .= "\t\t".'{if {'.$image.':value}}<div class="rsform-gallery"><a href="javascript:void(0)" class="rsform-simple-image-modal"><img src="{'.$image.':path}" alt="" /></a></div>{/if}'."\n";
+
+		if ($hideEmptyValues)
+		{
+			$out .= "\t\t" . '{/if}' . "\n";
+		}
 	}
 }
 
-if (!empty($others)) {
+if (!empty($others))
+{
 	$out .= "\t".'<div class="rsfp-table">'."\n";
 	
-	foreach ($others as $other) {
+	foreach ($others as $other)
+	{
+		if ($hideEmptyValues)
+		{
+			$out .= "\t\t" . '{if ' . $other->value . '}' . "\n";
+		}
+
 		$out .= "\t\t".'<div class="rsform-table-row">'."\n";
 		$out .= "\t\t\t".'<div class="rsform-left-col">'.$other->caption.'</div>'."\n";
 		$out .= "\t\t\t".'<div class="rsform-right-col">'.$other->value.'</div>'."\n";
 		$out .= "\t\t".'</div>'."\n";
+
+		if ($hideEmptyValues)
+		{
+			$out .= "\t\t" . '{/if}' . "\n";
+		}
 	}
 	
 	$out .= "\t".'</div>'."\n";

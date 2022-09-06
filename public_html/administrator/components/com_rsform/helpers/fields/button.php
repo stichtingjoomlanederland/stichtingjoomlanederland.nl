@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -14,14 +14,14 @@ class RSFormProFieldButton extends RSFormProField
 	protected $baseClass = 'rsform-button';
 	
 	// backend preview
-	public function getPreviewInput() {
-		$caption 	= $this->getProperty('CAPTION', '');
+	public function getPreviewInput()
+	{
 		$reset		= $this->getProperty('RESET', 'NO');
 		$buttonType = $this->getProperty('BUTTONTYPE', 'TYPEINPUT') == 'TYPEBUTTON' ? 'button' : 'input';
 		$label		= $this->getProperty('LABEL', '');
-		$resetLabel		= $this->getProperty('RESETLABEL', '');
+		$resetLabel	= $this->getProperty('RESETLABEL', '');
 		
-		$html = '<td>'.$caption.'</td><td>';
+		$html = '';
 		if ($buttonType == 'button') {
 			$html .= '<button type="button" class="btn">'.$this->escape($label).'</button>';
 		} else {
@@ -35,8 +35,6 @@ class RSFormProFieldButton extends RSFormProField
 			}
 		}
 		
-		$html .= '</td>';
-		
 		return $html;
 	}
 	
@@ -47,6 +45,7 @@ class RSFormProFieldButton extends RSFormProField
 		$buttonType = $this->getProperty('BUTTONTYPE', 'TYPEINPUT') == 'TYPEBUTTON' ? 'button' : 'input';
 		$label		= $this->getProperty('LABEL', '');
 		$reset		= $this->getProperty('RESET', 'NO');
+		$allowHtml	= $this->getProperty('ALLOWHTML', 'NO');
 		$attr		= $this->getAttributes('button');
 		$type 		= 'button';
 		$additional = '';
@@ -78,7 +77,7 @@ class RSFormProFieldButton extends RSFormProField
 		$html .= $additional;
 		// Add the label & close the tag
 		if ($buttonType == 'button') {
-			$html .= ' >'.$this->escape($label).'</button>';
+			$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
 		} else {
 			$html .= ' value="'.$this->escape($label).'" />';
 		}
@@ -109,7 +108,7 @@ class RSFormProFieldButton extends RSFormProField
 			$html .= $additional;
 			// Add the label & close the tag
 			if ($buttonType == 'button') {
-				$html .= ' >'.$this->escape($label).'</button>';
+				$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
 			} else {
 				$html .= ' value="'.$this->escape($label).'" />';
 			}
@@ -128,6 +127,7 @@ class RSFormProFieldButton extends RSFormProField
 			$attr['class'] .= $this->baseClass;
 		} elseif ($type == 'reset') {
 			$attr['class'] .= 'rsform-reset-button';
+			$attr['onclick'] = 'RSFormPro.resetElements('.$this->formId.')';
 		} elseif ($type == 'previous') {
 			$attr['class'] .= 'rsform-button-prev';
 			if (!isset($attr['onclick'])) {
@@ -157,6 +157,7 @@ class RSFormProFieldButton extends RSFormProField
 			$buttonType = $this->getProperty('BUTTONTYPE', 'TYPEINPUT') == 'TYPEBUTTON' ? 'button' : 'input';
 			$label  	= $this->getProperty('PREVBUTTON', JText::_('JPREV'));
 			$label		= empty($label) ? JText::_('JPREV') : $label;
+			$allowHtml	= $this->getProperty('ALLOWHTML', 'NO');
 			$id			= $this->getId();
 			$attr		= $this->getAttributes('previous');
 			$additional = '';
@@ -189,7 +190,7 @@ class RSFormProFieldButton extends RSFormProField
 			$html .= $additional;
 			// Add the label & close the tag
 			if ($buttonType == 'button') {
-				$html .= ' >'.$this->escape($label).'</button>';
+				$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
 			} else {
 				$html .= ' value="'.$this->escape($label).'" />';
 			}

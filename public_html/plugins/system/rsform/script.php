@@ -8,35 +8,50 @@
 // no direct access
 defined( '_JEXEC' ) or die( 'Restricted access' );
 
-class plgSystemRSFormInstallerScript
+class plgSystemRsformInstallerScript
 {
-	public function preflight($type, $parent) {
-		if ($type == 'uninstall') {
+	protected static $minJoomla = '3.7.0';
+	protected static $minComponent = '3.0.0';
+	
+	public function preflight($type, $parent)
+	{
+		if ($type == 'uninstall')
+		{
 			return true;
 		}
-		
-		$app = JFactory::getApplication();
-		
-		try {
-			if (!file_exists(JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/rsform.php')) {
+
+		try
+		{
+			$jversion = new JVersion();
+
+			if (!$jversion->isCompatible(static::$minJoomla))
+			{
+				throw new Exception('Please upgrade to at least Joomla! ' . static::$minJoomla . ' before continuing!');
+			}
+
+			if (!file_exists(JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/rsform.php'))
+			{
 				throw new Exception('Please install the RSForm! Pro component before continuing.');
 			}
-			
-			if (!file_exists(JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/assets.php')) {
-				throw new Exception('Please update RSForm! Pro to at least version 1.51.0 before continuing!');
+
+			if (!file_exists(JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/assets.php') || !file_exists(JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/version.php'))
+			{
+				throw new Exception('Please upgrade RSForm! Pro to at least version ' . static::$minComponent . ' before continuing!');
 			}
-			
+
 			require_once JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/version.php';
-			$version = new RSFormProVersion;
-			
-			if (version_compare((string) $version, '1.52.5', '<')) {
-				throw new Exception('Please update RSForm! Pro to at least version 1.52.5 before continuing!');
+
+			if (!class_exists('RSFormProVersion') || version_compare((string) new RSFormProVersion, static::$minComponent, '<'))
+			{
+				throw new Exception('Please upgrade RSForm! Pro to at least version ' . static::$minComponent . ' before continuing!');
 			}
-		} catch (Exception $e) {
-			$app->enqueueMessage($e->getMessage(), 'error');
+		}
+		catch (Exception $e)
+		{
+			JFactory::getApplication()->enqueueMessage($e->getMessage(), 'error');
 			return false;
 		}
-		
+
 		return true;
 	}
 }

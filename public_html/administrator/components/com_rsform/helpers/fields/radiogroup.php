@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -25,10 +25,10 @@ class RSFormProFieldRadioGroup extends RSFormProFieldMultiple
 	protected $columns = array('VERTICAL2COLUMNS' => 2, 'VERTICAL3COlUMNS' => 3, 'VERTICAL4COLUMNS' => 4, 'VERTICAL6COLUMNS' => 6);
 	
 	// backend preview
-	public function getPreviewInput() {
+	public function getPreviewInput()
+	{
 		$id			= $this->getId();
 		$flow		= $this->getProperty('FLOW', 'HORIZONTAL');
-		$caption 	= $this->getProperty('CAPTION','');
 		
 		// Add the items
 		$parsed = array();
@@ -70,9 +70,7 @@ class RSFormProFieldRadioGroup extends RSFormProFieldMultiple
 			$radiogroup .= $this->start.implode('', $parsed).$this->end;
 		}
 		
-		$html = '<td>'.$caption.'</td><td class="controls formControls preview-radio'.($flow == 'HORIZONTAL' ? '-inline' : '').'">'.$this->codeIcon.$radiogroup.'</td>';
-		
-		return $html;
+		return '<div class="controls formControls preview-radio' . ($flow == 'HORIZONTAL' ? '-inline' : '') . '">'. $this->codeIcon . $radiogroup . '</div>';
 	}
 	
 	// functions used for rendering in front view
@@ -143,6 +141,11 @@ class RSFormProFieldRadioGroup extends RSFormProFieldMultiple
 		} else {
 			$output .= $this->start.implode($this->glue, $parsed).$this->end;
 		}
+
+		if ($this->isRequired())
+		{
+			$output = '<div aria-required="true">' . $output . '</div>';
+		}
 		
 		return $output;
 	}
@@ -151,7 +154,7 @@ class RSFormProFieldRadioGroup extends RSFormProFieldMultiple
 		// For convenience
 		extract($data);
 		
-		return '<label for="'.$this->escape($id).$i.'">'.$item->label.'</label>';
+		return '<label id="'.$this->escape($id).$i.'-lbl" for="'.$this->escape($id).$i.'">'.$item->label.'</label>';
 	}
 	
 	protected function buildInput($data) {
@@ -202,13 +205,20 @@ class RSFormProFieldRadioGroup extends RSFormProFieldMultiple
 		}
 	}
 	
-	// @desc All select lists should have a 'rsform-radio' class for easy styling
-	public function getAttributes() {
+	// @desc All radio inputs should have a 'rsform-radio' class for easy styling
+	public function getAttributes()
+	{
 		$attr = parent::getAttributes();
-		if (strlen($attr['class'])) {
+		if (strlen($attr['class']))
+		{
 			$attr['class'] .= ' ';
 		}
 		$attr['class'] .= 'rsform-radio';
+
+		if ($this->isRequired())
+		{
+			unset($attr['aria-required']);
+		}
 		
 		return $attr;
 	}

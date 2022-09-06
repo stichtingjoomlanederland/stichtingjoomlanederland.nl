@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2017 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -28,17 +28,24 @@ class RSFormProGridFoundation extends RSFormProGrid
 		foreach ($this->pages as $page_index => $rows)
 		{
 			$html[] = '<!-- Do not remove this ID, it is used to identify the page so that the pagination script can work correctly -->';
-			$html[] = '<fieldset class="formContainer" id="rsform_{global:formid}_page_' . $page_index . '">';
+
+			$classes = array('formContainer');
+			if (count($this->pages) > 1)
+			{
+				$classes[] = 'formHidden';
+			}
+
+			$html[] = '<fieldset class="' . implode(' ', $classes) . '" id="rsform_{global:formid}_page_' . $page_index . '">';
 			foreach ($rows as $row_index => $row)
 			{
 				// Start a new row
-				$html[] = "\t".'<div class="row">';
+				$html[] = "\t".'<div class="grid-x grid-padding-x">';
 				
 				foreach ($row['columns'] as $column_index => $fields)
 				{
 					$size = $row['sizes'][$column_index];
 					
-					$html[] = "\t"."\t".'<div class="medium-' . (int) $size . ' columns">';
+					$html[] = "\t"."\t".'<div class="medium-' . (int) $size . ' cell">';
 					
 					foreach ($fields as $field)
 					{
@@ -85,7 +92,7 @@ class RSFormProGridFoundation extends RSFormProGrid
 		$placeholders = array(
 			'body' 		 	=> '{' . $data->ComponentName . ':body}',
 			'caption'	 	=> '{' . $data->ComponentName . ':caption}',
-			'description' 	=> '{' . $data->ComponentName . ':description}',
+			'description' 	=> '{' . $data->ComponentName . ':descriptionhtml}',
 			'error' 	 	=> '{' . $data->ComponentName . ':errorClass}',
 			'validation' 	=> '{' . $data->ComponentName . ':validation}',
 		);
@@ -95,11 +102,11 @@ class RSFormProGridFoundation extends RSFormProGrid
 		{
 			$block = $this->getBlock($data->ComponentName);
 
-			$html[] = "\t"."\t"."\t".'<div class="row rsform-block rsform-block-' . $block . $placeholders['error'] . '">';
+			$html[] = "\t"."\t"."\t".'<div class="grid-x grid-padding-x rsform-block rsform-block-' . $block . $placeholders['error'] . '">';
 			$html[] = "\t"."\t"."\t"."\t"."\t".$placeholders['body'];
 			$html[] = "\t"."\t"."\t".'</div>';
 		}
-		elseif (in_array($data->ComponentTypeId, array(RSFORM_FIELD_HIDDEN, RSFORM_FIELD_TICKET)))
+		elseif (in_array($data->ComponentTypeId, $this->hiddenComponents))
 		{
 			$html[] = "\t"."\t"."\t"."\t"."\t".$placeholders['body'];
 		}
@@ -107,14 +114,18 @@ class RSFormProGridFoundation extends RSFormProGrid
 		{
 			$block = $this->getBlock($data->ComponentName);
 
-			$html[] = "\t"."\t"."\t".'<div class="row rsform-block rsform-block-' . $block . $placeholders['error'] . '">';
+			$html[] = "\t"."\t"."\t".'<div class="grid-x grid-padding-x rsform-block rsform-block-' . $block . $placeholders['error'] . '">';
 				if ($data->ComponentTypeId != RSFORM_FIELD_PAGEBREAK)
 				{
-					$label = "\t"."\t"."\t"."\t"."\t".'<label class="formControlLabel has-tip" data-tooltip aria-haspopup="true" data-disable-hover="false" tabindex="1" title="' . $placeholders['description'] . '"';
-					if (!in_array($data->ComponentTypeId, array(RSFORM_FIELD_CHECKBOXGROUP, RSFORM_FIELD_RADIOGROUP, RSFORM_FIELD_BIRTHDAY)))
+					$label = '';
+
+					if ($this->formOptions->FormLayoutFlow == static::FLOW_VERTICAL)
 					{
-						$label .= ' for="' . $data->ComponentName . '"';
+						$label .= '{if ' . $placeholders['caption'] . '}' . "\n";
 					}
+
+					$label .= "\t"."\t"."\t"."\t"."\t".'<label class="formControlLabel has-tip middle" data-tooltip aria-haspopup="true" data-disable-hover="false" title="' . $placeholders['description'] . '"';
+					$label .= $this->generateFor($data);
 					$label .= '>';
 					$label .= $placeholders['caption'];
 					if ($data->Required && $this->requiredMarker)
@@ -122,34 +133,27 @@ class RSFormProGridFoundation extends RSFormProGrid
 						$label .= '<strong class="formRequired">' . $this->requiredMarker . '</strong>';
 					}
 					$label .= '</label>';
+
+					if ($this->formOptions->FormLayoutFlow == static::FLOW_VERTICAL)
+					{
+						$label .= "\n" . '{/if}';
+					}
 				}
 
-                if ($this->formOptions->FormLayoutFlow == static::FLOW_HORIZONTAL) {
-                    $html[] = "\t"."\t"."\t"."\t".'<div class="medium-3 columns">';
-                }
-
+				$size = ($this->formOptions->FormLayoutFlow == static::FLOW_HORIZONTAL) ? 3 : 12;
+				$html[] = "\t"."\t"."\t"."\t".'<div class="medium-' . $size . ' cell">';
 				if ($data->ComponentTypeId != RSFORM_FIELD_PAGEBREAK)
 				{
 					$html[] = $label;
 				}
-
-                if ($this->formOptions->FormLayoutFlow == static::FLOW_HORIZONTAL) {
-                    $html[] = "\t" . "\t" . "\t" . "\t" . '</div>';
-                }
-
-                if ($this->formOptions->FormLayoutFlow == static::FLOW_HORIZONTAL) {
-                    $html[] = "\t" . "\t" . "\t" . "\t" . '<div class="medium-9 columns formControls">';
-                }
-
-					$html[] = "\t"."\t"."\t"."\t"."\t".$placeholders['body'];
-                    if ($data->ComponentTypeId != RSFORM_FIELD_PAGEBREAK)
-					{
-						$html[]	= "\t"."\t"."\t"."\t"."\t".'<span class="formValidation">' . $placeholders['validation'] . '</span>';
-					}
-
-                if ($this->formOptions->FormLayoutFlow == static::FLOW_HORIZONTAL) {
-                    $html[] = "\t" . "\t" . "\t" . "\t" . '</div>';
-                }
+				$html[] = "\t" . "\t" . "\t" . "\t" . '</div>';
+				$html[] = "\t" . "\t" . "\t" . "\t" . '<div ' . $this->fieldAttributes($data) . '>';
+				$html[] = "\t"."\t"."\t"."\t"."\t".$placeholders['body'];
+				if ($data->ComponentTypeId != RSFORM_FIELD_PAGEBREAK)
+				{
+					$html[]	= "\t"."\t"."\t"."\t"."\t".'<span class="formValidation">' . $placeholders['validation'] . '</span>';
+				}
+				$html[] = "\t" . "\t" . "\t" . "\t" . '</div>';
 
 			$html[] = "\t"."\t"."\t".'</div>';
 		}
@@ -161,5 +165,29 @@ class RSFormProGridFoundation extends RSFormProGrid
 		}
 		
 		return implode("\n", $html);
+	}
+
+	protected function fieldAttributes($data)
+	{
+		$classes = array('formControls');
+
+		if ($this->formOptions->FormLayoutFlow == static::FLOW_VERTICAL)
+		{
+			$classes[] = 'medium-12';
+		}
+		else
+		{
+			$classes[] = 'medium-9';
+		}
+
+		$classes[] = 'cell';
+
+		$attr = 'class="' . implode(' ', $classes) . '"';
+		if (in_array($data->ComponentTypeId, array(RSFORM_FIELD_CHECKBOXGROUP, RSFORM_FIELD_RADIOGROUP)) || in_array($data->ComponentId, $this->checkboxes) || in_array($data->ComponentId, $this->radiogroups))
+		{
+			$attr .= ' role="group" aria-labelledby="' . $data->ComponentName . '-grouplbl"';
+		}
+
+		return $attr;
 	}
 }

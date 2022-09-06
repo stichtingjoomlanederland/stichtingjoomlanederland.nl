@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -9,26 +9,60 @@ defined('_JEXEC') or die('Restricted access');
 
 class RsformControllerEmails extends RsformController
 {
-	public function __construct()
+	public function __construct($config = array())
 	{
-		parent::__construct();
+		parent::__construct($config);
 		
 		$this->registerTask('apply', 'save');
+	}
+
+	public function edit()
+	{
+		JFactory::getApplication()->input->set('view', 'email');
+		JFactory::getApplication()->input->set('layout', 'default');
+
+		parent::display();
 	}
 	
 	public function save()
 	{
-	    $app    = JFactory::getApplication();
-		$model	= $this->getModel('forms');
-		$row	= $model->saveemail();
-		$type	= $app->input->getCmd('type', 'additional');
+		$this->checkToken();
+
+	    $app                = JFactory::getApplication();
+		$model	            = $this->getModel('email');
+		$type	            = $model->getType();
+		$data               = $app->input->post->get('jform', array(), 'array');
+		$data['message']    = $data['message_' . $data['mode']];
+		$data['replyto'] 	= str_replace(';', ',', $data['replyto']);
+		$data['to'] 		= str_replace(';', ',', $data['to']);
+		$data['cc'] 		= str_replace(';', ',', $data['cc']);
+		$data['bcc'] 		= str_replace(';', ',', $data['bcc']);
+
+		$row = $model->save($data);
 		
 		if ($this->getTask() == 'apply')
         {
-            return $this->setRedirect('index.php?option=com_rsform&task=forms.emails&type='.$type.'&cid='.$row->id.'&formId='.$row->formId.'&tmpl=component&update=1');
+            $this->setRedirect('index.php?option=com_rsform&task=emails.edit&type='.$type.'&cid='.$row->id.'&formId='.$row->formId.'&tmpl=component&update=1');
         }
+		else
+		{
+			JFactory::getDocument()->addScriptDeclaration("window.opener.updateEmails('{$type}');window.close();");
+		}
+	}
 
-        JFactory::getDocument()->addScriptDeclaration("window.opener.updateemails({$row->formId}, '{$type}');window.close();");
+	public function changeLanguage()
+	{
+		$input	  = JFactory::getApplication()->input;
+		$model	  = $this->getModel('email');
+		$data     = $input->post->get('jform', array(), 'array');
+		$formId   = $data['formId'];
+		$cid	  = $data['id'];
+		$language = $data['language'];
+		$type	  = $model->getType();
+
+		JFactory::getSession()->set('com_rsform.emails.emailId' . $cid . '.lang', $language);
+
+		$this->setRedirect('index.php?option=com_rsform&task=emails.edit&type=' . $type . '&tmpl=component&formId=' . $formId . '&cid=' . $cid);
 	}
 	
 	public function remove()
@@ -70,7 +104,8 @@ class RsformControllerEmails extends RsformController
 		$app->input->set('type', $type);
 		
 		parent::display();
-		jexit();
+
+		$app->close();
 	}
 	
 	public function update()
@@ -85,6 +120,7 @@ class RsformControllerEmails extends RsformController
 		$app->input->set('formId', $formId);
 		
 		parent::display();
-		jexit();
+
+		$app->close();
 	}
 }

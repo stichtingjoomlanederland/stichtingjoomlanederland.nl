@@ -2,7 +2,7 @@
 /**
  * Part of the Joomla Framework Archive Package
  *
- * @copyright  Copyright (C) 2005 - 2016 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2021 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -30,7 +30,7 @@ class Gzip implements ExtractableInterface
 	 * @var    array
 	 * @since  1.0
 	 */
-	private $flags = array('FTEXT' => 0x01, 'FHCRC' => 0x02, 'FEXTRA' => 0x04, 'FNAME' => 0x08, 'FCOMMENT' => 0x10);
+	private const FLAGS = ['FTEXT' => 0x01, 'FHCRC' => 0x02, 'FEXTRA' => 0x04, 'FNAME' => 0x08, 'FCOMMENT' => 0x10];
 
 	/**
 	 * Gzip file data buffer
@@ -38,7 +38,7 @@ class Gzip implements ExtractableInterface
 	 * @var    string
 	 * @since  1.0
 	 */
-	private $data = null;
+	private $data;
 
 	/**
 	 * Holds the options array.
@@ -46,7 +46,7 @@ class Gzip implements ExtractableInterface
 	 * @var    array|\ArrayAccess
 	 * @since  1.0
 	 */
-	protected $options = array();
+	protected $options = [];
 
 	/**
 	 * Create a new Archive object.
@@ -56,9 +56,9 @@ class Gzip implements ExtractableInterface
 	 * @since   1.0
 	 * @throws  \InvalidArgumentException
 	 */
-	public function __construct($options = array())
+	public function __construct($options = [])
 	{
-		if (!is_array($options) && !($options instanceof \ArrayAccess))
+		if (!\is_array($options) && !($options instanceof \ArrayAccess))
 		{
 			throw new \InvalidArgumentException(
 				'The options param must be an array or implement the ArrayAccess interface.'
@@ -93,7 +93,7 @@ class Gzip implements ExtractableInterface
 			}
 
 			$position = $this->getFilePosition();
-			$buffer = gzinflate(substr($this->data, $position, strlen($this->data) - $position));
+			$buffer   = gzinflate(substr($this->data, $position, \strlen($this->data) - $position));
 
 			if (empty($buffer))
 			{
@@ -102,7 +102,7 @@ class Gzip implements ExtractableInterface
 
 			if (!File::write($destination, $buffer))
 			{
-				throw new \RuntimeException('Unable to write archive');
+				throw new \RuntimeException('Unable to write archive to file ' . $destination);
 			}
 		}
 		else
@@ -115,7 +115,7 @@ class Gzip implements ExtractableInterface
 
 			if (!$input->open($archive))
 			{
-				throw new \RuntimeException('Unable to read archive (gz)');
+				throw new \RuntimeException('Unable to read archive');
 			}
 
 			$output = Stream::getStream();
@@ -124,7 +124,7 @@ class Gzip implements ExtractableInterface
 			{
 				$input->close();
 
-				throw new \RuntimeException('Unable to write archive (gz)');
+				throw new \RuntimeException('Unable to open file "' . $destination . '" for writing');
 			}
 
 			do
@@ -137,11 +137,10 @@ class Gzip implements ExtractableInterface
 					{
 						$input->close();
 
-						throw new \RuntimeException('Unable to write file (gz)');
+						throw new \RuntimeException('Unable to write archive to file ' . $destination);
 					}
 				}
 			}
-
 			while ($this->data);
 
 			$output->close();
@@ -160,7 +159,7 @@ class Gzip implements ExtractableInterface
 	 */
 	public static function isSupported()
 	{
-		return extension_loaded('zlib');
+		return \extension_loaded('zlib');
 	}
 
 	/**
@@ -175,7 +174,7 @@ class Gzip implements ExtractableInterface
 	{
 		// Gzipped file... unpack it first
 		$position = 0;
-		$info = @ unpack('CCM/CFLG/VTime/CXFL/COS', substr($this->data, $position + 2));
+		$info     = @ unpack('CCM/CFLG/VTime/CXFL/COS', substr($this->data, $position + 2));
 
 		if (!$info)
 		{
@@ -184,26 +183,26 @@ class Gzip implements ExtractableInterface
 
 		$position += 10;
 
-		if ($info['FLG'] & $this->flags['FEXTRA'])
+		if ($info['FLG'] & self::FLAGS['FEXTRA'])
 		{
 			$XLEN = unpack('vLength', substr($this->data, $position + 0, 2));
 			$XLEN = $XLEN['Length'];
 			$position += $XLEN + 2;
 		}
 
-		if ($info['FLG'] & $this->flags['FNAME'])
+		if ($info['FLG'] & self::FLAGS['FNAME'])
 		{
 			$filenamePos = strpos($this->data, "\x0", $position);
-			$position = $filenamePos + 1;
+			$position    = $filenamePos + 1;
 		}
 
-		if ($info['FLG'] & $this->flags['FCOMMENT'])
+		if ($info['FLG'] & self::FLAGS['FCOMMENT'])
 		{
 			$commentPos = strpos($this->data, "\x0", $position);
-			$position = $commentPos + 1;
+			$position   = $commentPos + 1;
 		}
 
-		if ($info['FLG'] & $this->flags['FHCRC'])
+		if ($info['FLG'] & self::FLAGS['FHCRC'])
 		{
 			$hcrc = unpack('vCRC', substr($this->data, $position + 0, 2));
 			$hcrc = $hcrc['CRC'];

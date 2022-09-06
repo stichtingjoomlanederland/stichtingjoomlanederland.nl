@@ -1,7 +1,7 @@
 <?php
 /**
  * @package RSForm! Pro
- * @copyright (C) 2007-2014 www.rsjoomla.com
+ * @copyright (C) 2007-2019 www.rsjoomla.com
  * @license GPL, http://www.gnu.org/copyleft/gpl.html
  */
 
@@ -32,6 +32,11 @@ class RSFormProFormLayoutResponsive extends RSFormProFormLayout
 			$this->addStyleSheet('com_rsform/frameworks/responsive/responsive-rtl.css');
 		}
     }
+
+    public function modifyForm(&$form)
+	{
+		$form->CSSClass .= ' formResponsive';
+	}
 
     public function generateButton($goto)
     {

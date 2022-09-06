@@ -1,4 +1,4 @@
-.has-error-foundation .control-label,
+.has-error-foundation .formControlLabel,
 .has-error-foundation label{
 	color: #ec5840;
 }
@@ -19,6 +19,6 @@
 	clear:both;
 }
 
-.has-error-foundation .columns  .row .columns * {
-	margin-bottom: 0px;
+.has-error-foundation .cell  .grid-x .cell * {
+	margin-bottom: 0;
 }

@@ -1,150 +1,89 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
 defined('_JEXEC') or die('Restricted access');
+
+JText::script('ERROR');
+JText::script('RSFP_FORM_MAPPINGS_SELECT_TABLE');
+JText::script('COM_RSFORM_PLEASE_ADD_SOME_DATA_TO_YOUR_COLUMNS_BEFORE_SAVING');
+
+JHtml::_('script', 'com_rsform/admin/mappings.js', array('relative' => true, 'version' => 'auto'));
+JHtml::_('script', 'com_rsform/admin/css.escape.js', array('relative' => true, 'version' => 'auto'));
 ?>
 <form action="<?php echo JRoute::_('index.php?option=com_rsform'); ?>" method="post" name="adminForm" id="adminForm" autocomplete="off">
     <!-- this workaround is needed because browsers no longer honor autocomplete="off" -->
     <input type="text" style="display:none">
     <input type="password" style="display:none">
-<div id="tablers">
-<table class="admintable">
-	<tr>
-		<td width="160" style="width: 160px;" align="right" class="key"><?php echo JText::_('RSFP_FORM_MAPPINGS_CONNECTION') ?></td>
-		<td>
-			<span id="mpConnectionOn">
-				<?php
-					echo $this->lists['MappingConnection']; 
-				?>
-			</span>
-			<span id="mpConnectionOff" style="display:none;"></span>
-		</td>
-	</tr>
-	<tr>
-		<td width="160" style="width: 160px;" align="right" class="key"><?php echo JText::_('RSFP_FORM_MAPPINGS_METHOD') ?></td>
-		<td>
-			<span id="mpMethodOn">
-				<?php
-					echo $this->lists['MappingMethod'];
-				?>
-			</span>
-			<span id="mpMethodOff" style="display:none;"></span>
-		</td>
-	</tr>
-	<tbody id="mappingsid">
-	<tr>
-		<td width="160" style="width: 160px;" align="right" class="key"><?php echo JText::_('RSFP_FORM_MAPPINGS_HOST') ?></td>
-		<td>
-			<span id="mpHostOn">
-				<input type="text" class="rs_inp rs_50" name="host" id="MappingHost" value="<?php echo $this->escape($this->mapping->host); ?>" size="50" />
-			</span>
-			<span id="mpHostOff" style="display:none;"></span>
-			<span id="mpPortOn">
-				<?php echo JText::_('RSFP_FORM_MAPPINGS_PORT'); ?> : <input type="text" class="rs_inp rs_10" name="port" id="MappingPort" value="<?php echo $this->escape($this->mapping->port); ?>" size="5" />
-			</span>
-		</td>
-	</tr>
-	<tr>
-		<td width="160" style="width: 160px;" align="right" class="key"><?php echo JText::_('RSFP_FORM_MAPPINGS_DRIVER') ?></td>
-		<td>
-			<span id="mpDriverOn">
-				<?php echo $this->lists['MappingDriver']; ?>
-			</span>
-			<span id="mpDriverOff" style="display:none;"></span>
-		</td>
-	</tr>
-	<tr>
-		<td width="160" style="width: 160px;" align="right" class="key"><?php echo JText::_('RSFP_FORM_MAPPINGS_USERNAME') ?></td>
-		<td>
-			<span id="mpUsernameOn">
-				<input type="text" autocomplete="off" class="rs_inp rs_50" name="username" id="MappingUsername" value="<?php echo $this->escape($this->mapping->username); ?>" size="50" />
-			</span>
-			<span id="mpUsernameOff" style="display:none;"></span>
-		</td>
-	</tr>
-	<tr>
-		<td width="160" style="width: 160px;" align="right" class="key"><?php echo JText::_('RSFP_FORM_MAPPINGS_PASSWORD') ?></td>
-		<td>
-			<span id="mpPasswordOn">
-				<input type="password" autocomplete="new-password" class="rs_inp rs_50" name="password" id="MappingPassword" value="<?php echo $this->escape($this->mapping->password); ?>" size="50" />
-			</span>
-			<span id="mpPasswordOff" style="display:none;"></span>
-		</td>
-	</tr>
-	<tr>
-		<td width="160" style="width: 160px;" align="right" class="key"><?php echo JText::_('RSFP_FORM_MAPPINGS_DATABASE') ?></td>
-		<td>
-			<span id="mpDatabaseOn">
-				<input type="text" class="rs_inp rs_50" name="database" id="MappingDatabase" value="<?php echo $this->escape($this->mapping->database); ?>" size="50" />
-			</span>
-			<span id="mpDatabaseOff" style="display:none;"></span>
-		</td>
-	</tr>
-	</tbody>
-	<tr>
-		<td width="160" style="width: 160px;" align="right">&nbsp;</td>
-		<td>
-			<button class="btn" type="button" id="connectBtn" onclick="mpConnect();"><?php echo JText::_('RSFP_FORM_MAPPINGS_CONNECT'); ?></button>
-            <?php echo JHtml::image('com_rsform/admin/loading.gif', '', 'id="mappingloader" style="vertical-align: middle; display: none;"',true); ?>
-		</td>
-	</tr>
-</table>
-</div>
-<div id="rsfpmappingContent">
-<?php if (!empty($this->mapping->id)) { ?>
-	<table class="admintable">
-		<tr>
-			<td width="160" style="width: 160px;" align="right" class="key"><?php echo JText::_('RSFP_FORM_MAPPINGS_TABLE'); ?></td>
-			<td>
-				<?php echo $this->lists['tables']; ?>
-                <?php echo JHtml::image('com_rsform/admin/loading.gif', '', 'id="mappingloader2" style="vertical-align: middle; display: none;"',true); ?>
-            </td>
-		</tr>
-	</table>
-<?php } ?>
-</div>
-<br /><br />
-<div id="rsfpmappingColumns">
-<?php if (!empty($this->mapping->id) && ($this->mapping->method == 0 || $this->mapping->method == 1 || $this->mapping->method == 3)) { ?>
+
+	<fieldset class="form-horizontal" id="connectionDetails">
 	<?php
-	try {
-		echo RSFormProHelper::mappingsColumns($this->config, 'set', $this->mapping);
-	} catch (Exception $e) {
-		echo $this->escape(JText::sprintf('RSFP_DB_ERROR', $e->getMessage()));
+	foreach ($this->form->getFieldset('connection') as $field)
+	{
+		echo $field->renderField();
+	}
+
+	if (empty($this->mapping->id))
+	{
+		?>
+		<div>
+			<button class="btn btn-primary" type="button" id="connectBtn" onclick="mappingConnect();"><?php echo JText::_('RSFP_FORM_MAPPINGS_CONNECT'); ?></button>
+			<?php echo JHtml::_('image', 'com_rsform/admin/loading.gif', '', array('id' => 'mappingloader', 'style' => 'vertical-align: middle; display: none;'), true); ?>
+		</div>
+		<?php
 	}
 	?>
-<?php } ?>
-</div>
-<br /><br />
-<div id="rsfpmappingWhere">
-<?php if (!empty($this->mapping->id) && ($this->mapping->method == 1 || $this->mapping->method == 2)) { ?>
+	</fieldset>
+	<fieldset class="form-horizontal">
 	<?php
-	try {
-		echo RSFormProHelper::mappingsColumns($this->config, 'where', $this->mapping);
-	} catch (Exception $e) {
-		echo $this->escape(JText::sprintf('RSFP_DB_ERROR', $e->getMessage()));
+		echo $this->form->getField('table')->renderField();
+	?>
+	</fieldset>
+	<div>
+		<button class="btn btn-success" type="button" id="saveBtn" <?php if (empty($this->mapping->id)) { ?>style="display: none;"<?php } ?> onclick="Joomla.submitbutton('mappings.save')"><?php echo JText::_('JSAVE'); ?></button>
+	</div>
+	<?php echo JHtml::_('image', 'com_rsform/admin/loading.gif', '', array('id' => 'mappingloader2', 'style' => 'vertical-align: middle; display: none;'), true); ?>
+
+	<div id="rsfpmappingColumns">
+	<?php
+	if (!empty($this->mapping->id) && $this->mapping->method != RSFP_MAPPING_DELETE)
+	{
+		try
+		{
+			echo RSFormProHelper::mappingsColumns($this->config, 'set', $this->mapping);
+		}
+		catch (Exception $e)
+		{
+			echo $this->escape(JText::sprintf('RSFP_DB_ERROR', $e->getMessage()));
+		}
 	}
 	?>
-<?php } ?>
-</div>
+	</div>
+
+	<div id="rsfpmappingWhere">
+	<?php
+	if (!empty($this->mapping->id) && in_array($this->mapping->method, array(RSFP_MAPPING_UPDATE, RSFP_MAPPING_DELETE)))
+	{
+		try
+		{
+			echo RSFormProHelper::mappingsColumns($this->config, 'where', $this->mapping);
+		}
+		catch (Exception $e)
+		{
+			echo $this->escape(JText::sprintf('RSFP_DB_ERROR', $e->getMessage()));
+		}
+	}
+	?>
+	</div>
+
 	<input type="hidden" name="option" value="com_rsform" />
-	<input type="hidden" name="task" value="save" />
-	<input type="hidden" name="controller" value="mappings" />
+	<input type="hidden" name="task" value="" />
 	<input type="hidden" name="id" id="mappingid" value="<?php echo $this->mapping->id; ?>" />
 	<input type="hidden" name="formId" value="<?php echo $this->formId; ?>" />
 </form>
-
-<script type="text/javascript">
-	function enableDbDetails(value) {
-		document.getElementById('mappingsid').style.display = value == 1 ? '' : 'none';
-	}
-
-	enableDbDetails(<?php echo $this->mapping->connection; ?>);
-</script>
 
 <style type="text/css">
 body {

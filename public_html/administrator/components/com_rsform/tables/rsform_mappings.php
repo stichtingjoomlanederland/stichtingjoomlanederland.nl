@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -27,7 +27,19 @@ class TableRSForm_Mappings extends JTable
 	public $andor;
 	public $ordering;
 	
-	public function __construct(& $db) {
+	public function __construct(& $db)
+	{
 		parent::__construct('#__rsform_mappings', 'id', $db);
+	}
+
+	public function check()
+	{
+		if (!$this->ordering && !$this->id)
+		{
+			$db = $this->getDbo();
+			$this->ordering = $this->getNextOrder($db->qn('formId') . ' = ' . $db->q($this->formId));
+		}
+
+		return true;
 	}
 }

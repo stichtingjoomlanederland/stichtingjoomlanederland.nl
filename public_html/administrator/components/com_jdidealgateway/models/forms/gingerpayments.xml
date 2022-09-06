@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+    <fieldset name="gingerpayments">
+
+        <field name="psp-spacer" type="spacer" label="COM_ROPAYMENTS_SPACER_PSP"/>
+
+        <field name="apiUrl"
+               type="list"
+               label="COM_ROPAYMENTS_GINGERPAYMENTS_APIURL_LABEL"
+               description="COM_ROPAYMENTS_GINGERPAYMENTS_APIURL_DESC"
+               required="true"
+               class="input-xlarge"
+               labelclass="config">
+            <option value="https://api.online.emspay.eu">EMS</option>
+            <option value="other">Other</option>
+        </field>
+
+        <field name="apiUrlOther"
+               type="text"
+               label="COM_ROPAYMENTS_GINGERPAYMENTS_APIURL_MANUAL_LABEL"
+               description="COM_ROPAYMENTS_GINGERPAYMENTS_APIURL_MANUAL_DESC"
+               required="true"
+               class="input-xlarge"
+               labelclass="config"
+               showon="apiUrl:other"/>
+
+        <field name="apiKey"
+               type="text"
+               label="COM_ROPAYMENTS_GINGERPAYMENTS_APIKEY_LABEL"
+               description="COM_ROPAYMENTS_GINGERPAYMENTS_APIKEY_DESC"
+               required="true"
+               class="input-xlarge"
+               labelclass="config"/>
+
+        <field name="description"
+               type="text"
+               label="COM_ROPAYMENTS_GINGERPAYMENTS_DESCRIPTION_LABEL"
+               description="COM_ROPAYMENTS_GINGERPAYMENTS_DESCRIPTION_DESC"
+               class="input-xxlarge"
+               required="true"
+               size="30"
+               labelclass="config"/>
+
+        <field name="redirect"
+               type="jdideal.waitoptions"
+               label="COM_ROPAYMENTS_WAIT_TIME_LABEL"
+               description="COM_ROPAYMENTS_WAIT_TIME_DESC"
+               required="true"
+               size="1"
+               class="advancedSelect custom-select"
+               labelclass="config"/>
+
+        <field name="payment"
+               type="list"
+               label="COM_ROPAYMENTS_GINGERPAYMENTS_BRANDLIST_LABEL"
+               description="COM_ROPAYMENTS_GINGERPAYMENTS_BRANDLIST_DESC"
+               required="true"
+               default="all"
+               multiple="true"
+               size="9"
+               class="advancedSelect custom-select"
+               labelclass="config">
+            <option value="all">COM_ROPAYMENTS_ALL</option>
+            <option value="apple-pay">COM_JDIDEALGATEWAY_PAYMENT_METHOD_APPLEPAY</option>
+            <option value="bancontact">COM_JDIDEALGATEWAY_PAYMENT_METHOD_BANCONTACT</option>
+            <option value="bank-transfer">COM_JDIDEALGATEWAY_PAYMENT_METHOD_BANKTRANSFER</option>
+            <option value="credit-card">COM_JDIDEALGATEWAY_PAYMENT_METHOD_CREDITCARD</option>
+            <option value="ideal">COM_JDIDEALGATEWAY_PAYMENT_METHOD_IDEAL</option>
+            <option value="google-pay">COM_JDIDEALGATEWAY_PAYMENT_METHOD_GOOGLEPAY</option>
+            <option value="payconiq">COM_JDIDEALGATEWAY_PAYMENT_METHOD_PAYCONIQ</option>
+            <option value="paypal">COM_JDIDEALGATEWAY_PAYMENT_METHOD_PAYPAL</option>
+            <option value="sofort">COM_JDIDEALGATEWAY_PAYMENT_METHOD_SOFORT</option>
+        </field>
+
+        <field name="status-spacer" type="spacer" label="COM_ROPAYMENTS_SPACER_STATUS"/>
+
+        <field name="pendingStatus"
+               type="jdideal.status"
+               label="COM_ROPAYMENTS_STATUS_PENDING_LABEL"
+               description="COM_ROPAYMENTS_STATUS_PENDING_DESC"
+               required="false"
+               size="1"
+               default="P"
+               class="advancedSelect custom-select"
+               labelclass="config"/>
+
+        <field name="verifiedStatus"
+               type="jdideal.status"
+               label="COM_ROPAYMENTS_STATUS_SUCCESS_LABEL"
+               description="COM_ROPAYMENTS_STATUS_SUCCESS_DESC"
+               required="false"
+               size="1"
+               default="C"
+               class="advancedSelect custom-select"
+               labelclass="config"/>
+
+        <field name="cancelledStatus"
+               type="jdideal.status"
+               label="COM_ROPAYMENTS_STATUS_CANCELLED_LABEL"
+               description="COM_ROPAYMENTS_STATUS_CANCELLED_DESC"
+               required="false"
+               size="1"
+               default="X"
+               class="advancedSelect custom-select"
+               labelclass="config"/>
+
+        <field name="failureStatus"
+               type="jdideal.status"
+               label="COM_ROPAYMENTS_STATUS_FAILED_LABEL"
+               description="COM_ROPAYMENTS_STATUS_FAILED_DESC"
+               required="false"
+               size="1"
+               default="F"
+               class="advancedSelect custom-select"
+               labelclass="config"/>
+
+        <field name="openStatus"
+               type="jdideal.status"
+               label="COM_ROPAYMENTS_STATUS_OPEN_LABEL"
+               description="COM_ROPAYMENTS_STATUS_OPEN_DESC"
+               required="false"
+               size="1"
+               default="P"
+               class="advancedSelect custom-select"
+               labelclass="config"/>
+
+        <field name="transferStatus"
+               type="jdideal.status"
+               label="COM_ROPAYMENTS_STATUS_TRANSFER_LABEL"
+               description="COM_ROPAYMENTS_STATUS_TRANSFER_DESC"
+               required="false"
+               size="1"
+               default="P"
+               class="advancedSelect custom-select"
+               labelclass="config"/>
+
+        <field name="ordernumber-spacer" type="spacer" label="COM_ROPAYMENTS_SPACER_ORDERNUMBERS"/>
+
+        <field name="orderNumber"
+               type="jdideal.ordernumber"
+               label="COM_ROPAYMENTS_ORDERNUMBER_LABEL"
+               description="COM_ROPAYMENTS_ORDERNUMBER_DESC"
+               required="false"
+               size="1"
+               default="order_number"
+               class="advancedSelect custom-select"
+               labelclass="config"/>
+    </fieldset>
+</form>

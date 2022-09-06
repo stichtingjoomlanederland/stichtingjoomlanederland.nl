@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -9,9 +9,11 @@ defined('_JEXEC') or die('Restricted access');
 
 $listOrder	= $this->escape($this->filter_order);
 $listDirn	= $this->escape($this->filter_order_Dir);
+
 JText::script('RSFP_SUBM_DIR_DELETE_SURE');
+JHtml::_('stylesheet', 'com_rsform/rsicons.css', array('relative' => true, 'version' => 'auto'));
 ?>
-<table class="table table-condensed table-striped category directoryTable">
+<table class="table table-condensed table-striped table-responsive directoryTable">
 	<thead>
 		<tr>
 			<?php if ($this->directory->enablecsv) { ?>
@@ -36,22 +38,22 @@ JText::script('RSFP_SUBM_DIR_DELETE_SURE');
 			<td align="center" class="center directoryActions" nowrap="nowrap">
 				<?php if ($this->hasDetailFields) { ?>
 				<a class="<?php echo $this->tooltipClass; ?> directoryDetail" title="<?php echo RSFormProHelper::getTooltipText(JText::_('RSFP_SUBM_DIR_VIEW')); ?>" href="<?php echo JRoute::_('index.php?option=com_rsform&view=directory&layout=view&id='.$item->SubmissionId); ?>">
-                    <?php echo JHtml::_('image', 'com_rsform/view.png', JText::sprintf('COM_RSFORM_VIEW_SUBMISSION_ALT', $item->SubmissionId), null, true); ?>
+					<span class="rsficon rsficon-zoom-in"></span>
 				</a>
 				<?php } ?>
 				<?php if (RSFormProHelper::canEdit($this->params->get('formId'), $item->SubmissionId)) { ?>
 				<a class="<?php echo $this->tooltipClass; ?> directoryEdit" title="<?php echo RSFormProHelper::getTooltipText(JText::_('RSFP_SUBM_DIR_EDIT')); ?>" href="<?php echo JRoute::_('index.php?option=com_rsform&view=directory&layout=edit&id='.$item->SubmissionId); ?>">
-                    <?php echo JHtml::_('image', 'com_rsform/edit.png', JText::sprintf('COM_RSFORM_EDIT_SUBMISSION_ALT', $item->SubmissionId), null, true); ?>
+					<span class="rsficon rsficon-edit"></span>
 				</a>
 				<?php } ?>
                 <?php if (RSFormProHelper::canDelete($this->params->get('formId'), $item->SubmissionId)) { ?>
                     <a onclick="return confirm(Joomla.JText._('RSFP_SUBM_DIR_DELETE_SURE'));" class="<?php echo $this->tooltipClass; ?> directoryDelete" title="<?php echo RSFormProHelper::getTooltipText(JText::_('RSFP_SUBM_DIR_DELETE')); ?>" href="<?php echo JRoute::_('index.php?option=com_rsform&controller=directory&task=delete&id='.$item->SubmissionId); ?>">
-                        <?php echo JHtml::_('image', 'com_rsform/delete.png', JText::sprintf('COM_RSFORM_DELETE_SUBMISSION_ALT', $item->SubmissionId), null, true); ?>
+	                    <span class="rsficon rsficon-remove"></span>
                     </a>
                 <?php } ?>
 				<?php if ($this->directory->enablepdf) { ?>
 				<a class="<?php echo $this->tooltipClass; ?> directoryPdf" title="<?php echo RSFormProHelper::getTooltipText(JText::_('RSFP_SUBM_DIR_PDF')); ?>" href="<?php echo $this->pdfLink($item->SubmissionId); ?>">
-                    <?php echo JHtml::_('image', 'com_rsform/pdf.png', JText::sprintf('COM_RSFORM_DOWNLOAD_PDF_ALT', $item->SubmissionId), null, true); ?>
+					<span class="rsficon rsficon-file-pdf"></span>
 				</a>
 				<?php } ?>
 			</td>

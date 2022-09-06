@@ -2,7 +2,7 @@
 /**
  * Part of the Joomla Framework Archive Package
  *
- * @copyright  Copyright (C) 2005 - 2016 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2021 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -24,7 +24,7 @@ class Bzip2 implements ExtractableInterface
 	 * @var    string
 	 * @since  1.0
 	 */
-	private $data = null;
+	private $data;
 
 	/**
 	 * Holds the options array.
@@ -32,7 +32,7 @@ class Bzip2 implements ExtractableInterface
 	 * @var    array|\ArrayAccess
 	 * @since  1.0
 	 */
-	protected $options = array();
+	protected $options = [];
 
 	/**
 	 * Create a new Archive object.
@@ -42,9 +42,9 @@ class Bzip2 implements ExtractableInterface
 	 * @since   1.0
 	 * @throws  \InvalidArgumentException
 	 */
-	public function __construct($options = array())
+	public function __construct($options = [])
 	{
-		if (!is_array($options) && !($options instanceof \ArrayAccess))
+		if (!\is_array($options) && !($options instanceof \ArrayAccess))
 		{
 			throw new \InvalidArgumentException(
 				'The options param must be an array or implement the ArrayAccess interface.'
@@ -89,7 +89,7 @@ class Bzip2 implements ExtractableInterface
 
 			if (!File::write($destination, $buffer))
 			{
-				throw new \RuntimeException('Unable to write archive');
+				throw new \RuntimeException('Unable to write archive to file ' . $destination);
 			}
 		}
 		else
@@ -102,7 +102,7 @@ class Bzip2 implements ExtractableInterface
 
 			if (!$input->open($archive))
 			{
-				throw new \RuntimeException('Unable to read archive (bz2)');
+				throw new \RuntimeException('Unable to read archive');
 			}
 
 			$output = Stream::getStream();
@@ -111,7 +111,7 @@ class Bzip2 implements ExtractableInterface
 			{
 				$input->close();
 
-				throw new \RuntimeException('Unable to write archive (bz2)');
+				throw new \RuntimeException('Unable to open file "' . $destination . '" for writing');
 			}
 
 			do
@@ -124,11 +124,10 @@ class Bzip2 implements ExtractableInterface
 					{
 						$input->close();
 
-						throw new \RuntimeException('Unable to write archive (bz2)');
+						throw new \RuntimeException('Unable to write archive to file ' . $destination);
 					}
 				}
 			}
-
 			while ($this->data);
 
 			$output->close();
@@ -147,6 +146,6 @@ class Bzip2 implements ExtractableInterface
 	 */
 	public static function isSupported()
 	{
-		return extension_loaded('bz2');
+		return \extension_loaded('bz2');
 	}
 }

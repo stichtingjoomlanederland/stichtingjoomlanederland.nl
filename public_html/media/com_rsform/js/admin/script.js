@@ -5,256 +5,171 @@ if (typeof RSFormPro != 'object') {
 RSFormPro.$ = jQuery;
 
 function initRSFormPro() {
-	jQuery('#mappingTable tbody').tableDnD({
-		onDragClass: 'rsform_dragged',
-		onDragStop : function (table, row) {
-			tidyOrderMp(true);
-		}
-	});
-
-	jQuery('#rsfp_calculations').tableDnD({
-		onDragClass: 'rsform_dragged',
-		onDragStop : function (table, row) {
-			tidyOrderCalculationsDir();
-		}
-	});
-
-	jQuery(document).click(function () {
-		jQuery(this).mousedown(function (e) {
-			if (!jQuery(e.target).is('input')) {
-				var checkParent = jQuery(e.target).parents('.dropdownContainer').length;
-				if (!checkParent) {
-					closeAllDropdowns();
-				}
-			}
-		});
-	});
-
 	jQuery("#properties").click(function () {
-		jQuery("#rsform_tab2").show();
-		jQuery("#rsform_tab1").hide();
-		jQuery("#components").removeClass('btn-primary');
-		jQuery("#properties").addClass('btn-primary');
+		jQuery("#rsform_properties_tab").removeClass('rsfp-hidden');
+		jQuery("#rsform_components_tab").addClass('rsfp-hidden');
+		jQuery("#components").removeClass('btn-primary active').addClass('btn-outline-secondary');
+		jQuery("#properties").addClass('btn-primary active').removeClass('btn-outline-secondary');
 	});
 
 	jQuery("#components").click(function () {
-		jQuery("#rsform_tab1").show();
-		jQuery("#rsform_tab2").hide();
-		jQuery("#properties").removeClass('btn-primary');
-		jQuery("#components").addClass('btn-primary');
+		jQuery("#rsform_components_tab").removeClass('rsfp-hidden');
+		jQuery("#rsform_properties_tab").addClass('rsfp-hidden');
+		jQuery("#properties").removeClass('btn-primary active').addClass('btn-outline-secondary');
+		jQuery("#components").addClass('btn-primary active').removeClass('btn-outline-secondary');
+
+		jQuery('#componentscontent').trigger('components.shown');
 	});
 
 	jQuery('[data-placeholders]').rsplaceholder();
 
+	initMappingsOrdering(false);
+	initCalculationsOrdering(false);
+
+	jQuery(document).on('renderedMappings', function(){
+		jQuery('[data-placeholders]').rsplaceholder();
+	});
+
+	jQuery(document).on('renderedRsfpmappingWhere', function(event, element){
+		jQuery('#'+element).find('[data-placeholders]').rsplaceholder();
+	});
+
+	jQuery(document).on('renderedSilentPostField', function($event, $field_one, $field_two){
+		jQuery($field_one).find('input').rsplaceholder();
+		jQuery($field_two).find('input').rsplaceholder();
+	});
+
+	jQuery(document).on('renderedCalculationsFields', function($event){
+		jQuery('#calculationsContents [data-placeholders]').rsplaceholder();
+	});
 }
 
-function legacyOrderingEnable()
-{
-	var $table = jQuery('#componentPreview');
-    $table.find('tbody').tableDnD({
-        onDragClass: 'rsform_dragged',
-        onDragStop : function (table, row) {
-            tidyOrder(true);
-        }
-    });
+function initMappingsOrdering(update_php) {
+	jQuery('#mappingTable tbody').tableDnD({
+		onDragClass: 'rsform_dragged',
+		onDragStop : function () {
+			if (typeof update_php === 'undefined') {
+				update_php = false;
+			}
 
-    $table.find('.order').show();
+			stateLoading();
 
-    RSFormPro.Grid.hide();
+			var params = [];
+			var orders = document.getElementsByName('mporder[]');
+			var cids = document.getElementsByName('mpid[]');
+			var newValue = 0,
+				oldValue = 0;
 
-    jQuery('#rsform_ordering_msg').hide();
+			for (var i = 0; i < orders.length; i++) {
+				newValue = parseInt(i + 1);
+				oldValue = parseInt(orders[i].value);
+
+				if (oldValue !== newValue) {
+					update_php = true;
+				}
+
+				orders[i].value = newValue;
+
+				params.push('cid[' + cids[i].value + ']' + '=' + newValue);
+			}
+
+			if (update_php) {
+				var xml = buildXmlHttp();
+				xml.open("POST", 'index.php?option=com_rsform&task=mappings.saveordering', true);
+
+				params = params.join('&');
+
+				//Send the proper header information along with the request
+				xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+				xml.send(params);
+				xml.onreadystatechange = function () {
+					if (xml.readyState === 4) {
+						stateDone();
+					}
+				}
+			} else {
+				stateDone();
+			}
+		}
+	});
 }
 
-function legacyOrderingDisable()
-{
-    var $table = jQuery('#componentPreview');
-    $table.find('tbody').tableDnDDestroy();
-    $table.find('.order').hide();
+function initCalculationsOrdering(update_php) {
+	jQuery('#calculationsTable').tableDnD({
+		onDragClass: 'rsform_dragged',
+		onDragStop : function () {
+			if (typeof update_php === 'undefined') {
+				update_php = false;
+			}
 
-    RSFormPro.Grid.show();
+			stateLoading();
 
-    jQuery('#rsform_ordering_msg').show();
+			var orders = document.getElementsByName('calcorder[]');
+			var cids = document.getElementsByName('calcid[]');
+			var formId = document.getElementById('formId').value;
+			var params = ['formId=' + formId];
+			var newValue = 0,
+				oldValue = 0;
+
+			for (var i = 0; i < orders.length; i++) {
+				newValue = parseInt(i + 1);
+				oldValue = parseInt(orders[i].value);
+
+				if (oldValue !== newValue) {
+					update_php = true;
+				}
+
+				orders[i].value = newValue;
+
+				params.push('cid[' + cids[i].value + ']' + '=' + newValue);
+			}
+
+			if (update_php) {
+				var xml = buildXmlHttp();
+
+				var url = 'index.php?option=com_rsform&task=calculations.saveOrdering';
+				xml.open("POST", url, true);
+
+				params = params.join('&');
+
+				//Send the proper header information along with the request
+				xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+				xml.send(params);
+				xml.onreadystatechange = function () {
+					if (xml.readyState === 4) {
+						stateDone();
+					}
+				}
+			} else {
+				stateDone();
+			}
+		}
+	});
 }
-
-jQuery(document).on('renderedMappings', function(){
-	jQuery('[data-placeholders]').rsplaceholder();
-});
-
-jQuery(document).on('renderedRsfpmappingWhere', function(event, element){
-	jQuery('#'+element).find('[data-placeholders]').rsplaceholder();
-});
-
-jQuery(document).on('renderedSilentPostField', function($event, $field_one, $field_two){
-	jQuery($field_one).find('input').rsplaceholder();
-	jQuery($field_two).find('input').rsplaceholder();
-});
-
-jQuery(document).on('renderedCalculationsField', function($event, $field){
-	jQuery('#'+$field).rsplaceholder();
-});
 
 function buildXmlHttp() {
-	var xmlHttp;
-	try {
-		xmlHttp = new XMLHttpRequest();
-	}
-	catch (e) {
-		try {
-			xmlHttp = new ActiveXObject("Msxml2.XMLHTTP");
-		}
-		catch (e) {
-			try {
-				xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
-			}
-			catch (e) {
-				alert("Your browser does not support AJAX!");
-				return false;
-			}
-		}
-	}
-	return xmlHttp;
-}
-
-function tidyOrder(update_php) {
-	if (!update_php)
-		update_php = false;
-
-	stateLoading();
-
-	var params = [];
-
-	var must_update_php = update_php;
-	var orders = document.getElementsByName('order[]');
-	var cids = document.getElementsByName('cid[]');
-	for (i = 0; i < orders.length; i++) {
-		params.push('cid[' + cids[i].value + ']=' + parseInt(i + 1));
-
-		if (orders[i].value != i + 1)
-			must_update_php = true;
-
-		orders[i].value = i + 1;
-	}
-
-	if (update_php && must_update_php) {
-		xml = buildXmlHttp();
-
-		var url = 'index.php?option=com_rsform&task=components.save.ordering&randomTime=' + Math.random();
-		xml.open("POST", url, true);
-
-		params = params.join('&');
-
-		//Send the proper header information along with the request
-		xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-		xml.send(params);
-		xml.onreadystatechange = function () {
-			if (xml.readyState == 4) {
-				formId = document.getElementById('formId').value;
-				if (document.getElementById('FormLayoutAutogenerate1').checked == true)
-					generateLayout(formId, false);
-
-				stateDone();
-			}
-		}
-	}
-	else {
-		stateDone();
-	}
-}
-
-
-function tidyOrderMp(update_php) {
-	if (!update_php)
-		update_php = false;
-
-	stateLoading();
-
-	var params = [];
-
-	var must_update_php = update_php;
-	var orders = document.getElementsByName('mporder[]');
-	var cids = document.getElementsByName('mpid[]');
-	for (i = 0; i < orders.length; i++) {
-		params.push('mpid_' + cids[i].value + '=' + parseInt(i + 1));
-
-		if (orders[i].value != i + 1)
-			must_update_php = true;
-
-		orders[i].value = i + 1;
-	}
-
-	if (update_php && must_update_php) {
-		xml = buildXmlHttp();
-
-		var url = 'index.php?option=com_rsform&task=ordering&controller=mappings&randomTime=' + Math.random();
-		xml.open("POST", url, true);
-
-		params = params.join('&');
-
-		//Send the proper header information along with the request
-		xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-		xml.send(params);
-		xml.onreadystatechange = function () {
-			if (xml.readyState == 4) {
-				stateDone();
-			}
-		}
-	}
-	else {
-		stateDone();
-	}
-}
-
-function orderMapping(mp, task)
-{
-    if (task == 'orderdown' || task == 'orderup')
-    {
-        var table = RSFormPro.$('#mappingTable');
-        currentRow = RSFormPro.$(document.getElementById(mp)).parent().parent();
-        if (task == 'orderdown')
-        {
-            try { currentRow.insertAfter(currentRow.next()); }
-            catch (dnd_e) { }
-        }
-        if (task == 'orderup')
-        {
-            try { currentRow.insertBefore(currentRow.prev()); }
-            catch (dnd_e) { }
-        }
-
-        tidyOrderMp(true);
-    }
+	return new XMLHttpRequest();
 }
 
 function displayTemplate(componentTypeId, componentId) {
+
+	if (componentId && parseInt(componentId) && !document.querySelector('input[name="cid[]"][value="' + componentId + '"]'))
+	{
+		componentId = null;
+	}
+
 	RSFormPro.editModal.display(componentTypeId, componentId);
 }
 
-function rsfp_validateDate(value) {
-	value = value.replace(/[^0-9\/]/g, '');
-	return value;
-}
-
-function f_scrollTop() {
-	return f_filterResults(
-		window.pageYOffset ? window.pageYOffset : 0,
-		document.documentElement ? document.documentElement.scrollTop : 0,
-		document.body ? document.body.scrollTop : 0
-	);
-}
-function f_filterResults(n_win, n_docel, n_body) {
-	var n_result = n_win ? n_win : 0;
-	if (n_docel && (!n_result || (n_result > n_docel)))
-		n_result = n_docel;
-	return n_body && (!n_result || (n_result > n_body)) ? n_body : n_result;
-}
-
-function removeComponent(formId, componentId) {
+function removeComponent(componentId) {
 	stateLoading();
 
+	var formId = document.getElementById('formId').value;
+
 	// Build URL to post to
-	var url = 'index.php?option=com_rsform&task=components.remove&randomTime=' + Math.random();
+	var url = 'index.php?option=com_rsform&task=components.remove';
 
 	// Build data array
 	var data = {
@@ -263,23 +178,13 @@ function removeComponent(formId, componentId) {
 		'formId': formId
 	};
 
-	RSFormPro.$.post(url, data, function (response, status, jqXHR) {
-		// Remove row
-		var table = document.getElementById('componentPreview');
-		var rows = document.getElementsByName('previewComponentId');
-		for (var i = 0; i < rows.length; i++) {
-			if (rows[i].value == componentId) {
-				table.deleteRow(i);
-			}
-		}
-		
+	jQuery.post(url, data, function (response, status, jqXHR) {
+
 		RSFormPro.Grid.deleteField(componentId);
 
 		if (!response.submit) {
 			jQuery('#rsform_submit_button_msg').show();
 		}
-
-		tidyOrder(true);
 
 		stateDone();
 	}, 'json');
@@ -296,7 +201,7 @@ function processComponent(componentType) {
 	stateLoading();
 
 	// Build URL to post to
-	var url = 'index.php?option=com_rsform&task=components.validate.name&randomTime=' + Math.random();
+	var url = 'index.php?option=com_rsform&task=components.validatename';
 
 	// Build data array
 	var data = {
@@ -310,10 +215,10 @@ function processComponent(componentType) {
 		data['destination'] = jQuery('#DESTINATION').val();
 	}
 
-	RSFormPro.$.post(url, data, function (response, status, jqXHR) {
+	jQuery.post(url, data, function (response, status, jqXHR) {
 		if (response.result == false) {
 			// Switch to tab
-			jQuery('[href="#rsfptab' + response.tab + '"]').click();
+			RSFormPro.switchTab(response.tab);
 
 			// Show error message
 			jQuery('#rsformerror' + response.tab).text(response.message).show();
@@ -327,48 +232,11 @@ function processComponent(componentType) {
 	}, 'json');
 }
 
-function changeDirectoryAutoGenerateLayout(formId, value) {
-	stateLoading();
-	var layouts = document.getElementsByName('jform[ViewLayoutName]');
-	var layoutName = '';
-	for (i = 0; i < layouts.length; i++)
-		if (layouts[i].checked)
-			layoutName = layouts[i].value;
-
-	xml = buildXmlHttp();
-	xml.onreadystatechange = function () {
-		if (xml.readyState == 4) {
-			if (value == 1) {
-				document.getElementById('rsform_layout_msg').style.display = 'none';
-				document.getElementById('ViewLayout').readOnly = true;
-				
-				if (typeof Joomla.editors.instances['ViewLayout'] != 'undefined')
-				{
-					Joomla.editors.instances['ViewLayout'].setOption('readOnly', true);
-				}
-			}
-			else {
-				document.getElementById('rsform_layout_msg').style.display = '';
-				document.getElementById('ViewLayout').readOnly = false;
-				if (typeof Joomla.editors.instances['ViewLayout'] != 'undefined')
-				{
-					Joomla.editors.instances['ViewLayout'].setOption('readOnly', false);
-				}
-			}
-
-			stateDone();
-		}
-	};
-	xml.open('GET', 'index.php?option=com_rsform&task=directory.changeAutoGenerateLayout&formId=' + formId + '&status=' + value + '&randomTime=' + Math.random() + '&ViewLayoutName=' + layoutName, true);
-	xml.send(null);
-}
-
 function autoGenerateLayout()
 {
-    if (document.getElementById('FormLayoutAutogenerate1').checked == true)
+    if (jQuery('[name=FormLayoutAutogenerate]:checked').val() === '1')
     {
-        var formId = document.getElementById('formId').value;
-        generateLayout(formId, false);
+        generateLayout(false);
     }
 }
 
@@ -377,7 +245,7 @@ function changeFormLayoutFlow()
     stateLoading();
 
     // Build URL to post to
-    var url = 'index.php?option=com_rsform&task=forms.changeFormLayoutFlow&randomTime=' + Math.random();
+    var url = 'index.php?option=com_rsform&task=forms.changeFormLayoutFlow';
 
     // Build data array
     var data = {
@@ -385,18 +253,20 @@ function changeFormLayoutFlow()
         'formId': document.getElementById('formId').value
     };
 
-    RSFormPro.$.post(url, data, function (response, status, jqXHR) {
+    jQuery.post(url, data, function (response, status, jqXHR) {
         stateDone();
 
         autoGenerateLayout();
     }, 'json');
 }
 
-function changeFormAutoGenerateLayout(formId, value) {
+function changeFormAutoGenerateLayout(value) {
+	var formId = document.getElementById('formId').value;
+
 	stateLoading();
 
 	// Build URL to post to
-	var url = 'index.php?option=com_rsform&task=forms.changeAutoGenerateLayout&randomTime=' + Math.random();
+	var url = 'index.php?option=com_rsform&task=forms.changeAutoGenerateLayout';
 
 	// Build data array
 	var data = {
@@ -405,23 +275,26 @@ function changeFormAutoGenerateLayout(formId, value) {
 		'status'        : value
 	};
 
-	RSFormPro.$.post(url, data, function (response, status, jqXHR) {
+	jQuery.post(url, data, function (response, status, jqXHR) {
 		var hasCodeMirror = typeof Joomla.editors.instances['formLayout'] != 'undefined';
 
-		value = Boolean(parseInt(value));
+		if (value === '0') {
+			Joomla.renderMessages({'warning': [Joomla.JText._('RSFP_AUTOGENERATE_LAYOUT_DISABLED')]}, '#componentsMessages');
+		} else {
+			Joomla.removeMessages(document.getElementById('componentsMessages'));
+		}
 
-		value ? jQuery('#rsform_layout_msg').hide() : jQuery('#rsform_layout_msg').show();
-		jQuery('#formLayout').prop('readonly', value);
+		jQuery('#formLayout').prop('readonly', value === '1');
 
 		if (hasCodeMirror) {
-			Joomla.editors.instances['formLayout'].setOption('readOnly', value);
+			Joomla.editors.instances['formLayout'].setOption('readOnly', value === '1');
 		}
 
 		stateDone();
 	}, 'json');
 }
 
-function generateLayout(formId, alert) {
+function generateLayout(alert) {
 	if (alert && !confirm(Joomla.JText._('RSFP_AUTOGENERATE_LAYOUT_WARNING_SURE'))) {
 		return;
 	}
@@ -429,7 +302,8 @@ function generateLayout(formId, alert) {
 	stateLoading();
 
 	// Build URL to post to
-	var url = 'index.php?option=com_rsform&task=layouts.generate&randomTime=' + Math.random();
+	var url = 'index.php?option=com_rsform&task=layouts.generate';
+	var formId = document.getElementById('formId').value;
 
 	// Build data array
 	var data = {
@@ -437,7 +311,7 @@ function generateLayout(formId, alert) {
 		'formId'    : formId
 	};
 
-	RSFormPro.$.post(url, data, function (response, status, jqXHR) {
+	jQuery.post(url, data, function (response, status, jqXHR) {
 		var hasCodeMirror = typeof Joomla.editors.instances['formLayout'] != 'undefined';
 
 		jQuery('#formLayout').val(response);
@@ -450,62 +324,26 @@ function generateLayout(formId, alert) {
 	}, 'text');
 }
 
-function generateDirectoryLayout(formId, alert) {
-	if (alert != 'no') {
-		var answer = confirm("Pressing the 'Generate layout' button will ERASE your current layout. Are you sure you want to continue?");
-		if (answer == false) return;
-	}
-	var layoutName = 'inline-xhtml';
-	for (var i = 0; i < document.getElementsByName('jform[ViewLayoutName]').length; i++)
-		if (document.getElementsByName('jform[ViewLayoutName]')[i].checked)
-			layoutName = document.getElementsByName('jform[ViewLayoutName]')[i].value;
+function saveLayoutName(layoutName) {
+	var formId = document.getElementById('formId').value;
 
 	stateLoading();
-	xml = buildXmlHttp();
+	var xml = buildXmlHttp();
+	xml.open('POST', 'index.php?option=com_rsform', true);
+	xml.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+	var data = [
+		'task=layoutssavename',
+		'formId=' + formId,
+		'formLayoutName=' + layoutName
+	];
+	xml.send(data.join('&'));
 	xml.onreadystatechange = function () {
-		if (xml.readyState == 4) {
-			document.getElementById('ViewLayout').value = xml.responseText;
-			if (typeof Joomla.editors.instances['ViewLayout'] != 'undefined')
-			{
-				Joomla.editors.instances['ViewLayout'].setValue(xml.responseText);
-			}
+		if (xml.readyState === 4) {
+			autoGenerateLayout();
+
 			stateDone();
 		}
 	};
-	xml.open('GET', 'index.php?option=com_rsform&task=directory.generate&layoutName=' + layoutName + '&formId=' + formId + '&randomTime=' + Math.random(), true);
-	xml.send(null);
-}
-
-function saveLayoutName(formId, layoutName, isLegacy) {
-	stateLoading();
-	xml = buildXmlHttp();
-	xml.open('GET', 'index.php?option=com_rsform&task=layouts.save.name&formId=' + formId + '&randomTime=' + Math.random() + '&formLayoutName=' + layoutName, true);
-	xml.send(null);
-	xml.onreadystatechange = function () {
-		if (xml.readyState == 4) {
-			if (document.getElementById('FormLayoutAutogenerate1').checked == true)
-				generateLayout(formId, false);
-			stateDone();
-		}
-	};
-
-	isLegacy ?  legacyOrderingEnable() : legacyOrderingDisable();
-}
-
-function saveDirectoryLayoutName(formId, layoutName) {
-	stateLoading();
-	xml = buildXmlHttp();
-	xml.open('GET', 'index.php?option=com_rsform&task=directory.savename&formId=' + formId + '&randomTime=' + Math.random() + '&ViewLayoutName=' + layoutName, true);
-	xml.send(null);
-	xml.onreadystatechange = function () {
-		if (xml.readyState == 4) {
-			var autogenerate = document.getElementsByName('jform[ViewLayoutAutogenerate]');
-			for (var i = 0; i < autogenerate.length; i++)
-				if (autogenerate[i].value == 1 && autogenerate[i].checked)
-					generateDirectoryLayout(formId, 'no');
-			stateDone();
-		}
-	}
 }
 
 function stateLoading() {
@@ -514,93 +352,6 @@ function stateLoading() {
 
 function stateDone() {
 	document.getElementById('state').style.display = 'none';
-}
-
-function refreshCaptcha(componentId, captchaPath) {
-	if (!captchaPath) captchaPath = 'index.php?option=com_rsform&task=captcha&format=image&componentId=' + componentId;
-	document.getElementById('captcha' + componentId).src = captchaPath + '&' + Math.random();
-	document.getElementById('captchaTxt' + componentId).value = '';
-	document.getElementById('captchaTxt' + componentId).focus();
-}
-
-function isset() {
-	// http://kevin.vanzonneveld.net
-	// +   original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-	// +   improved by: FremyCompany
-	// +   improved by: Onno Marsman
-	// +   improved by: Rafał Kukawski
-	// *     example 1: isset( undefined, true);
-	// *     returns 1: false
-	// *     example 2: isset( 'Kevin van Zonneveld' );
-	// *     returns 2: true
-	var a = arguments,
-		l = a.length,
-		i = 0,
-		undef;
-
-	if (l === 0) {
-		throw new Error('Empty isset');
-	}
-
-	while (i !== l) {
-		if (a[i] === undef || a[i] === null) {
-			return false;
-		}
-		i++;
-	}
-	return true;
-}
-
-function exportProcess(start, limit, total) {
-	var xml = buildXmlHttp();
-	xml.onreadystatechange = function () {
-		if (xml.readyState == 4) {
-			var post = xml.responseText;
-			if (post.indexOf('END') != -1) {
-				document.getElementById('progressBar').style.width = document.getElementById('progressBar').innerHTML = '100%';
-				document.location = 'index.php?option=com_rsform&task=submissions.export.file&ExportFile=' + document.getElementById('ExportFile').value + '&ExportType=' + document.getElementById('exportType').value;
-			}
-			else {
-				document.getElementById('progressBar').style.width = Math.ceil(start * 100 / total) + '%';
-				document.getElementById('progressBar').innerHTML = Math.ceil(start * 100 / total) + '%';
-				start = start + limit;
-				exportProcess(start, limit, total);
-			}
-		}
-	};
-
-	xml.open('GET', 'index.php?option=com_rsform&task=submissions.export.process&exportStart=' + start + '&exportLimit=' + limit + '&randomTime=' + Math.random(), true);
-	xml.send(null);
-}
-
-function importProcess(start, limit, total, formId)
-{
-    var xml = buildXmlHttp();
-    xml.onreadystatechange = function ()
-	{
-        if (xml.readyState == 4)
-        {
-            var post = xml.responseText;
-            if (post.indexOf('END') > -1)
-            {
-                document.getElementById('progressBar').style.width = document.getElementById('progressBar').innerHTML = '100%';
-
-                Joomla.renderMessages({'message': [Joomla.JText._('COM_RSFORM_IMPORT_HAS_FINISHED')]});
-            }
-            else
-            {
-            	var start = post;
-
-                document.getElementById('progressBar').style.width = Math.ceil(start * 100 / total) + '%';
-                document.getElementById('progressBar').innerHTML = Math.ceil(start * 100 / total) + '%';
-
-                importProcess(start, limit, total);
-            }
-        }
-    };
-
-    xml.open('GET', 'index.php?option=com_rsform&task=submissions.importprocess&formId=' + formId + '&importStart=' + start + '&importLimit=' + limit + '&randomTime=' + Math.random(), true);
-    xml.send(null);
 }
 
 function number_format(number, decimals, dec_point, thousands_sep) {
@@ -702,13 +453,13 @@ function changeValidation(elem) {
 		
 		var clonedElement = document.getElementById('idVALIDATIONEXTRA').cloneNode(true);
 		clonedElement.removeAttribute('id');
-		clonedElement.removeClass('hideVALIDATIONEXTRA');
+		jQuery(clonedElement).removeClass('hideVALIDATIONEXTRA');
 		
 		var afterElement = document.getElementById('idVALIDATIONMULTIPLE');
 		
-		for(i = 0; i < selectedValues.length; i++) {
+		for (var i = 0; i < selectedValues.length; i++) {
 			var newclonedElement = clonedElement.cloneNode(true);
-			newclonedElement.addClass('mValidation '+selectedValues[i]);
+			jQuery(newclonedElement).addClass('mValidation '+selectedValues[i]);
 			
 			var captionElement = newclonedElement.querySelector('#captionVALIDATIONEXTRA');
 			var validationElement = newclonedElement.querySelector('#VALIDATIONEXTRA');
@@ -745,428 +496,96 @@ function changeValidation(elem) {
 	}
 }
 
-function submissionChangeForm(formId) {
-	document.location = 'index.php?option=com_rsform&task=submissions.manage&formId=' + formId;
-}
-
-function toggleCustomizeColumns() {
-	var el = jQuery('#columnsDiv');
-
-	if (el.is(':hidden')) {
-		var windowH = jQuery(window).height();
-		var remove = 0;
-		if (jQuery('body > #status').length > 0) {
-			remove += parseInt(jQuery('body > #status').height());
-		}
-		var parentElementOffset = el.parent().offset();
-		remove += parentElementOffset.top;
-		var innerHeight = windowH - remove - 120;
-
-		if (innerHeight <= 0) {
-			innerHeight = 400;
-		}
-		el.find('#columnsInnerDiv').css('max-height', innerHeight+'px');
-		el.slideDown('fast');
-	} else {
-		el.slideUp('fast');
-	}
-}
-
-function closeAllDropdowns(except) {
-	var dropdowns = jQuery('.dropdownContainer');
-	var except = jQuery('#dropdown' + except);
-
-	for (var i = 0; i < dropdowns.length; i++) {
-		var dropdown = jQuery(dropdowns[i]).children('div');
-		if (dropdown.attr('id') != except.attr('id'))
-			jQuery(dropdowns[i]).children('div').hide();
-	}
-}
-
-/**
- * @deprecated, used to generate the new type of fields
- * @param what
- * @param extra
- * @param inner
- */
-function toggleDropdown(what, extra, inner) {
-
-		jQuery(what).addClass('placeholders-initiated');
-
-		$attr = {
-			'data-delimiter' : ' ',
-			'data-placeholders' : 'display',
-			'onclick' : '',
-			'onkeydown' : ''
-		};
-		jQuery(what).attr($attr);
-
-		jQuery(what).rsplaceholder();
-
-}
-
 function toggleQuickAdd() {
-	var what = 'none';
-	if (document.getElementById('QuickAdd1').style.display == 'none')
-		what = '';
-
-	document.getElementById('QuickAdd1').style.display = what;
-	document.getElementById('QuickAdd2').style.display = what;
-	document.getElementById('QuickAdd3').style.display = what;
-	document.getElementById('QuickAdd4').style.display = what;
-	document.getElementById('QuickAdd5').style.display = what;
+	jQuery('.QuickAdd').toggle();
 }
 
-function mpConnect() {
-	var fields = jQuery("#tablers :input");
-	var params = [];
-	var fname = '';
-	var fvalue = '';
-
-	for (i = 0; i < fields.length; i++) {
-		if (fields[i].type == 'button') continue;
-
-		if (fields[i].type == 'radio') {
-			if (fields[i].checked) {
-				if (fields[i].name == 'rsfpmapping[connection]') {
-					fname = 'connection';
-					fvalue = fields[i].value;
-				}
-
-				if (fields[i].name == 'rsfpmapping[method]') {
-					fname = 'method';
-					fvalue = fields[i].value;
-				}
-			} else continue;
-		}
-
-		fname = fields[i].name;
-		fvalue = fields[i].value;
-
-		params.push(fname + '=' + encodeURIComponent(fvalue));
-	}
-	params.push('randomTime=' + Math.random());
-	params = params.join('&');
-
-	document.getElementById('mappingloader').style.display = '';
-
-	xmlHttp = buildXmlHttp();
-	xmlHttp.open("POST", 'index.php?option=com_rsform&task=gettables&controller=mappings', true);
-
-	//Send the proper header information along with the request
-	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-	xmlHttp.onreadystatechange = function () {
-		if (xmlHttp.readyState == 4) {
-			response = xmlHttp.responseText.split('|');
-
-			if (response[0] == 1) {
-				document.getElementById('rsfpmappingContent').innerHTML = response[1];
-				document.getElementById('connectBtn').style.display = 'none';
-				document.getElementById('mpConnectionOn').style.display = 'none';
-				document.getElementById('mpConnectionOff').style.display = '';
-				document.getElementById('mpMethodOn').style.display = 'none';
-				document.getElementById('mpMethodOff').style.display = '';
-				document.getElementById('mpHostOn').style.display = 'none';
-				document.getElementById('mpHostOff').style.display = '';
-				document.getElementById('mpDriverOn').style.display = 'none';
-				document.getElementById('mpDriverOff').style.display = '';
-				document.getElementById('mpPortOn').style.display = 'none';
-				document.getElementById('mpUsernameOn').style.display = 'none';
-				document.getElementById('mpUsernameOff').style.display = '';
-				document.getElementById('mpPasswordOn').style.display = 'none';
-				document.getElementById('mpPasswordOff').style.display = '';
-				document.getElementById('mpDatabaseOn').style.display = 'none';
-				document.getElementById('mpDatabaseOff').style.display = '';
-
-				if (document.getElementById('connection0').checked) document.getElementById('mpConnectionOff').innerHTML = getLabelText('connection0');
-				if (document.getElementById('connection1').checked) document.getElementById('mpConnectionOff').innerHTML = getLabelText('connection1');
-				if (document.getElementById('method0').checked) document.getElementById('mpMethodOff').innerHTML = getLabelText('method0');
-				if (document.getElementById('method1').checked) document.getElementById('mpMethodOff').innerHTML = getLabelText('method1');
-				if (document.getElementById('method2').checked) document.getElementById('mpMethodOff').innerHTML = getLabelText('method2');
-				if (document.getElementById('method3').checked) document.getElementById('mpMethodOff').innerHTML = getLabelText('method3');
-				document.getElementById('mpHostOff').innerHTML = document.getElementById('MappingHost').value + ':' + document.getElementById('MappingPort').value;
-				document.getElementById('mpDriverOff').innerHTML = document.getElementById('driver').value;
-				document.getElementById('mpUsernameOff').innerHTML = document.getElementById('MappingUsername').value;
-				document.getElementById('mpPasswordOff').innerHTML = document.getElementById('MappingPassword').value;
-				document.getElementById('mpDatabaseOff').innerHTML = document.getElementById('MappingDatabase').value;
-			} else {
-				document.getElementById('rsfpmappingContent').innerHTML = '<font color="red">' + response[0] + '</font>';
-			}
-
-			document.getElementById('mappingloader').style.display = 'none';
-		}
-	};
-
-	xmlHttp.send(params);
-}
-
-function getLabelText(element) {
-	return jQuery('#' + element).parent().text();
-}
-
-
-function mpColumns(table) {
-	var fields = jQuery("#tablers :input");
-	var params = [];
-	var fname = '';
-	var fvalue = '';
-
-	for (i = 0; i < fields.length; i++) {
-		if (fields[i].type == 'button') continue;
-
-		if (fields[i].type == 'radio') {
-			if (fields[i].checked) {
-				if (fields[i].name == 'rsfpmapping[connection]') {
-					fname = 'connection';
-					fvalue = fields[i].value;
-				}
-
-				if (fields[i].name == 'rsfpmapping[method]') {
-					fname = 'method';
-					fvalue = fields[i].value;
-				}
-			} else continue;
-		}
-
-		fname = fields[i].name;
-		fvalue = fields[i].value;
-
-		params.push(fname + '=' + encodeURIComponent(fvalue));
-	}
-	params.push('table=' + table);
-	params.push('type=set');
-	params.push('tmpl=component');
-	params.push('randomTime=' + Math.random());
-
-	if (document.getElementById('mappingid') && document.getElementById('mappingid').value) {
-		params.push('cid=' + document.getElementById('mappingid').value);
-	}
-
-	params = params.join('&');
-
-	document.getElementById('mappingloader2').style.display = '';
-
-	xmlHttp = buildXmlHttp();
-	xmlHttp.open("POST", 'index.php?option=com_rsform&task=getcolumns&controller=mappings', true);
-
-	//Send the proper header information along with the request
-	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
-		if (xmlHttp.readyState == 4) {
-			if ((isset(document.getElementById('method0')) && document.getElementById('method0').checked) || (isset(document.getElementById('method1')) && document.getElementById('method1').checked) || (isset(document.getElementById('method3')) && document.getElementById('method3').checked) || (isset(document.getElementById('method')) && document.getElementById('method').value == 0) || (isset(document.getElementById('method')) && document.getElementById('method').value == 1) || (isset(document.getElementById('method')) && document.getElementById('method').value == 3))
-				document.getElementById('rsfpmappingColumns').innerHTML = xmlHttp.responseText;
-			document.getElementById('mappingloader2').style.display = 'none';
-
-			if ((isset(document.getElementById('method1')) && document.getElementById('method1').checked) || (isset(document.getElementById('method2')) && document.getElementById('method2').checked) || (isset(document.getElementById('method')) && document.getElementById('method').value == 1) || (isset(document.getElementById('method')) && document.getElementById('method').value == 2))
-				mappingWhere(table);
-
-			jQuery(document).trigger('renderedMappings');
-		}
-	};
-
-	xmlHttp.send(params);
-}
-
-function mappingdelete(formid, mid) {
+function removeEmail(id, type) {
 	stateLoading();
 
-	params = 'formId=' + formid + '&mid=' + mid + '&tmpl=component&randomTime=' + Math.random();
+	var formId = document.getElementById('formId').value;
+	var params = [
+		'cid=' + id,
+		'formId=' + formId,
+		'type=' + type
+	];
+	var xmlHttp = buildXmlHttp();
 
-	xmlHttp = buildXmlHttp();
-	xmlHttp.open("POST", 'index.php?option=com_rsform&task=remove&controller=mappings', true);
-
-	//Send the proper header information along with the request
-	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
-		if (xmlHttp.readyState == 4) {
-			document.getElementById('mappingcontent').innerHTML = xmlHttp.responseText;
-			stateDone();
-
-			jQuery('#mappingTable tbody').tableDnD({
-				onDragClass: 'rsform_dragged',
-				onDragStop     : function (table, row) {
-					tidyOrderMp(true);
-				}
-			});
-		}
-	};
-	xmlHttp.send(params);
-}
-
-function ShowMappings(formid) {
-	stateLoading();
-
-	params = 'formId=' + formid + '&tmpl=component&randomTime=' + Math.random();
-
-	xmlHttp = buildXmlHttp();
-	xmlHttp.open("POST", 'index.php?option=com_rsform&task=showmappings&controller=mappings', true);
-
-	//Send the proper header information along with the request
-	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
-		if (xmlHttp.readyState == 4) {
-			document.getElementById('mappingcontent').innerHTML = xmlHttp.responseText;
-			stateDone();
-
-			jQuery('#mappingTable tbody').tableDnD({
-				onDragClass: 'rsform_dragged',
-				onDragStop     : function (table, row) {
-					tidyOrderMp(true);
-				}
-			});
-		}
-	};
-	xmlHttp.send(params);
-}
-
-function mappingWhere(table) {
-	var fields = jQuery("#tablers :input");
-	var params = [];
-	var fname = '';
-	var fvalue = '';
-
-	for (i = 0; i < fields.length; i++) {
-		if (fields[i].type == 'button') continue;
-
-		if (fields[i].type == 'radio') {
-			if (fields[i].checked) {
-				if (fields[i].name == 'rsfpmapping[connection]') {
-					fname = 'connection';
-					fvalue = fields[i].value;
-				}
-
-				if (fields[i].name == 'rsfpmapping[method]') {
-					fname = 'method';
-					fvalue = fields[i].value;
-				}
-			} else continue;
-		}
-
-		fname = fields[i].name;
-		fvalue = fields[i].value;
-
-		params.push(fname + '=' + encodeURIComponent(fvalue));
-	}
-	params.push('table=' + table);
-	params.push('type=where');
-	params.push('tmpl=component');
-	params.push('randomTime=' + Math.random());
-	params = params.join('&');
-
-
-	document.getElementById('mappingloader2').style.display = '';
-
-	xmlHttp = buildXmlHttp();
-	xmlHttp.open("POST", 'index.php?option=com_rsform&task=getcolumns&controller=mappings', true);
-
-	//Send the proper header information along with the request
-	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
-		if (xmlHttp.readyState == 4) {
-			document.getElementById('rsfpmappingWhere').innerHTML = xmlHttp.responseText;
-			document.getElementById('mappingloader2').style.display = 'none';
-			jQuery(document).trigger('renderedRsfpmappingWhere', 'rsfpmappingWhere');
-		}
-	};
-	xmlHttp.send(params);
-}
-
-function removeEmail(id, fid, type) {
-	stateLoading();
-
-	var params = [];
-	params.push('cid=' + id);
-	params.push('formId=' + fid);
-	params.push('type=' + type);
-	params.push('tmpl=component');
-	params.push('randomTime=' + Math.random());
-	params = params.join('&');
-
-	xmlHttp = buildXmlHttp();
 	xmlHttp.open("POST", 'index.php?option=com_rsform&task=emails.remove', true);
-
-	//Send the proper header information along with the request
 	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
-		if (xmlHttp.readyState == 4) {
+	xmlHttp.onreadystatechange = function () {
+		if (xmlHttp.readyState === 4) {
 			stateDone();
-			document.getElementById('emailscontent').innerHTML = xmlHttp.responseText;
+
+			document.getElementById('emailsContent').innerHTML = xmlHttp.responseText;
 		}
 	};
-	xmlHttp.send(params);
+	xmlHttp.send(params.join('&'));
 }
 
-function updateemails(fid, type) {
-	var content = document.getElementById('emailscontent');
-
+function updateEmails(type) {
 	stateLoading();
 
-	var params = [];
-	params.push('formId=' + fid);
-	params.push('type=' + type);
-	params.push('tmpl=component');
-	params.push('randomTime=' + Math.random());
-	params = params.join('&');
+	var formId = document.getElementById('formId').value;
+	var params = [
+		'formId=' + formId,
+		'type=' + type,
+	];
+	var xmlHttp = buildXmlHttp();
 
-	xmlHttp = buildXmlHttp();
 	xmlHttp.open("POST", 'index.php?option=com_rsform&task=emails.update', true);
-
-	//Send the proper header information along with the request
 	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
-		if (xmlHttp.readyState == 4) {
+	xmlHttp.onreadystatechange = function () {
+		if (xmlHttp.readyState === 4) {
 			stateDone();
-			content.innerHTML = xmlHttp.responseText;
+
+			document.getElementById('emailsContent').innerHTML = xmlHttp.responseText;
 		}
 	};
-	xmlHttp.send(params);
+	xmlHttp.send(params.join('&'));
 }
 
-function conditionDelete(formid, cid) {
+function conditionDelete(cid) {
 	stateLoading();
 
-	params = 'formId=' + formid + '&cid=' + cid + '&tmpl=component&randomTime=' + Math.random();
+	var formId = document.getElementById('formId').value;
+	var params = [
+		'formId=' + formId,
+		'cid=' + cid,
+	];
+	var xmlHttp = buildXmlHttp();
 
-	xmlHttp = buildXmlHttp();
-	xmlHttp.open("POST", 'index.php?option=com_rsform&task=remove&controller=conditions', true);
-
-	//Send the proper header information along with the request
+	xmlHttp.open("POST", 'index.php?option=com_rsform&task=conditions.remove', true);
 	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
-		if (xmlHttp.readyState == 4) {
-			document.getElementById('conditionscontent').innerHTML = xmlHttp.responseText;
+	xmlHttp.onreadystatechange = function () {
+		if (xmlHttp.readyState === 4) {
 			stateDone();
+
+			document.getElementById('conditionsContent').innerHTML = xmlHttp.responseText;
 		}
 	};
-	xmlHttp.send(params);
+	xmlHttp.send(params.join('&'));
 }
 
-function showConditions(formid) {
+function showConditions() {
 	stateLoading();
 
-	params = 'formId=' + formid + '&tmpl=component&randomTime=' + Math.random();
+	var formId = document.getElementById('formId').value;
+	var params = [
+		'formId=' + formId
+	];
+	var xmlHttp = buildXmlHttp();
 
-	xmlHttp = buildXmlHttp();
-	xmlHttp.open("POST", 'index.php?option=com_rsform&task=showconditions&controller=conditions', true);
-
-	//Send the proper header information along with the request
+	xmlHttp.open("POST", 'index.php?option=com_rsform&task=conditions.showconditions', true);
 	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
-		if (xmlHttp.readyState == 4) {
-			document.getElementById('conditionscontent').innerHTML = xmlHttp.responseText;
+	xmlHttp.onreadystatechange = function () {
+		if (xmlHttp.readyState === 4) {
 			stateDone();
+
+			document.getElementById('conditionsContent').innerHTML = xmlHttp.responseText;
 		}
 	};
-	xmlHttp.send(params);
+	xmlHttp.send(params.join('&'));
 }
 
 function openRSModal(href, type, size) {
@@ -1179,184 +598,96 @@ function openRSModal(href, type, size) {
 	window.open(href, type, 'width=' + size[0] + ', height=' + size[1] + ',scrollbars=1');
 }
 
-function addCalculation(formId) {
-	if (document.getElementById('rsfp_expression').value == '')
-	{
-		return;
-	}
+function showCalculations() {
+	var formId = document.getElementById('formId').value,
+		params = [
+			'formId=' + formId
+		],
+		xmlHttp = buildXmlHttp();
 
 	stateLoading();
 
-	params = [];
-	params.push('formId=' + formId);
-	params.push('total=' + document.getElementById('rsfp_total_add').value);
-	params.push('expression=' + encodeURIComponent(document.getElementById('rsfp_expression').value));
-	params.push('tmpl=component');
-	params.push('randomTime=' + Math.random());
-	params = params.join('&');
-
-	xmlHttp = buildXmlHttp();
-	xmlHttp.open("POST", 'index.php?option=com_rsform&task=calculations&controller=forms', true);
-
-	//Send the proper header information along with the request
+	xmlHttp.open("POST", 'index.php?option=com_rsform&task=calculations.show', true);
 	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
-		if (xmlHttp.readyState == 4) {
-			var response = xmlHttp.responseText;
-
-			if (response) {
-				var response = response.split('|');
-				var options = document.getElementById('rsfp_total_add').options;
-				var container = document.getElementById('rsfp_calculations');
-
-				var tr = document.createElement('tr');
-				var td1 = document.createElement('td');
-				var td2 = document.createElement('td');
-				var td3 = document.createElement('td');
-
-				tr.setAttribute('id', 'calculationRow' + response[0]);
-
-				var select = document.createElement('select');
-				select.setAttribute('id', 'total' + response[0]);
-				select.setAttribute('name', 'calculations[' + response[0] + '][total]');
-				select.setAttribute('size', '1');
-				select.setAttribute('style', 'margin-bottom:0px;');
-
-				select.options.length = 0;
-				for (i = 0; i < options.length; i++) {
-					option = new Option(options[i].value, options[i].value);
-					if (options[i].value == document.getElementById('rsfp_total_add').value)
-						option.selected = true;
-					select.options[select.options.length] = option;
-				}
-
-				td2.innerHTML = ' = ';
-
-				var input = document.createElement('input');
-				input.setAttribute('id', 'calculations' + response[0] + 'expression');
-				input.setAttribute('type', 'text');
-				input.setAttribute('name', 'calculations[' + response[0] + '][expression]');
-				input.setAttribute('class', 'rs_inp rs_80');
-				input.setAttribute('size', '100');
-				input.setAttribute('value', document.getElementById('rsfp_expression').value);
-				input.setAttribute('data-filter-type', 'include');
-				input.setAttribute('data-filter', 'value');
-				input.setAttribute('data-delimiter', ' ');
-				input.setAttribute('data-placeholders', 'display');
-
-				var $input_id = 'calculations' + response[0] + 'expression';
-
-				var a = document.createElement('button');
-				a.setAttribute('class', 'btn btn-danger btn-mini');
-				a.setAttribute('type', 'button');
-				a.onclick = function () {
-					removeCalculation(response[0]);
-				};
-
-				var img = document.createElement('i');
-				img.setAttribute('class', 'rsficon rsficon-remove');
-
-				a.appendChild(img);
-
-				var hidden1 = document.createElement('input');
-				hidden1.setAttribute('type', 'hidden');
-				hidden1.setAttribute('name', 'calcid[]');
-				hidden1.setAttribute('value', response[0]);
-
-				var hidden2 = document.createElement('input');
-				hidden2.setAttribute('type', 'hidden');
-				hidden2.setAttribute('name', 'calorder[]');
-				hidden2.setAttribute('value', response[1]);
-
-				td1.appendChild(select);
-				td3.appendChild(input);
-				td3.appendChild(document.createTextNode('\u00A0'));
-				td3.appendChild(a);
-				td3.appendChild(hidden1);
-				td3.appendChild(hidden2);
-				td3.setAttribute('colspan', '2');
-				tr.appendChild(td1);
-				tr.appendChild(td2);
-				tr.appendChild(td3);
-				container.appendChild(tr);
-
-				document.getElementById('rsfp_expression').value = '';
-
-				jQuery('#rsfp_calculations').tableDnD({
-					onDragClass: 'rsform_dragged',
-					onDragStop: function (table, row) {
-						tidyOrderCalculationsDir();
-					}
-				});
-
-				jQuery(document).trigger('renderedCalculationsField', $input_id);
-			}
-
+	xmlHttp.onreadystatechange = function () {
+		if (xmlHttp.readyState === 4) {
 			stateDone();
+
+			document.getElementById('calculationsContents').innerHTML = xmlHttp.responseText;
+			initCalculationsOrdering(false);
+			jQuery(document).trigger('renderedCalculationsFields');
 		}
 	};
-	xmlHttp.send(params);
+	xmlHttp.send(params.join('&'));
 }
 
 function removeCalculation(id) {
-	if (!confirm(Joomla.JText._('RSFP_DELETE_SURE_CALCULATION')))
-	{
-		return;
-	}
-	
 	stateLoading();
 
-	params = 'id=' + id + '&tmpl=component&randomTime=' + Math.random();
+	var formId = document.getElementById('formId').value,
+		params = [
+			'formId=' + formId,
+			'id=' + id
+		],
+		xmlHttp = buildXmlHttp();
 
-	xmlHttp = buildXmlHttp();
-	xmlHttp.open("POST", 'index.php?option=com_rsform&task=removeCalculation&controller=forms', true);
-
-	//Send the proper header information along with the request
+	xmlHttp.open('POST', 'index.php?option=com_rsform&task=calculations.remove', true);
 	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
-		if (xmlHttp.readyState == 4) {
-			if (xmlHttp.responseText == 1)
-				document.getElementById('calculationRow' + id).dispose();
-
+	xmlHttp.onreadystatechange = function () {
+		if (xmlHttp.readyState === 4) {
 			stateDone();
+
+			document.getElementById('calculationsContents').innerHTML = xmlHttp.responseText;
+			initCalculationsOrdering(false);
+			jQuery(document).trigger('renderedCalculationsFields');
 		}
 	};
-	xmlHttp.send(params);
+	xmlHttp.send(params.join('&'));
 }
 
-function tidyOrderCalculationsDir() {
+function mappingDelete(mid) {
 	stateLoading();
 
-	var params = [];
-	var orders = document.getElementsByName('calorder[]');
-	var cids = document.getElementsByName('calcid[]');
 	var formId = document.getElementById('formId').value;
+	var params = [
+		'formId=' + formId,
+		'mid=' + mid
+	];
+	var xmlHttp = buildXmlHttp();
 
-	for (i = 0; i < orders.length; i++) {
-		params.push('cid[' + cids[i].value + ']=' + parseInt(i + 1));
-		orders[i].value = i + 1;
-	}
-
-	params.push('formId=' + formId);
-
-	xml = buildXmlHttp();
-
-	var url = 'index.php?option=com_rsform&task=forms.save.calculations.ordering&randomTime=' + Math.random();
-	xml.open("POST", url, true);
-
-	params = params.join('&');
-
-	//Send the proper header information along with the request
-	xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-	xml.send(params);
-	xml.onreadystatechange = function () {
-		if (xml.readyState == 4) {
+	xmlHttp.open("POST", 'index.php?option=com_rsform&task=mappings.remove', true);
+	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	xmlHttp.onreadystatechange = function () {
+		if (xmlHttp.readyState === 4) {
 			stateDone();
+
+			document.getElementById('mappingsContents').innerHTML = xmlHttp.responseText;
+			initMappingsOrdering(true);
 		}
-	}
+	};
+	xmlHttp.send(params.join('&'));
+}
+
+function mappingsShow() {
+	stateLoading();
+
+	var formId = document.getElementById('formId').value;
+	var params = [
+		'formId=' + formId
+	];
+	var xmlHttp = buildXmlHttp();
+
+	xmlHttp.open("POST", 'index.php?option=com_rsform&task=mappings.showmappings', true);
+	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	xmlHttp.onreadystatechange = function () {
+		if (xmlHttp.readyState === 4) {
+			stateDone();
+
+			document.getElementById('mappingsContents').innerHTML = xmlHttp.responseText;
+			initMappingsOrdering(true);
+		}
+	};
+	xmlHttp.send(params.join('&'));
 }
 
 function validateEmailFields() {
@@ -1370,6 +701,8 @@ function validateEmailFields() {
     var fieldName, field, fieldValue, values, value, match;
     var pattern = /{.*?}/g;
 
+    var hasPlaceholder, wrongPlaceholder, notAnEmail, wrongDelimiter;
+
     for (var i = 0; i < fields.length; i++) {
         // Grab field name from array
         fieldName 	= fields[i];
@@ -1377,7 +710,7 @@ function validateEmailFields() {
         // Grab value
         fieldValue 	= field.value;
 
-        RSFormPro.$(field).removeClass('rs_error_field');
+        jQuery(field).removeClass('rs_error_field');
 
         // Something's been typed in
         if (fieldValue.length > 0) {
@@ -1397,9 +730,9 @@ function validateEmailFields() {
                 if (hasPlaceholder) {
                     do {
                         match = pattern.exec(value);
-                        if (match && typeof match[0] != 'undefined') {
+                        if (match && typeof match[0] !== 'undefined') {
                             // Wrong placeholder
-                            if (RSFormPro.Placeholders.indexOf(match[0]) == -1) {
+                            if (RSFormPro.Placeholders.indexOf(match[0]) === -1) {
                                 wrongPlaceholder = true;
                             }
                         }
@@ -1407,21 +740,36 @@ function validateEmailFields() {
                 }
 
                 // Not an email
-                notAnEmail = !hasPlaceholder && value.indexOf('@') == -1;
+                notAnEmail = !hasPlaceholder && value.indexOf('@') === -1;
                 // A situation where we have a wrong delimiter thus ending up in multiple @ addresses
                 wrongDelimiter = !hasPlaceholder && (value.match(/@/g) || []).length > 1;
 
                 if (wrongPlaceholder || notAnEmail || wrongDelimiter) {
                     // Switch to the correct tab only on the first error
-                    if (result == true) {
-                        RSFormPro.$('#properties').click();
+                    if (result === true) {
+                    	if (wrongPlaceholder)
+						{
+							Joomla.renderMessages({'error': [Joomla.JText._('COM_RSFORM_EMAIL_FIELD_ERROR_WRONG_PLACEHOLDER').replace('%s', fieldName)]});
+						}
+                    	if (notAnEmail)
+						{
+							Joomla.renderMessages({'error': [Joomla.JText._('COM_RSFORM_EMAIL_FIELD_ERROR_NOT_AN_EMAIL').replace('%s', fieldName)]});
+						}
+                    	if (wrongDelimiter)
+						{
+							Joomla.renderMessages({'error': [Joomla.JText._('COM_RSFORM_EMAIL_FIELD_ERROR_WRONG_DELIMITER').replace('%s', fieldName)]});
+						}
+
+                        jQuery('#properties').click();
                         if (fieldName.indexOf('User') > -1) {
-                            RSFormPro.$('#useremails').click();
-                        } else {
-                            RSFormPro.$('#adminemails').click();
+							jQuery('#useremails').click();
+						} else if (fieldName.indexOf('Admin') > -1) {
+							jQuery('#adminemails').click();
+                        } else if (fieldName.indexOf('Deletion') > -1) {
+                            jQuery('#deletionemail').click();
                         }
                     }
-                    RSFormPro.$(field).addClass('rs_error_field');
+                    jQuery(field).addClass('rs_error_field');
                     result = false;
                 }
             }
@@ -1429,59 +777,6 @@ function validateEmailFields() {
     }
 
     return result;
-}
-
-function enableAttachFile(value)
-{
-    if (value == 1)
-    {
-        document.getElementById('rsform_select_file').style.display = '';
-        document.getElementById('UserEmailAttachFile').disabled = false;
-    }
-    else
-    {
-        document.getElementById('rsform_select_file').style.display = 'none';
-        document.getElementById('UserEmailAttachFile').disabled = true;
-    }
-}
-
-function enableThankyou(value)
-{
-    if (value == 1)
-    {
-        document.getElementById('showContinueContainer').style.display = 'table-row';
-        document.getElementById('systemMessageContainer').style.display = 'none';
-
-        if (document.getElementById('ScrollToThankYou0').checked)
-        {
-            document.getElementById('thankyouMessagePopupContainer').style.display = 'table-row';
-        }
-    }
-    else
-    {
-        document.getElementById('showContinueContainer').style.display = 'none';
-        document.getElementById('systemMessageContainer').style.display = 'table-row';
-
-        document.getElementById('thankyouMessagePopupContainer').style.display = 'none';
-    }
-}
-
-function enableThankyouPopup(value)
-{
-    if (value == 0)
-    {
-        if (document.getElementById('ShowThankyou1').checked)
-        {
-            document.getElementById('thankyouMessagePopupContainer').style.display = 'table-row';
-        }
-    }
-    else
-    {
-        if (document.getElementById('ShowThankyou1').checked)
-        {
-            document.getElementById('thankyouMessagePopupContainer').style.display = 'none';
-        }
-    }
 }
 
 RSFormPro.Post = {};
@@ -1501,7 +796,40 @@ RSFormPro.Post.addField = function () {
 };
 
 RSFormPro.Post.deleteField = function () {
-	jQuery(this).parents('tr').remove();
+    if (confirm(Joomla.JText._('RSFP_POST_ARE_YOU_SURE_DELETE_THIS_FIELD'))) {
+        jQuery(this).parents('tr').remove();
+    }
 };
+
+RSFormPro.Post.addHeader = function () {
+    var $table = jQuery('#com-rsform-post-headers tbody');
+    var $row = jQuery('<tr>');
+
+    var $inputName = jQuery('<td><input type="text" id="form_post_headers_name'+ Math.floor((Math.random() * 100000) + 1) +'" data-delimiter=" " data-placeholders="display" name="form_post[headers_name][]" placeholder="' + Joomla.JText._('RSFP_POST_HEADERS_NAME_PLACEHOLDER') + '" class="rs_inp rs_80"></td>');
+    var $inputValue = jQuery('<td><input type="text" id="form_post_headers_value'+ Math.floor((Math.random() * 100000) + 1) +'" data-delimiter=" " data-placeholders="display" data-filter-type="include" data-filter="value,global" name="form_post[headers_value][]" placeholder="' + Joomla.JText._('RSFP_POST_HEADERS_VALUE_PLACEHOLDER') + '" class="rs_inp rs_80"></td>');
+    var $deleteBtn = jQuery('<td>').append(jQuery('<button type="button" class="btn btn-danger btn-mini"><i class="rsficon rsficon-remove"></i></button>').click(RSFormPro.Post.deleteHeader));
+
+    $row.append($inputName, $inputValue, $deleteBtn);
+    $table.append($row);
+    var $object = [$inputName, $inputValue];
+    jQuery(document).trigger('renderedSilentPostField', $object);
+};
+
+RSFormPro.Post.deleteHeader = function () {
+	if (confirm(Joomla.JText._('RSFP_POST_ARE_YOU_SURE_DELETE_THIS_HEADER'))) {
+        jQuery(this).parents('tr').remove();
+	}
+};
+
+RSFormPro.removeFile = function(button) {
+	if (button.parentNode)
+	{
+		button.parentNode.parentNode.removeChild(button.parentNode);
+	}
+};
+
+RSFormPro.fixCodeMirror = function(id) {
+	Joomla.editors.instances[id].setOption('mode', 'text/x-php');
+}
 
 jQuery(document).ready(initRSFormPro);

@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2017 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -21,7 +21,11 @@ class RSFormProGrid
 	protected $formOptions;
 	protected $requiredMarker;
 	protected $showFormTitle;
-	
+
+	protected $hiddenComponents = array();
+	protected $checkboxes = array();
+	protected $radiogroups = array();
+
 	public function __construct($data, $formId, $formOptions, $requiredMarker, $showFormTitle)
 	{
 		$this->formId 			= $formId;
@@ -29,7 +33,21 @@ class RSFormProGrid
 		$this->requiredMarker 	= $requiredMarker;
 		$this->showFormTitle 	= $showFormTitle;
 		$this->components 		= $this->getComponents();
-		
+		$this->hiddenComponents = array(RSFORM_FIELD_HIDDEN, RSFORM_FIELD_TICKET);
+
+		if ($componentIds = RSFormProHelper::componentExists($formId, RSFORM_FIELD_CAPTCHA))
+		{
+			$captchaData = RSFormProHelper::getComponentProperties($componentIds[0]);
+			if ($captchaData['IMAGETYPE'] === 'INVISIBLE')
+			{
+				$this->hiddenComponents[] = RSFORM_FIELD_CAPTCHA;
+			}
+		}
+
+		JFactory::getApplication()->triggerEvent('onRsformDefineHiddenComponents', array(&$this->hiddenComponents));
+		JFactory::getApplication()->triggerEvent('onRsformDefineCheckboxes', array(&$this->checkboxes, $this->formId));
+		JFactory::getApplication()->triggerEvent('onRsformDefineRadiogroups', array(&$this->radiogroups, $this->formId));
+
 		$data = json_decode($data, true);
 		if (is_array($data) && isset($data[0], $data[1]))
 		{
@@ -147,4 +165,58 @@ class RSFormProGrid
     {
         return '{if ' . $placeholder . '}' . $then . '{/if}';
     }
+
+    protected function generateFor($data)
+	{
+		$componentTypeId = $data->ComponentTypeId;
+
+		if (in_array($data->ComponentId, $this->checkboxes))
+		{
+			$componentTypeId = RSFORM_FIELD_CHECKBOXGROUP;
+		}
+		elseif (in_array($data->ComponentId, $this->radiogroups))
+		{
+			$componentTypeId = RSFORM_FIELD_RADIOGROUP;
+		}
+
+		switch ($componentTypeId)
+		{
+			default:
+				return ' for="' . $data->ComponentName . '"';
+				break;
+
+			case RSFORM_FIELD_JQUERY_CALENDAR:
+				require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/calendar.php';
+
+				return ' for="txtjQcal' . $this->formId . '_' . RSFormProCalendar::getInstance('jQueryCalendar')->getPosition($this->formId, $data->ComponentId) . '"';
+				break;
+
+			case RSFORM_FIELD_CALENDAR:
+				require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/calendar.php';
+
+				return ' for="txtcal' . $this->formId . '_' . RSFormProCalendar::getInstance('YUICalendar')->getPosition($this->formId, $data->ComponentId) . '"';
+				break;
+
+			case RSFORM_FIELD_RANGE_SLIDER:
+				require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/rangeslider.php';
+
+				return ' for="rs-range-slider' . $this->formId . '_' . RSFormProRangeSlider::getInstance()->getPosition($this->formId, $data->ComponentId) . '"';
+				break;
+
+			case RSFORM_FIELD_CAPTCHA:
+				return ' for="captchaTxt' . $data->ComponentId . '"';
+				break;
+
+			case RSFORM_FIELD_CHECKBOXGROUP:
+			case RSFORM_FIELD_RADIOGROUP:
+				return ' id="' . $data->ComponentName . '-grouplbl"';
+				break;
+
+			case RSFORM_FIELD_BIRTHDAY:
+			case RSFORM_FIELD_BUTTON:
+			case RSFORM_FIELD_SUBMITBUTTON:
+				return '';
+				break;
+		}
+	}
 }

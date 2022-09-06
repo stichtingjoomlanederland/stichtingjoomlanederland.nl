@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -14,19 +14,19 @@ class TableRSForm_Condition_Details extends JTable
 	 *
 	 * @var int
 	 */
-	var $id = null;
-	
-	var $condition_id 	= null;
-	var $component_id 	= null;
-	var $operator 		= null;
-	var $value 			= null;
+	public $id = null;
+
+	public $condition_id 	= null;
+	public $component_id 	= null;
+	public $operator 		= null;
+	public $value 			= null;
 		
 	/**
 	 * Constructor
 	 *
 	 * @param object Database connector object
 	 */
-	function __construct(& $db)
+	public function __construct(& $db)
 	{
 		parent::__construct('#__rsform_condition_details', 'id', $db);
 	}

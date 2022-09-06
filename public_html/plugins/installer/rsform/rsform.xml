@@ -9,6 +9,11 @@
 	<license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license> 
 	<version>1.0.0</version>
 	<description>PLG_INSTALLER_RSFORM_XML_DESCRIPTION</description>
+
+	<updateservers>
+        <server type="extension" priority="1" name="Installer - RSForm! Pro">https://www.rsjoomla.com/updates/com_rsform/Other/plg_installer.xml</server>
+    </updateservers>
+
 	<files>
 		<filename plugin="rsform">rsform.php</filename>
 		<filename>index.html</filename>

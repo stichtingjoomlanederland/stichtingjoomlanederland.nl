@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -24,7 +24,8 @@ class RSFormProFormLayoutBootstrap4 extends RSFormProFormLayout
 		parent::__construct();
 	}
 	
-	public function loadFramework() {
+	public function loadFramework()
+	{
 		// Load the CSS files
 		$this->addStyleSheet('com_rsform/frameworks/bootstrap4/bootstrap.min.css');
 

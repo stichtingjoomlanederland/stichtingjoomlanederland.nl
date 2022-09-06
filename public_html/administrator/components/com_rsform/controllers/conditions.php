@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -9,9 +9,9 @@ defined('_JEXEC') or die('Restricted access');
 
 class RsformControllerConditions extends RsformController
 {
-	public function __construct()
+	public function __construct($config = array())
 	{
-		parent::__construct();
+		parent::__construct($config);
 		
 		$this->registerTask('apply', 'save');
 	}
@@ -19,7 +19,7 @@ class RsformControllerConditions extends RsformController
 	public function save()
 	{
 		// Check for request forgeries
-		JSession::checkToken() or jexit('Invalid Token');
+		$this->checkToken();
 
 		$model 	= $this->getModel('conditions');
 		$task 	= $this->getTask();
@@ -62,7 +62,8 @@ class RsformControllerConditions extends RsformController
         $app->input->set('formId', $formId);
 		
 		parent::display();
-		jexit();
+
+		$app->close();
 	}
 	
 	public function showConditions()
@@ -77,6 +78,7 @@ class RsformControllerConditions extends RsformController
         $app->input->set('formId', $formId);
 		
 		parent::display();
-        jexit();
+
+		$app->close();
 	}
 }

@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -99,16 +99,35 @@ JText::script('RSFP_SUBMISSION_REDIRECT_WHERE_VALIDATION');
 			<tr>
 				<td width="350" style="width: 350px;" align="right" class="key"><?php echo JText::_('RSFP_WHATS_FORM_LAYOUT'); ?></td>
 				<td class="com-rsform-css-fix">
-                    <?php if ($this->layouts['html5Layouts']) { ?>
-                        <?php foreach ($this->layouts['html5Layouts'] as $i => $layout) { ?>
-                            <div class="rsform_layout_box">
-                                <label for="formLayout<?php echo ucfirst($layout); ?>" class="radio">
-                                    <input type="radio" id="formLayout<?php echo ucfirst($layout); ?>" name="FormLayout" value="<?php echo $layout; ?>" <?php if ($i == 0) { ?> checked<?php } ?>/> <?php echo JText::_('RSFP_LAYOUT_'.str_replace('-', '_', $layout)); ?>
-                                </label>
-                                <?php echo JHtml::image('com_rsform/admin/layouts/' . $layout . '.gif', JText::_('RSFP_LAYOUT_'.str_replace('-', '_', $layout)), 'width="175"', true); ?>
-                            </div>
-                        <?php } ?>
-                    <?php } ?>
+                    <?php
+					if ($this->layouts)
+                    {
+                    	$checked = false;
+						foreach ($this->layouts as $layoutGroup => $layouts)
+						{
+							?>
+							<h3 class="rsfp-legend"><?php echo JText::_('RSFP_' . $layoutGroup); ?></h3>
+							<?php
+							foreach ($layouts as $i => $layout)
+							{
+								?>
+								<div class="rsform_layout_box">
+									<label for="formLayout<?php echo ucfirst($layout); ?>" class="radio">
+										<input type="radio" id="formLayout<?php echo ucfirst($layout); ?>"
+											   name="FormLayout"
+											   value="<?php echo $layout; ?>" <?php if (!$checked) { ?> checked<?php } ?>/> <?php echo JText::_('RSFP_LAYOUT_' . str_replace('-', '_', $layout)); ?>
+									</label>
+									<?php echo JHtml::image('com_rsform/admin/layouts/' . $layout . '.gif', JText::_('RSFP_LAYOUT_' . str_replace('-', '_', $layout)), 'width="175"', true); ?>
+								</div>
+								<?php
+								$checked = true;
+							}
+							?>
+							<div class="clearfix"></div>
+							<?php
+						}
+                    }
+                    ?>
 				</td>
 			</tr>
 			<tr>

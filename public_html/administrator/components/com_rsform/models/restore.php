@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -59,20 +59,22 @@ class RsformModelRestore extends JModelLegacy
 		$extension = $this->getExtension($file['name']);
 		
 		// Check if the extension is correct
-		if ($extension != 'zip' && $extension != 'tgz' && $extension != 'gz' && $extension != 'tar') {
+		if (!in_array($extension, array('zip', 'tgz', 'gz', 'tar')))
+		{
 			throw new Exception(JText::sprintf('RSFP_RESTORE_NOT_VALID_EXTENSION', $extension));
 		}
 		
-		if ($extension == 'zip') {
-			$this->restoreLegacy($file);
-		} else {
-			require_once JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/restore/restore.php';
-			
-			$restore = new RSFormProRestore();
-			$restore->upload($file);
-			
-			return $restore->getKey();
+		if ($extension == 'zip')
+		{
+			throw new Exception(JText::_('COM_RSFORM_LEGACY_BACKUPS_CAN_NO_LONGER_BE_RESTORED'));
 		}
+
+		require_once JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/restore/restore.php';
+
+		$restore = new RSFormProRestore();
+		$restore->upload($file);
+
+		return $restore->getKey();
 	}
 	
 	public function decompress() {
@@ -149,7 +151,6 @@ class RsformModelRestore extends JModelLegacy
 	}
 	
 	public function deleteTemporaryFiles() {
-		jimport('joomla.filesystem.folder');
 		// set the path to delete
 		$path = JFactory::getConfig()->get('tmp_path');
 		$path = $path.'/rsform_backup_'.$this->getKey();
@@ -157,45 +158,6 @@ class RsformModelRestore extends JModelLegacy
 		if (!JFolder::delete($path)) {
 			throw new Exception(sprintf('Could not remove temporary folder: "%s"!', $path));
 		}
-	}
-	
-	protected function restoreLegacy($userfile) {
-		require_once JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/restore/legacy.php';
-		
-		jimport('joomla.filesystem.archive');
-		jimport('joomla.filesystem.folder');
-		jimport('joomla.filesystem.file');
-		
-		$overwrite = $this->getOverwrite();
-		
-		if (!extension_loaded('zlib')) {
-			throw new Exception('The installer cannot continue until Zlib is installed.');
-		}
-		
-		if (!JFile::upload($userfile['tmp_name'], JPATH_SITE.'/media/'.$userfile['name'], false, true)) {
-			throw new Exception('Failed to move uploaded file to <b>/media</b> directory.');
-		}
-		
-		$options = array(
-			'filename' 	=> JPATH_SITE.'/media/'.$userfile['name'],
-			'overwrite'	=> $overwrite
-		);
-		
-		$restore = new RSFormProRestore($options);
-		
-		if (!$restore->process()) {
-			throw new Exception('Unable to extract archive.');
-		}
-		
-		if (!$restore->restore()) {
-			throw new Exception($restore->getErrors());
-		}
-	}
-	
-	public function getSideBar() {
-		require_once JPATH_COMPONENT.'/helpers/toolbar.php';
-
-		return RSFormProToolbarHelper::render();
 	}
 	
 	public function getKey() {

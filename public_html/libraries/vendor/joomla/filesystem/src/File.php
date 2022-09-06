@@ -2,7 +2,7 @@
 /**
  * Part of the Joomla Framework Filesystem Package
  *
- * @copyright  Copyright (C) 2005 - 2018 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2021 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -41,9 +41,9 @@ class File
 	 *
 	 * @since   1.0
 	 */
-	public static function makeSafe($file, array $stripChars = array('#^\.#'))
+	public static function makeSafe($file, array $stripChars = ['#^\.#'])
 	{
-		$regex = array_merge(array('#(\.){2,}#', '#[^A-Za-z0-9\.\_\- ]#'), $stripChars);
+		$regex = array_merge(['#(\.){2,}#', '#[^A-Za-z0-9\.\_\- ]#'], $stripChars);
 
 		$file = preg_replace($regex, '', $file);
 
@@ -72,14 +72,20 @@ class File
 		// Prepend a base path if it exists
 		if ($path)
 		{
-			$src = Path::clean($path . '/' . $src);
+			$src  = Path::clean($path . '/' . $src);
 			$dest = Path::clean($path . '/' . $dest);
 		}
 
 		// Check src path
 		if (!is_readable($src))
 		{
-			throw new \UnexpectedValueException(__METHOD__ . ': Cannot find or read file: ' . $src);
+			throw new \UnexpectedValueException(
+				sprintf(
+					"%s: Cannot find or read file: %s",
+					__METHOD__,
+					Path::removeRoot($src)
+				)
+			);
 		}
 
 		if ($useStreams)
@@ -91,6 +97,8 @@ class File
 				throw new FilesystemException(sprintf('%1$s(%2$s, %3$s): %4$s', __METHOD__, $src, $dest, $stream->getError()));
 			}
 
+			self::invalidateFileCache($dest);
+
 			return true;
 		}
 
@@ -98,6 +106,8 @@ class File
 		{
 			throw new FilesystemException(__METHOD__ . ': Copy failed.');
 		}
+
+		self::invalidateFileCache($dest);
 
 		return true;
 	}
@@ -118,7 +128,7 @@ class File
 
 		foreach ($files as $file)
 		{
-			$file = Path::clean($file);
+			$file     = Path::clean($file);
 			$filename = basename($file);
 
 			if (!Path::canChmod($file))
@@ -136,6 +146,8 @@ class File
 			{
 				throw new FilesystemException(__METHOD__ . ': Failed deleting ' . $filename);
 			}
+
+			self::invalidateFileCache($file);
 		}
 
 		return true;
@@ -158,7 +170,7 @@ class File
 	{
 		if ($path)
 		{
-			$src = Path::clean($path . '/' . $src);
+			$src  = Path::clean($path . '/' . $src);
 			$dest = Path::clean($path . '/' . $dest);
 		}
 
@@ -177,6 +189,8 @@ class File
 				throw new FilesystemException(__METHOD__ . ': ' . $stream->getError());
 			}
 
+			self::invalidateFileCache($dest);
+
 			return true;
 		}
 
@@ -185,28 +199,31 @@ class File
 			throw new FilesystemException(__METHOD__ . ': Rename failed.');
 		}
 
+		self::invalidateFileCache($dest);
+
 		return true;
 	}
 
 	/**
 	 * Write contents to a file
 	 *
-	 * @param   string   $file        The full file path
-	 * @param   string   $buffer      The buffer to write
-	 * @param   boolean  $useStreams  Use streams
+	 * @param   string   $file          The full file path
+	 * @param   string   $buffer        The buffer to write
+	 * @param   boolean  $useStreams    Use streams
+	 * @param   boolean  $appendToFile  Append to the file and not overwrite it.
 	 *
 	 * @return  boolean  True on success
 	 *
 	 * @since   1.0
 	 */
-	public static function write($file, &$buffer, $useStreams = false)
+	public static function write($file, &$buffer, $useStreams = false, $appendToFile = false)
 	{
 		@set_time_limit(ini_get('max_execution_time'));
 
 		// If the destination directory doesn't exist we need to create it
-		if (!file_exists(dirname($file)))
+		if (!file_exists(\dirname($file)))
 		{
-			Folder::create(dirname($file));
+			Folder::create(\dirname($file));
 		}
 
 		if ($useStreams)
@@ -215,15 +232,28 @@ class File
 
 			// Beef up the chunk size to a meg
 			$stream->set('chunksize', (1024 * 1024));
+			$stream->writeFile($file, $buffer, $appendToFile);
 
-			$stream->writeFile($file, $buffer);
+			self::invalidateFileCache($file);
 
 			return true;
 		}
 
 		$file = Path::clean($file);
 
-		return \is_int(file_put_contents($file, $buffer));
+		// Set the required flag to only append to the file and not overwrite it
+		if ($appendToFile === true)
+		{
+			$res = \is_int(file_put_contents($file, $buffer, \FILE_APPEND));
+		}
+		else
+		{
+			$res = \is_int(file_put_contents($file, $buffer));
+		}
+
+		self::invalidateFileCache($file);
+
+		return $res;
 	}
 
 	/**
@@ -244,7 +274,7 @@ class File
 		$dest = Path::clean($dest);
 
 		// Create the destination directory if it does not exist
-		$baseDir = dirname($dest);
+		$baseDir = \dirname($dest);
 
 		if (!is_dir($baseDir))
 		{
@@ -260,14 +290,18 @@ class File
 				throw new FilesystemException(sprintf('%1$s(%2$s, %3$s): %4$s', __METHOD__, $src, $dest, $stream->getError()));
 			}
 
+			self::invalidateFileCache($dest);
+
 			return true;
 		}
 
-		if (is_writeable($baseDir) && move_uploaded_file($src, $dest))
+		if (is_writable($baseDir) && move_uploaded_file($src, $dest))
 		{
 			// Short circuit to prevent file permission errors
 			if (Path::setPermissions($dest))
 			{
+				self::invalidateFileCache($dest);
+
 				return true;
 			}
 
@@ -275,5 +309,26 @@ class File
 		}
 
 		throw new FilesystemException(__METHOD__ . ': Failed to move file.');
+	}
+
+	/**
+	 * Invalidate any opcache for a newly written file immediately, if opcache* functions exist and if this was a PHP file.
+	 *
+	 * @param   string  $file  The path to the file just written to, to flush from opcache
+	 *
+	 * @return void
+	 */
+	public static function invalidateFileCache($file)
+	{
+		if (function_exists('opcache_invalidate'))
+		{
+			$info = pathinfo($file);
+
+			if (isset($info['extension']) && $info['extension'] === 'php')
+			{
+				// Force invalidation to be absolutely sure the opcache is cleared for this file.
+				opcache_invalidate($file, true);
+			}
+		}
 	}
 }

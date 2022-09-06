@@ -1,38 +1,32 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
 defined('_JEXEC') or die('Restricted access');
 
 require_once JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/field.php';
+require_once JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/rangeslider.php';
 
 class RSFormProFieldRangeSlider extends RSFormProField
 {
 	protected $customId;
 	
 	// backend preview
-	public function getPreviewInput() {
-		$type  	= $this->getProperty('SLIDERTYPE', 'SINGLE');
-		$caption 	= $this->getProperty('CAPTION','');
-		$codeIcon	= RSFormProHelper::getIcon('rangeSlider');
-		
-		$html = '<td>'.$caption.'</td><td>'.$codeIcon.' '.JText::_('RSFP_COMP_FVALUE_'.$type).'</td>';
-		
-		return $html;
+	public function getPreviewInput()
+	{
+		return RSFormProHelper::getIcon('rangeSlider') . ' ' . JText::_('RSFP_COMP_FVALUE_' . $this->getProperty('SLIDERTYPE', 'SINGLE'));
 	}
 	
 	// functions used for rendering in front view
 	
 	public function getFormInput() {
-		require_once JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/rangeslider.php';
 		$slider = RSFormProRangeSlider::getInstance();
 		
 		$value 		= (string) $this->getValue();
 		$name		= $this->getName();
-		$id			= $this->getId();
 		$readonly	= $this->getProperty('READONLY', 'NO');
 		$values  	= $this->getProperty('VALUES', '');
 		if (!empty($values)) {
@@ -43,9 +37,8 @@ class RSFormProFieldRangeSlider extends RSFormProField
 		
 		$attr		= $this->getAttributes('input');
 		$additional = '';
-		$position	= $this->getPosition();
 		// Create a unique ID for this slider.
-		$this->customId = $this->formId.'_'.$position;
+		$this->customId = $this->formId . '_' . $this->getPosition();
 		
 		// set the slider script
 		$config = array(
@@ -103,15 +96,19 @@ class RSFormProFieldRangeSlider extends RSFormProField
 	// @desc Gets the position of this slider in the current form (eg. if it's the only slider in the form, the position is 0,
 	//	if it's the second slider the position is 1 and so on).
 	protected function getPosition() {
-		$componentTypeId = $this->getProperty('componentTypeId', RSFORM_FIELD_RANGE_SLIDER);
-		$sliders 	 = RSFormProHelper::componentExists($this->formId, $componentTypeId);
-		$componentId = $this->getProperty('componentId');
-		$position 	 = 0;
-		foreach ($sliders as $position => $slider) {
-			if ($slider == $componentId) {
-				break;
-			}
+		return RSFormProRangeSlider::getInstance()->getPosition($this->formId, $this->componentId);
+	}
+
+	public function processValidation($validationType = 'form', $submissionId = 0)
+	{
+		$required 	= $this->isRequired();
+		$value 		= trim($this->getValue());
+
+		if ($required && empty($value))
+		{
+			return false;
 		}
-		return $position;
+
+		return true;
 	}
 }

@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/licenses/gpl-2.0.html
 */
 /**
@@ -19,8 +19,6 @@ class RSFormProODS {
 	protected $arrRow;
 	
 	public function __construct($strTmpDir) {
-		jimport('joomla.filesystem.archive');
-		
 		$this->strTmpDir = $strTmpDir;
 		if (!is_dir($this->strTmpDir)) {
 			mkdir($this->strTmpDir);
@@ -396,12 +394,12 @@ class RSFormProODS {
 	 * @param string $type float, string
 	 */
 	public function addCell($intColumn, $value, $type) {
-		$this->arrRow[$intColumn]['value'] = str_replace(array('<', '>', '"', "'", '&', '//', chr(0x0b)), array('&lt;', '&gt;', '&quot;', '&apos;', '&amp;', '&#47;', "\n"), $value);
-		
+		$this->arrRow[$intColumn]['value'] = str_replace(array('&', '<', '>', '"', "'", '//', chr(0x0b)), array('&amp;', '&lt;', '&gt;', '&quot;', '&apos;', '&#47;', "\n"), $value);
+
 	    if (@simplexml_load_string(sprintf('<?xml version="1.0" encoding="UTF-8"?><root>%s</root>', $this->arrRow[$intColumn]['value'])) === false) {
 	        if (@simplexml_load_string(sprintf('<?xml version="1.0" encoding="UTF-8"?><root>%s</root>', html_entity_decode($this->arrRow[$intColumn]['value'], ENT_QUOTES, 'UTF-8'))) === false) {
 	            if (@simplexml_load_string(sprintf('<?xml version="1.0" encoding="UTF-8"?><root>%s</root>', html_entity_decode(iconv('ISO-8859-1', 'UTF-8//IGNORE', $this->arrRow[$intColumn]['value'])))) === false) {
-	                $strFixedName = trim(preg_replace('/[^0-9a-z\-\_\'"\.\(\)\s]/i', ' ', $this->arrRow[$intColumn]['value']));
+	                $strFixedName = trim(preg_replace('/[^0-9a-z\-_\'".()\s]/i', ' ', $this->arrRow[$intColumn]['value']));
 	                printf("fixed %s to %s\n", $this->arrRow[$intColumn]['value'], $strFixedName);
 	            }
 	        }
@@ -439,11 +437,9 @@ class RSFormProODS {
 		file_put_contents($this->strTmpDir . '/META-INF/manifest.xml',$this->getManifest());
 		
 		// create the zip archive
-		jimport('joomla.filesystem.file');
-		jimport('joomla.filesystem.folder');
 		$files = $this->_prepareZIPFiles(JFolder::files($this->strTmpDir, '.', true, true));
 		
-		$adapter = JArchive::getAdapter('zip');
+		$adapter = new Joomla\Archive\Zip();
 		if ($adapter->create($this->strTmpDir.'.ods', $files)) {
 			$this->cleanUp();
 		}

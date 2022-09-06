@@ -150,6 +150,7 @@ RSFormPro.Backup = {
 				
 				case 'done':
 					RSFormPro.Backup.toggle();
+					document.getElementById('backupKey').value = RSFormPro.Backup.key;
 					Joomla.submitbutton('backup.download');
 				break;
 			}
@@ -281,4 +282,12 @@ RSFormPro.Backup = {
 			RSFormPro.Backup.progress(true);
 		}
 	}
+}
+
+Joomla.submitbutton = function(task) {
+	if (task === 'backup.start') {
+		return RSFormPro.Backup.start();
+	}
+
+	Joomla.submitform(task);
 }

@@ -1,7 +1,7 @@
 <?php
 /**
-* @package RSForm!Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @package RSForm! Pro
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -87,9 +87,11 @@ class RSFormProAssets
 			if (self::$scripts) {
 				foreach (self::$scripts as $src => $tmp) {
 					if (!isset(self::$added[$src])) {
-						$script = self::createScript($src);
-						if (strpos($body, $script) === false)
+						$test = self::createScript($src, true);
+
+						if (strpos($body, $test) === false)
 						{
+							$script = self::createScript($src);
 							$newHead .= $script;
 						}
 					}
@@ -97,13 +99,15 @@ class RSFormProAssets
 				// Reset
 				self::$scripts = array();
 			}
-			
+
 			if (self::$styles) {
 				foreach (self::$styles as $src => $tmp) {
 					if (!isset(self::$added[$src])) {
-						$style = self::createStyleSheet($src);
-						if (strpos($body, $style) === false)
+						$test = self::createStyleSheet($src, true);
+
+						if (strpos($body, $test) === false)
 						{
+							$style = self::createStyleSheet($src);
 							$newHead .= $style;
 						}
 					}
@@ -170,12 +174,27 @@ class RSFormProAssets
 		return $result;
 	}
 
-	protected static function createScript($src) {
-		$html = '<script';
-		if (!self::isHTML5()) {
-			$html .= ' type="text/javascript"';
+	protected static function createScript($src, $test = false)
+	{
+		$srcLine = ' src="' . $src;
+
+		if (!$test)
+		{
+			$html = '<script';
+
+			if (!self::isHTML5())
+			{
+				$html .= ' type="text/javascript"';
+			}
+
+			$html .= $srcLine;
+			$html .= '"></script>' . "\n";
 		}
-		$html .= ' src="' . $src . '"></script>' . "\n";
+		else
+		{
+			$html = $srcLine;
+		}
+
 		return $html;
 	}
 
@@ -189,12 +208,27 @@ class RSFormProAssets
 		return $html;
 	}
 
-	protected static function createStyleSheet($src) {
-		$html = '<link rel="stylesheet"';
-		if (!self::isHTML5()) {
-			$html .= ' type="text/css"';
+	protected static function createStyleSheet($src, $test = false)
+	{
+		$srcLine = ' href="' . $src;
+
+		if (!$test)
+		{
+			$html = '<link rel="stylesheet"';
+
+			if (!self::isHTML5())
+			{
+				$html .= ' type="text/css"';
+			}
+
+			$html .= $srcLine;
+			$html .= '" />' . "\n";
 		}
-		$html .= ' href="' . $src . '" />' . "\n";
+		else
+		{
+			$html = $srcLine;
+		}
+
 		return $html;
 	}
 
@@ -206,5 +240,38 @@ class RSFormProAssets
 		$html .= '>'. "\n". $inlineStyles. "\n". '</style>'. "\n";
 
 		return $html;
+	}
+
+	public static function addJquery()
+	{
+		try
+		{
+			JHtml::_('jquery.framework');
+
+			// This allows jQuery to be loaded after content has been rendered in Joomla! 3.x
+			if (version_compare(JVERSION, '4.0', '<') && static::$replace)
+			{
+				$debug = (boolean) JFactory::getConfig()->get('debug');
+
+				static::addScript(JHtml::_('script', 'jui/jquery.min.js', array('version' => 'auto', 'relative' => true, 'detectDebug' => $debug, 'pathOnly' => true)));
+				static::addScript(JHtml::_('script', 'jui/jquery-noconflict.js', array('version' => 'auto', 'relative' => true, 'pathOnly' => true)));
+				static::addScript(JHtml::_('script', 'jui/jquery-migrate.min.js', array('version' => 'auto', 'relative' => true, 'detectDebug' => $debug, 'pathOnly' => true)));
+			}
+		}
+		catch (Exception $e)
+		{
+			// Let's try to add the asset through our own function on Joomla! 4.x
+			if (version_compare(JVERSION, '4.0', '>=') && static::$replace)
+			{
+				try
+				{
+					static::addScript(JFactory::getApplication()->getDocument()->getWebAssetManager()->getAsset('script', 'jquery')->getUri());
+				}
+				catch (Exception $assetException)
+				{
+					// This shouldn't happen
+				}
+			}
+		}
 	}
 }

@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -14,10 +14,10 @@ require_once JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/fieldmultiple.p
 class RSFormProFieldSelectList extends RSFormProFieldMultiple
 {	
 	// backend preview
-	public function getPreviewInput() {
+	public function getPreviewInput()
+	{
 		$size  		= $this->getProperty('SIZE', 0);
 		$multiple 	= $this->getProperty('MULTIPLE', 'NO');
-		$caption 	= $this->getProperty('CAPTION','');
 		
 		// Start building the HTML input
 		$selectInput = '<select';
@@ -62,18 +62,11 @@ class RSFormProFieldSelectList extends RSFormProFieldMultiple
 				}
 			}
 		}
-		
-		$callingClass = get_class($this);
+
 		// Close the tag
 		$selectInput .= '</select>';
-		
-		if ($callingClass != 'RSFormProFieldSelectList') {
-			$html = $this->codeIcon.$selectInput;
-		} else {
-			$html = '<td>'.$caption.'</td><td>'.$this->codeIcon.$selectInput.'</td>';
-		}
-		
-		return $html;
+
+		return $this->codeIcon . $selectInput;
 	}
 	
 	// functions used for rendering in front view

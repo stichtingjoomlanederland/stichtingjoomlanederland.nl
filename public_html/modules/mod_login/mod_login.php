@@ -1,29 +1,34 @@
 <?php
+
 /**
  * @package     Joomla.Site
  * @subpackage  mod_login
  *
- * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
+ * @copyright   (C) 2005 Open Source Matters, Inc. <https://www.joomla.org>
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
 
-// Include the login functions only once
-JLoader::register('ModLoginHelper', __DIR__ . '/helper.php');
+use Joomla\CMS\Factory;
+use Joomla\CMS\Helper\AuthenticationHelper;
+use Joomla\CMS\Helper\ModuleHelper;
+use Joomla\Module\Login\Site\Helper\LoginHelper;
 
 $params->def('greeting', 1);
 
-$type             = ModLoginHelper::getType();
-$return           = ModLoginHelper::getReturnUrl($params, $type);
-$twofactormethods = JAuthenticationHelper::getTwoFactorMethods();
-$user             = JFactory::getUser();
+// HTML IDs
+$formId           = 'login-form-' . $module->id;
+$type             = LoginHelper::getType();
+$return           = LoginHelper::getReturnUrl($params, $type);
+$registerLink     = LoginHelper::getRegistrationUrl($params);
+$extraButtons     = AuthenticationHelper::getLoginButtons($formId);
+$user             = Factory::getUser();
 $layout           = $params->get('layout', 'default');
 
 // Logged users must load the logout sublayout
-if (!$user->guest)
-{
-	$layout .= '_logout';
+if (!$user->guest) {
+    $layout .= '_logout';
 }
 
-require JModuleHelper::getLayoutPath('mod_login', $layout);
+require ModuleHelper::getLayoutPath('mod_login', $layout);

@@ -1,6 +1,8 @@
 /* editModal functions */
 RSFormPro.editModal = {
 	selector: '#editModal',
+
+	attached: false,
 	
 	disableButton: function() {
 		jQuery(this.selector).find('.btn-primary').prop('disabled', true);
@@ -11,20 +13,61 @@ RSFormPro.editModal = {
 	},
 	
 	open: function() {
-		jQuery(this.selector).modal('show');
-		
-		// Focus on textbox once
-		var focused = false;
-		jQuery(this.selector).on('shown.bs.modal', function() {
-			if (!focused && jQuery('#NAME').length > 0) {
-				focused = true;
-				jQuery('#NAME').focus();
+		if (!this.attached)
+		{
+			this.attached = true;
+
+			var selector = this.selector;
+
+			if (RSFormPro.isJ4)
+			{
+				// Solve TinyMCE + BS5 issues
+				document.addEventListener('focusin', function (e) {
+					if (e.target.closest('.tox-tinymce-aux, .moxman-window, .tam-assetmanager-root') !== null) {
+						e.stopImmediatePropagation();
+					}
+				});
 			}
-		});
+
+			var func = function() {
+				if (!RSFormPro.isJ4)
+				{
+					// Solves issues with TinyMCE dialogs inside a Bootstrap 2.3.2 Modal
+					jQuery(document).off('focusin.modal');
+				}
+				else
+				{
+					// TinyMCE + Firefox + Paciu issues - this solves it
+					try {window.dispatchEvent(new Event('resize')); } catch (err) {}
+				}
+
+				var field = document.getElementById('NAME');
+
+				if (typeof field === 'object' && field.getAttribute('type') === 'text')
+				{
+					field.focus();
+				}
+				else
+				{
+					field = document.getElementById('CAPTION');
+					if (typeof field === 'object')
+					{
+						field.focus();
+					}
+				}
+			}
+
+			jQuery(selector).on('shown.bs.modal', func);
+		}
+
+		jQuery(this.selector).modal('show');
 	},
 	
 	close: function() {
 		jQuery(this.selector).modal('hide');
+
+		// Doing this to prevent editors from showing 'data entered on the page may not be saved'
+		window.onbeforeunload = function() {};
 	},
 	
 	save: function() {
@@ -51,8 +94,7 @@ RSFormPro.editModal = {
 			task: 'components.display',
 			componentType: componentTypeId,
 			formId: jQuery('#formId').val(),
-			format: 'raw',
-			randomTime: Math.random()
+			format: 'raw'
 		};
 
 		if (componentId > 0)
@@ -64,7 +106,7 @@ RSFormPro.editModal = {
 		{
 			document.getElementById('componentIdToEdit').value = -1;
 		}
-		
+
 		jQuery.ajax({
 			url: 'index.php',
 			data: urlParams,
@@ -77,21 +119,46 @@ RSFormPro.editModal = {
 			success: function(responseText) {
 				$component.removeClass('rsform_loading_btn');
 				var response = responseText.split('{rsfsep}');
-				
+				var tabTitle, tabContent;
+				var editorContainer = jQuery('#rsfp-editor-container');
+				var editorValue;
+
+				editorContainer.addClass('rsfp-hidden');
+
 				// Display tabs
 				for (var r = 0; r < response.length; r++)
 				{
-					jQuery('[href="#rsfptab' + r + '"]').show();
-					jQuery('#rsfptab' + r).html(response[r]);
-					
-					if (response[r].trim() == '')
+					tabTitle = jQuery(RSFormPro.getTab(r));
+					tabContent = jQuery('#rsfptab' + r);
+
+					tabTitle.show();
+
+					if (r === 3)
 					{
-						jQuery('[href="#rsfptab' + r + '"]').hide();
+						editorValue = '';
+						if (jQuery(response[r]).find('#TEXT').length > 0)
+						{
+							editorContainer.removeClass('rsfp-hidden');
+							editorValue = jQuery(response[r]).find('#TEXT').val();
+						}
+
+						try {
+							Joomla.editors.instances['TEXT'].setValue(editorValue);
+						} catch (err) {}
+					}
+					else
+					{
+						tabContent.html(response[r]);
+					}
+
+					if (response[r].trim() === '')
+					{
+						tabTitle.hide();
 					}
 				}
-				
+
 				// Switch to 1st tab.
-				jQuery('[href="#rsfptab0"]').click();
+				RSFormPro.switchTab(0);
 
 				changeValidation(document.getElementById('VALIDATIONRULE'));
 
@@ -104,13 +171,13 @@ RSFormPro.editModal = {
 						selector: $name
 					};
 
-					if (jQuery(this).attr('data-properties') == 'toggler') {
+					if (jQuery(this).attr('data-properties') === 'toggler') {
 						$object[$name].data = jQuery.parseJSON( jQuery(this).attr('data-toggle') );
 					}
 				});
 
-				jQuery('.rsform_hide').trigger('renderedLayout', $object);
-				
+				jQuery('#rsfp-tabs').trigger('renderedLayout', $object);
+
 				RSFormPro.editModal.open();
 			}
 		});
@@ -151,19 +218,19 @@ jQuery.formTabs = {
 
 	setTitleActive: function (index,tid) {
 		index = parseInt(index);
-		if (tid == 'rsform_tab2') document.getElementById('ptab').value = index;
+		if (tid == 'rsform_properties_tab') document.getElementById('ptab').value = index;
 		jQuery(this.tabTitles[tid][index]).addClass('active');
 	},
 
 	setAllContentsInactive: function (tid) {
 		this.tabContents[tid].each(function(index, content) {
-			jQuery(content).hide();
+			jQuery(content).addClass('rsfp-hidden');
 		});
 	},
 
 	setContentActive: function (index,tid) {
 		index = parseInt(index);
-		jQuery(this.tabContents[tid][index]).show();
+		jQuery(this.tabContents[tid][index]).removeClass('rsfp-hidden');
 		
 		jQuery(this.tabContents[tid][index]).trigger('formtabs.shown');
 	},
@@ -185,7 +252,7 @@ jQuery.formTabs = {
 			});
 		});
 	}
-}
+};
 
 jQuery.fn.extend({
 	formTabs: jQuery.formTabs.build
@@ -213,6 +280,8 @@ RSFormPro.gridModal = {
 			columns = row.children('.rsfp-grid-column'),
 			size = new_columns[0],
 			is_new_row = typeof this.params[1] != 'undefined' ? this.params[1] : false;
+
+		var diff, i;
 		
 		// Added new row
 		if (is_new_row)
@@ -224,7 +293,7 @@ RSFormPro.gridModal = {
 					'</div>',
 					'<div class="clearfix"></div>',
 					'<div class="rsfp-row-controls">',
-						'<button type="button" class="btn" onclick="RSFormPro.gridModal.open(this);">' + Joomla.JText._('RSFP_ROW_OPTIONS') + '</button>',
+						'<button type="button" class="btn btn-secondary" onclick="RSFormPro.gridModal.open(this);">' + Joomla.JText._('RSFP_ROW_OPTIONS') + '</button>',
 						'<button type="button" class="btn btn-success" onclick="RSFormPro.gridModal.open(this, true);">' + Joomla.JText._('RSFP_ADD_NEW_ROW') + '</button>',
 						'<button type="button" class="btn btn-danger" onclick="RSFormPro.Grid.deleteRow(this);">' + Joomla.JText._('RSFP_DELETE_ROW') + '</button>',
 					'</div>',
@@ -251,9 +320,9 @@ RSFormPro.gridModal = {
 			// We've selected a layout with more columns, just add empty columns
 			if (columns.length < new_columns.length)
 			{
-				var diff = new_columns.length - columns.length;
+				diff = new_columns.length - columns.length;
 				
-				for (var i = 0; i < diff; i++)
+				for (i = 0; i < diff; i++)
 				{
 					// Refresh
 					columns = row.children('.rsfp-grid-column');
@@ -264,9 +333,9 @@ RSFormPro.gridModal = {
 			// We've selected a layout with less columns, must move fields inside closest column
 			else if (columns.length > new_columns.length)
 			{
-				var diff = columns.length - new_columns.length;
+				diff = columns.length - new_columns.length;
 				
-				for (var i = 0; i < diff; i++)
+				for (i = 0; i < diff; i++)
 				{
 					// Refresh
 					columns = row.children('.rsfp-grid-column');
@@ -505,29 +574,65 @@ RSFormPro.Grid = {
 	clipboard: [],
 	
 	rightClickMenu: function() {
+		var $menu;
 		if (!this.initialized)
 		{
-			var $menu = jQuery('<ul class="dropdown-menu" id="rsfp-grid-contextmenu">' +
-				  '<li id="rsfp-grid-contextmenu-cut"><a href="#"><span class="icon-scissors"></span><span class="rsfp-text">' + Joomla.JText._('RSFP_GRID_CUT') + '</span></a></li>' +
-				  '<li id="rsfp-grid-contextmenu-paste"><a href="#" class="disabled"><span class="icon-copy"></span><span class="rsfp-text">' + Joomla.JText._('RSFP_GRID_NOTHING_TO_PASTE') + '</span></a></li>' +
+			var separator = '<li id="rsfp-grid-contextmenu-separator"><hr /></li>';
+
+			// No need for a divider in 4.0
+			if (RSFormPro.isJ4)
+			{
+				separator = '';
+			}
+
+			$menu = jQuery('<ul class="dropdown-menu" id="rsfp-grid-contextmenu">' +
+				  '<li id="rsfp-grid-contextmenu-cut" class="dropdown-item"><a href="javascript:void(0);"><i class="icon-scissors"></i> <span class="rsfp-text">' + Joomla.JText._('RSFP_GRID_CUT') + '</span></a></li>' +
+				  '<li id="rsfp-grid-contextmenu-paste" class="dropdown-item"><a href="javascript:void(0);" class="disabled"><i class="icon-copy"></i> <span class="rsfp-text">' + Joomla.JText._('RSFP_GRID_NOTHING_TO_PASTE') + '</span></a></li>' +
+					separator +
+					'<li id="rsfp-grid-contextmenu-state" class="dropdown-item">' + '<a href="javascript:void(0);" class="disabled"><i class="icon-expired"></i> <span class="rsfp-text">' + Joomla.JText._('RSFP_GRID_NOTHING_TO_PUBLISH') + '</span></a></li>' +
+					'<li id="rsfp-grid-contextmenu-required" class="dropdown-item">' + '<a href="javascript:void(0);" class="disabled"><i class="icon-expired"></i> <span class="rsfp-text">' + Joomla.JText._('RSFP_GRID_CANT_CHANGE_REQUIRED') + '</span></a></li>' +
 				'</ul>');
 
-			jQuery('body').append($menu);
-			jQuery('body').on('click', function(e){
+			var $body = jQuery('body');
+			$body.append($menu);
+			$body.on('click', function(e){
 				$menu.hide();
 			});
 		}
 		else
 		{
-			var $menu = jQuery('#rsfp-grid-contextmenu');
+			$menu = jQuery('#rsfp-grid-contextmenu');
 		}
 		
-		var $cut = $menu.find('#rsfp-grid-contextmenu-cut');
-		var $paste = $menu.find('#rsfp-grid-contextmenu-paste')
-		
-		// Right clicking on a field should bring up a menu - only fields that are neither hidden fields nor pages.
-		jQuery('.rsfp-grid-row').not('.rsfp-grid-row-unsortable').find('.rsfp-grid-field').not('.rsfp-grid-field-unsortable').off('contextmenu').on('contextmenu', function(e){
+		var $cut = $menu.find('#rsfp-grid-contextmenu-cut'),
+			$paste = $menu.find('#rsfp-grid-contextmenu-paste'),
+			$separator = $menu.find('#rsfp-grid-contextmenu-separator'),
+			$state = $menu.find('#rsfp-grid-contextmenu-state'),
+			$required = $menu.find('#rsfp-grid-contextmenu-required');
+
+		var showAllActions = function() {
+			$cut.show();
+			$paste.show();
+			$separator.show();
+			$state.show();
+			$required.show();
+		};
+
+		// Right clicking on a field should bring up a menu
+		jQuery('.rsfp-grid-row').find('.rsfp-grid-field').off('contextmenu').on('contextmenu', function(e){
 			var $this = jQuery(this);
+
+			showAllActions();
+
+			// Unsortable fields (Pagebreaks) only need to show the publish button
+			// This is the same for hidden fields
+			if ($this.hasClass('rsfp-grid-field-unsortable') || $this.parents('.rsfp-grid-row').hasClass('rsfp-grid-row-unsortable'))
+			{
+				$cut.hide();
+				$paste.hide();
+				$separator.hide();
+				$required.hide();
+			}
 			
 			// Clicking on "Cut" will add this field to the clipboard
 			$cut.children('a').removeClass('disabled');
@@ -543,39 +648,187 @@ RSFormPro.Grid = {
 				// Hide the menu
 				$menu.hide();
 			});
-
-			// Clicking on "Paste" will paste all fields from the clipboard below the current element
-			$paste.off('click').on('click', function(e){
-				e.preventDefault();
-
-				// Loop through all items in the clipboard and show them
-				jQuery(RSFormPro.Grid.clipboard).each(function(index, item){
-					jQuery(item).show();
-				});
-
-				// Add them after the current element
-                $this.after(RSFormPro.Grid.clipboard);
-				
-				// Empty the clipboard
-				RSFormPro.Grid.clipboard = [];
-				
-				// Hide the menu
-				$menu.hide();
-
-				// Save the Grid
-				RSFormPro.Grid.toJson();
-			});
 			
 			// If we don't have anything in the clipboard, the 'Paste' link must be disabled
 			if (RSFormPro.Grid.clipboard.length > 0)
 			{
 				$paste.children('a').removeClass('disabled');
 				$paste.find('.rsfp-text').text(Joomla.JText._('RSFP_GRID_PASTE_ITEMS').replace('%d', RSFormPro.Grid.clipboard.length));
+
+				// Clicking on "Paste" will paste all fields from the clipboard below the current element
+				$paste.off('click').on('click', function(e){
+					e.preventDefault();
+
+					// Loop through all items in the clipboard and show them
+					jQuery(RSFormPro.Grid.clipboard).each(function(index, item){
+						jQuery(item).show();
+					});
+
+					// Add them after the current element
+					$this.after(RSFormPro.Grid.clipboard);
+
+					// Empty the clipboard
+					RSFormPro.Grid.clipboard = [];
+
+					// Hide the menu
+					$menu.hide();
+
+					// Save the Grid
+					RSFormPro.Grid.toJson();
+				});
 			}
 			else
 			{
+				$paste.off('click');
 				$paste.children('a').addClass('disabled');
 				$paste.find('.rsfp-text').text(Joomla.JText._('RSFP_GRID_NOTHING_TO_PASTE'));
+			}
+
+			$state.children('a').removeClass('disabled');
+			if ($this.hasClass('rsfp-grid-unpublished-field'))
+			{
+				$state.find('.rsfp-text').text(Joomla.JText._('RSFP_GRID_UNPUBLISHED'));
+				$state.find('i').attr('class', 'icon-unpublish');
+			}
+			else
+			{
+				$state.find('.rsfp-text').text(Joomla.JText._('RSFP_GRID_PUBLISHED'));
+				$state.find('i').attr('class', 'icon-publish');
+			}
+
+			$state.off('click').on('click', function (e) {
+				e.preventDefault();
+
+				stateLoading();
+
+				var task;
+				var formId = jQuery('#formId').val();
+				var id = $this.find('input[data-rsfpgrid]').val();
+
+				if ($this.hasClass('rsfp-grid-unpublished-field'))
+				{
+					$this.removeClass('rsfp-grid-unpublished-field');
+					task = 'components.publish';
+				}
+				else
+				{
+					$this.addClass('rsfp-grid-unpublished-field');
+					task = 'components.unpublish';
+				}
+
+				var xml = buildXmlHttp();
+				var url = 'index.php?option=com_rsform&task=' + task + '&format=raw';
+
+				xml.open('POST', url, true);
+
+				var params = ['componentId=' + id, 'formId=' + formId, 'ajax=1'].join('&');
+
+				xml.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+				xml.send(params);
+				xml.onreadystatechange = function() {
+					if (xml.readyState === 4)
+					{
+						stateDone();
+
+						autoGenerateLayout();
+					}
+				};
+
+				// Hide the menu
+				$menu.hide();
+			});
+
+			if ($this.hasClass('rsfp-grid-can-be-required'))
+			{
+				$required.children('a').removeClass('disabled');
+
+				if ($this.hasClass('rsfp-grid-required-field'))
+				{
+					$required.find('.rsfp-text').text(Joomla.JText._('RSFP_GRID_SET_AS_REQUIRED'));
+					$required.find('i').attr('class', 'icon-publish');
+				}
+				else
+				{
+					$required.find('.rsfp-text').text(Joomla.JText._('RSFP_GRID_SET_AS_NOT_REQUIRED'));
+					$required.find('i').attr('class', 'icon-unpublish');
+				}
+
+				$required.off('click').on('click', function (e) {
+					e.preventDefault();
+
+					stateLoading();
+
+					var task;
+					var formId = jQuery('#formId').val();
+					var id = $this.find('input[data-rsfpgrid]').val();
+
+					var $name = $this.find('.rsfp-grid-field-name');
+
+					if ($this.hasClass('rsfp-grid-required-field'))
+					{
+						$this.removeClass('rsfp-grid-required-field').addClass('rsfp-grid-unrequired-field');
+
+						if ($name.text().indexOf(' (*)') > -1)
+						{
+							$name.contents().filter(function(){
+								return this.nodeType === Node.TEXT_NODE;
+							}).each(function(){
+								this.nodeValue = this.nodeValue.replace(' (*)', '');
+							});
+						}
+
+						task = 'components.unsetrequired';
+					}
+					else
+					{
+						$this.removeClass('rsfp-grid-unrequired-field').addClass('rsfp-grid-required-field');
+						task = 'components.setrequired';
+
+						$name.contents().filter(function(){
+							return this.nodeType === Node.TEXT_NODE;
+						}).each(function(){
+							this.nodeValue = this.nodeValue + ' (*)';
+						});
+					}
+
+					var xml = buildXmlHttp();
+					var url = 'index.php?option=com_rsform&task=' + task + '&format=raw';
+
+					xml.open('POST', url, true);
+
+					var params = [
+						'componentId=' + id,
+						'formId=' + formId,
+						'ajax=1'
+					];
+					params = params.join('&');
+
+					xml.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+					xml.send(params);
+					xml.onreadystatechange = function() {
+						if (xml.readyState === 4)
+						{
+							stateDone();
+
+							autoGenerateLayout();
+						}
+					};
+
+					// Hide the menu
+					$menu.hide();
+				});
+			}
+			else
+			{
+				// The "Required" link should be disabled since we don't have items
+				$required.children('a').addClass('disabled');
+				$required.find('i').attr('class', 'icon-expired');
+				$required.find('.rsfp-text').text(Joomla.JText._('RSFP_GRID_CANT_CHANGE_REQUIRED'));
+
+				// Remove the click event
+				$required.off('click');
 			}
 
 			// Show the menu next to the cursor
@@ -592,6 +845,8 @@ RSFormPro.Grid = {
 			jQuery(column).off('contextmenu').on('contextmenu', function(e){
 				var $this = jQuery(this);
 
+				showAllActions();
+
 				if ($this.children('.rsfp-grid-field:visible').length == 0)
 				{
 					// The "Cut" link should be disabled since we can't cut an entire row
@@ -600,35 +855,41 @@ RSFormPro.Grid = {
 					// Remove the click event
 					$cut.off('click');
 
-					// Clicking on "Paste" should append the clipboard items to this row
-					$paste.off('click').on('click', function(e){
-						e.preventDefault();
-						
-						// Loop through all items in the clipboard and append them to the current row
-						jQuery(RSFormPro.Grid.clipboard).each(function(index, item){
-							$this.append(jQuery(item).show());
-						});
-						
-						// Empty the clipboard
-						RSFormPro.Grid.clipboard = [];
-
-						// Hide the menu
-						$menu.hide();
-
-						// Save the Grid
-						RSFormPro.Grid.toJson();
-					});
+					$separator.hide();
+					$state.hide();
+					$required.hide();
 
 					// If we don't have anything in the clipboard, the 'Paste' link must be disabled
 					if (RSFormPro.Grid.clipboard.length > 0)
 					{
 						$paste.children('a').removeClass('disabled');
 						$paste.find('.rsfp-text').text(Joomla.JText._('RSFP_GRID_PASTE_ITEMS').replace('%d', RSFormPro.Grid.clipboard.length));
+
+						// Clicking on "Paste" should append the clipboard items to this row
+						$paste.off('click').on('click', function(e){
+							e.preventDefault();
+
+							// Loop through all items in the clipboard and append them to the current row
+							jQuery(RSFormPro.Grid.clipboard).each(function(index, item){
+								$this.append(jQuery(item).show());
+							});
+
+							// Empty the clipboard
+							RSFormPro.Grid.clipboard = [];
+
+							// Hide the menu
+							$menu.hide();
+
+							// Save the Grid
+							RSFormPro.Grid.toJson();
+						});
 					}
 					else
 					{
 						$paste.children('a').addClass('disabled');
 						$paste.find('.rsfp-text').text(Joomla.JText._('RSFP_GRID_NOTHING_TO_PASTE'));
+
+						$paste.off('click');
 					}
 
 					// Show the menu next to the cursor
@@ -657,18 +918,9 @@ RSFormPro.Grid = {
 		// Save the layout
 		RSFormPro.Grid.toJson();
 	},
-
-	hide: function() {
-		jQuery('#gridlayout').css('cursor', 'not-allowed');
-
-	},
-
-	show: function() {
-        jQuery('#gridlayout').css('cursor', '');
-	},
 	
 	resize: function(e) {
-		if (e.target == window && RSFormPro.Grid.initialized && jQuery('#gridlayoutdiv').is(':visible')) {
+		if (e.target === window && RSFormPro.Grid.initialized && jQuery('#gridlayoutdiv').is(':visible')) {
 			RSFormPro.Grid.initialize();
 		}
 	},
@@ -728,18 +980,20 @@ RSFormPro.Grid = {
 					rows[rowId].columns[columnId] = [];
 					rows[rowId].sizes.push(size);
 					
-					jQuery(column).find('input').each(function(fieldId, input) {
+					jQuery(column).find('input[data-rsfpgrid]').each(function(fieldId, input) {
 						rows[rowId].columns[columnId].push(jQuery(input).val());
 					});
 				}
 			});
 		});
 		
-		jQuery('#rsfp-grid-row-container > .rsfp-grid-row.rsfp-grid-row-unsortable').find('input').each(function(fieldId, input) {
+		jQuery('#rsfp-grid-row-container > .rsfp-grid-row.rsfp-grid-row-unsortable').find('input[data-rsfpgrid]').each(function(fieldId, input) {
 			hidden.push(jQuery(input).val());
 		});
-		
-		var old_val = jQuery('[name=GridLayout]').val();
+
+		var gridLayoutInput = jQuery('[name=GridLayout]');
+
+		var old_val = gridLayoutInput.val();
 		var new_val = JSON.stringify([rows, hidden]);
 		
 		if (new_val != old_val)
@@ -748,20 +1002,9 @@ RSFormPro.Grid = {
 			stateLoading();
 			
 			// Save value to hidden field
-			jQuery('[name=GridLayout]').val(new_val);
-			
-			// Let's reorder fields
-			var table = jQuery('#componentPreview > tbody'),
-				table_rows = table.children('tr');
-			
-			// Remove current rows
-			table.children('tr').remove();
-			
-			// Start reordering based on Grid position
-			jQuery('#rsfp-grid-row-container').find('input').each(function(index, input) {
-				var row = table_rows.find('input#preview-id-' + jQuery(input).val()).parent().parent();
-				table.append(row);
-			});
+			gridLayoutInput.val(new_val);
+
+			gridLayoutInput.trigger('gridlayout.changed');
 			
 			// Send AJAX request
 			jQuery.post(
@@ -772,7 +1015,7 @@ RSFormPro.Grid = {
 					stateDone();
 					
 					// If layout auto-generation is enabled, grab it from the request
-					if (document.getElementById('FormLayoutAutogenerate1').checked == true) {
+					if (jQuery('[name=FormLayoutAutogenerate]:checked').val() === '1') {
 						var hasCodeMirror = typeof Joomla.editors.instances['formLayout'] != 'undefined';
 
 						jQuery('#formLayout').val(response);
@@ -783,6 +1026,98 @@ RSFormPro.Grid = {
 					}
 				}
 			);
+		}
+	}
+};
+
+jQuery(document).ready(function($){
+	// Let's save the JSON first if we've added new elements
+	RSFormPro.Grid.toJson();
+
+	$('#componentscontent').on('components.shown', function() {
+		if (!RSFormPro.Grid.initialized && jQuery('.rsfp-grid-row').width() !== 98)
+		{
+			RSFormPro.Grid.initialize();
+
+			jQuery('#rsfp-grid-loader').fadeOut(200, function(){
+				jQuery(this).remove();
+			});
+		}
+	});
+
+	$(window).on('resize', RSFormPro.Grid.resize);
+
+	var tabposition = parseInt(document.getElementById('tabposition').value);
+	var ptab        = parseInt(document.getElementById('ptab').value);
+	tabposition > 0 ? $("#properties").click() : $('#components').click();
+
+	$('#rsform_properties_tab').formTabs(tabposition > 0 ? ptab : 0);
+
+	toggleQuickAdd();
+
+	if (jQuery('[name=FormLayoutAutogenerate]:checked').val() === '0') {
+		Joomla.renderMessages({'warning': [Joomla.JText._('RSFP_AUTOGENERATE_LAYOUT_DISABLED')]}, '#componentsMessages');
+	}
+});
+
+RSFormPro.switchTab = function(id) {
+	if (RSFormPro.isJ4)
+	{
+		RSFormPro.getTab(id).click();
+	}
+	else
+	{
+		jQuery(RSFormPro.getTab(id)).click();
+	}
+}
+
+RSFormPro.getTab = function(id) {
+	if (RSFormPro.isJ4)
+	{
+		return document.getElementById('editModalTabs').tabs[id].tabButton;
+	}
+	else
+	{
+		return document.querySelector('[href="#rsfptab' + id + '"]');
+	}
+}
+
+Joomla.submitbutton = function(pressbutton)
+{
+	var propertiesSelected = jQuery('#properties').hasClass('btn-primary');
+
+	document.getElementById('tabposition').value = propertiesSelected ? 1 : 0;
+
+	if (['components.remove', 'components.publish', 'components.unpublish', 'components.save', 'submissions.back', 'forms.directory', 'forms.cancel'].indexOf(pressbutton) > -1)
+	{
+		Joomla.submitform(pressbutton);
+	}
+	else if (pressbutton === 'forms.preview')
+	{
+		var paths = Joomla.getOptions('system.paths');
+		var formId = document.getElementById('formId').value;
+
+		window.open(paths.root + '/index.php?option=com_rsform&view=rsform&formId=' + formId);
+	}
+	else
+	{
+		if ((pressbutton === 'forms.apply' || pressbutton === 'forms.save') && !validateEmailFields())
+		{
+			return false;
+		}
+
+		// do field validation
+		if (document.getElementById('FormName').value.length === 0)
+		{
+			jQuery("#properties").click();
+			jQuery("#editform").click();
+			var messages = {"error": []};
+			messages.error.push(Joomla.JText._('RSFP_SPECIFY_FORM_NAME'));
+			Joomla.renderMessages(messages);
+		}
+		else
+		{
+			Joomla.submitform(pressbutton);
 		}
 	}
 };

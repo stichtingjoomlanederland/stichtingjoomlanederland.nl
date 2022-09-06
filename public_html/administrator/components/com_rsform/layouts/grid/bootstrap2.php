@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2017 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -32,6 +32,11 @@ class RSFormProGridBootstrap2 extends RSFormProGrid
             {
                 $classes[] = 'form-horizontal';
             }
+
+			if (count($this->pages) > 1)
+			{
+				$classes[] = 'formHidden';
+			}
 
 			$html[] = '<!-- Do not remove this ID, it is used to identify the page so that the pagination script can work correctly -->';
 			$html[] = '<fieldset class="' . implode(' ', $classes) . '" id="rsform_{global:formid}_page_' . $page_index . '">';
@@ -91,7 +96,7 @@ class RSFormProGridBootstrap2 extends RSFormProGrid
 		$placeholders = array(
 			'body' 		 	=> '{' . $data->ComponentName . ':body}',
 			'caption'	 	=> '{' . $data->ComponentName . ':caption}',
-			'description' 	=> '{' . $data->ComponentName . ':description}',
+			'description' 	=> '{' . $data->ComponentName . ':descriptionhtml}',
 			'error' 	 	=> '{' . $data->ComponentName . ':errorClass}',
 			'validation' 	=> '{' . $data->ComponentName . ':validation}',
 		);
@@ -105,7 +110,7 @@ class RSFormProGridBootstrap2 extends RSFormProGrid
 			$html[] = "\t"."\t"."\t"."\t"."\t".$placeholders['body'];
 			$html[] = "\t"."\t"."\t".'</div>';
 		}
-		elseif (in_array($data->ComponentTypeId, array(RSFORM_FIELD_HIDDEN, RSFORM_FIELD_TICKET)))
+		elseif (in_array($data->ComponentTypeId, $this->hiddenComponents))
 		{
 			$html[] = "\t"."\t"."\t"."\t"."\t".$placeholders['body'];
 		}
@@ -116,22 +121,34 @@ class RSFormProGridBootstrap2 extends RSFormProGrid
 			$html[] = "\t"."\t"."\t".'<div class="control-group rsform-block rsform-block-' . $block . $placeholders['error'] . '">';
 				if ($data->ComponentTypeId != RSFORM_FIELD_PAGEBREAK)
 				{
-					$label = "\t"."\t"."\t"."\t".'<label class="control-label formControlLabel hasTooltip" title="' . $placeholders['description'] . '"';
-					if (!in_array($data->ComponentTypeId, array(RSFORM_FIELD_CHECKBOXGROUP, RSFORM_FIELD_RADIOGROUP, RSFORM_FIELD_BIRTHDAY)))
+					$label = '';
+
+					if ($this->formOptions->FormLayoutFlow == static::FLOW_VERTICAL)
 					{
-						$label .= ' for="' . $data->ComponentName . '"';
+						$label .= '{if ' . $placeholders['caption'] . '}' . "\n";
 					}
+
+					$label .= "\t"."\t"."\t"."\t".'<label class="control-label formControlLabel"';
+					$label .= $this->generateFor($data);
 					$label .= '>';
+					$label .= '<span class="hasTooltip" title="' . $placeholders['description'] . '">';
 					$label .= $placeholders['caption'];
 					if ($data->Required && $this->requiredMarker)
 					{
 						$label .= '<strong class="formRequired">' . $this->requiredMarker . '</strong>';
 					}
+					$label .= '</span>';
 					$label .= '</label>';
+
+					if ($this->formOptions->FormLayoutFlow == static::FLOW_VERTICAL)
+					{
+						$label .= "\n" . '{/if}';
+					}
+
 					$html[] = $label;
 				}
 				
-				$html[] = "\t"."\t"."\t"."\t".'<div class="controls formControls' . ($data->ComponentTypeId == RSFORM_FIELD_PAGEBREAK ? ' btn-group' : '') . '">';
+				$html[] = "\t"."\t"."\t"."\t".'<div ' . $this->fieldAttributes($data) . '>';
 					$html[] = "\t"."\t"."\t"."\t"."\t".$placeholders['body'];
 					if (!in_array($data->ComponentTypeId, array(RSFORM_FIELD_FREETEXT, RSFORM_FIELD_PAGEBREAK)))
 					{
@@ -148,5 +165,24 @@ class RSFormProGridBootstrap2 extends RSFormProGrid
 		}
 		
 		return implode("\n", $html);
+	}
+
+	protected function fieldAttributes($data)
+	{
+		$classes = array('formControls');
+		$classes[] = 'controls';
+
+		if ($data->ComponentTypeId == RSFORM_FIELD_PAGEBREAK)
+		{
+			$classes[] = 'btn-group';
+		}
+
+		$attr = 'class="' . implode(' ', $classes) . '"';
+		if (in_array($data->ComponentTypeId, array(RSFORM_FIELD_CHECKBOXGROUP, RSFORM_FIELD_RADIOGROUP)) || in_array($data->ComponentId, $this->checkboxes) || in_array($data->ComponentId, $this->radiogroups))
+		{
+			$attr .= ' role="group" aria-labelledby="' . $data->ComponentName . '-grouplbl"';
+		}
+
+		return $attr;
 	}
 }

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/**
+ * @copyright	Copyright (c) 2021 R2H (https://www.r2h.nl). All rights reserved.
+ * @license		http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
+ */
+-->
+<extension type="module" version="3.0" client="site" method="upgrade">
+	<name>mod_tinyslider</name>
+	<author>R2H</author>
+	<creationDate>July 2018</creationDate>
+	<copyright>Copyright (c) 2021 R2H. All rights reserved.</copyright>
+	<license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
+	<authorEmail>post@r2h.nl</authorEmail>
+	<authorUrl>https://www.r2h.nl</authorUrl>
+	<version>1.0.0</version>
+	<description>MOD_TINYSLIDER_XML_DESCRIPTION</description>
+	<namespace path="src">R2H\Module\TinySlider</namespace>
+	<files>
+		<filename module="mod_tinyslider">mod_tinyslider.php</filename>
+		<folder>src</folder>
+		<folder>tmpl</folder>
+	</files>
+
+	<media folder="media" destination="mod_tinyslider">
+		<folder>css</folder>
+		<folder>images</folder>
+		<folder>js</folder>
+	</media>
+
+	<languages>
+		<language tag="en-GB">language/en-GB/mod_tinyslider.ini</language>
+		<language tag="en-GB">language/en-GB/mod_tinyslider.sys.ini</language>
+		<language tag="nl-NL">language/nl-NL/mod_tinyslider.ini</language>
+		<language tag="nl-NL">language/nl-NL/mod_tinyslider.sys.ini</language>
+	</languages>
+
+	<config>
+		<fields name="params">
+			<fieldset name="basic">
+
+			</fieldset>
+			<fieldset
+				name="slides"
+				label="Slides">
+
+                <field
+					name="slides"
+					type="subform"
+					label="Slides"
+					layout="joomla.form.field.subform.repeatable"
+					multiple="true">
+
+					<form>
+						<fieldset name="slide" label="Slide">
+							<field
+								name="image"
+								type="media"
+								label="Image"
+								directory="images"
+								preview="true"
+								required="true" />
+
+							<field
+								name="title"
+								type="text"
+								label="Title"
+								filter="safehtml" />
+
+						</fieldset>
+					</form>
+
+				</field>
+            </fieldset>
+
+			<fieldset name="advanced">
+
+				<field
+					name="layout"
+					type="modulelayout"
+					label="JFIELD_ALT_LAYOUT_LABEL"
+					class="form-select"
+					validate="moduleLayout"
+				/>
+
+				<field
+					name="moduleclass_sfx"
+					type="textarea"
+					label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL"
+					rows="3"
+					validate="CssIdentifier"
+				/>
+
+				<field
+					name="owncache"
+					type="list"
+					label="COM_MODULES_FIELD_CACHING_LABEL"
+					default="1"
+					filter="integer"
+					validate="options"
+					>
+					<option value="1">JGLOBAL_USE_GLOBAL</option>
+					<option value="0">COM_MODULES_FIELD_VALUE_NOCACHING</option>
+				</field>
+
+				<field
+					name="cache_time"
+					type="number"
+					label="COM_MODULES_FIELD_CACHE_TIME_LABEL"
+					default="900"
+					filter="integer"
+				/>
+			</fieldset>
+		</fields>
+	</config>
+</extension>

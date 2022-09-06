@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS `#__rsform_submissions` (
   `DateSubmitted` datetime NOT NULL ,
   `UserIp` varchar(255) NOT NULL default '',
   `Username` varchar(255) NOT NULL default '',
-  `UserId` text NOT NULL,
+  `UserId` int(11) NOT NULL default '0',
   `Lang` varchar(255) NOT NULL,
   `confirmed` tinyint(1) NOT NULL,
   `SubmissionHash` varchar(32) NOT NULL,

@@ -5,11 +5,12 @@ CREATE TABLE IF NOT EXISTS `#__rsform_emails` (
   `from` varchar(255) NOT NULL,
   `fromname` varchar(255) NOT NULL,
   `replyto` varchar(255) NOT NULL,
+  `replytoname` varchar(255) NOT NULL,
   `to` varchar(255) NOT NULL,
   `cc` varchar(255) NOT NULL,
   `bcc` varchar(255) NOT NULL,
   `subject` varchar(255) NOT NULL,
   `mode` tinyint(1) NOT NULL,
-  `message` text NOT NULL,
+  `message` mediumtext NOT NULL,
   PRIMARY KEY (`id`)
 ) DEFAULT CHARSET=utf8;

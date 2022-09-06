@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSForm! Pro
- * @copyright  (c) 2007 - 2016 RSJoomla!
+ * @copyright  (c) 2007-2019 www.rsjoomla.com
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -22,7 +22,6 @@ class RSFormProQuickFields
 
 		if (!$done) {
 			// Get field properties first
-			$data	= array();
 			$mainframe = JFactory::getApplication();
 			$formId = JFactory::getApplication()->input->getInt('formId');
 			$db 	= JFactory::getDbo();
@@ -66,10 +65,12 @@ class RSFormProQuickFields
 							if (isset($properties['DESCRIPTION']))
 							{
 								$componentPlaceholders['generate'][] = '{' . $properties['NAME'] . ':description}';
+								$componentPlaceholders['generate'][] = '{' . $properties['NAME'] . ':descriptionhtml}';
 							}
 							
 							// Validation placeholder
 							$componentPlaceholders['generate'][] = '{' . $properties['NAME'] . ':validation}';
+							$componentPlaceholders['generate'][] = '{' . $properties['NAME'] . ':errorClass}';
 
 							// Value placeholder
 							$componentPlaceholders['display'][] = '{' . $properties['NAME'] . ':value}';
@@ -78,6 +79,12 @@ class RSFormProQuickFields
 								$componentPlaceholders['display'][] = '{' . $properties['NAME'] . ':path}';
 								$componentPlaceholders['display'][] = '{' . $properties['NAME'] . ':localpath}';
 								$componentPlaceholders['display'][] = '{' . $properties['NAME'] . ':filename}';
+								$componentPlaceholders['display'][] = '{' . $properties['NAME'] . ':image}';
+								$componentPlaceholders['display'][] = '{' . $properties['NAME'] . ':localimage}';
+							}
+
+							if ($component->ComponentTypeId == RSFORM_FIELD_GMAPS) {
+								$componentPlaceholders['display'][] = '{' . $properties['NAME'] . ':map}';
 							}
 
 							if (isset($properties['ITEMS'])) {
@@ -87,7 +94,7 @@ class RSFormProQuickFields
 								}
 							}
 
-							$mainframe->triggerEvent('rsfp_onAfterCreateQuickAddPlaceholders', array(&$componentPlaceholders, $component->ComponentTypeId));
+							$mainframe->triggerEvent('onRsformAfterCreateQuickAddPlaceholders', array(&$componentPlaceholders, $component->ComponentTypeId));
 
 							$all[] = $componentPlaceholders;
 

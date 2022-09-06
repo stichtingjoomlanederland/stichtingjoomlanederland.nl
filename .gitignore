@@ -21,6 +21,8 @@
 
 # Backup Files
 /public_html/administrator/components/com_akeeba/backup/
+/backup/*
+!/backup/index.html
 
 # IDE & System Related Files #
 .buildpath

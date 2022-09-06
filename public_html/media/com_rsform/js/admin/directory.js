@@ -31,19 +31,19 @@ jQuery.formTabs = {
 
     setTitleActive: function (index,tid) {
         index = parseInt(index);
-        if (tid == 'rsform_tab3') document.getElementById('ptab').value = index;
+        if (tid == 'rsform_directory_tab') document.getElementById('ptab').value = index;
         jQuery(this.tabTitles[tid][index]).addClass('active');
     },
 
     setAllContentsInactive: function (tid) {
         this.tabContents[tid].each(function(index, content) {
-            jQuery(content).hide();
+            jQuery(content).addClass('rsfp-hidden');
         });
     },
 
     setContentActive: function (index,tid) {
         index = parseInt(index);
-        jQuery(this.tabContents[tid][index]).show();
+        jQuery(this.tabContents[tid][index]).removeClass('rsfp-hidden');
     },
 
     makeTitlesClickable: function (tid) {
@@ -63,19 +63,6 @@ jQuery.fn.extend({
     formTabs: jQuery.formTabs.build
 });
 
-
-function toggleOrderSpansDir() {
-    var table = jQuery('#dirSubmissionsTable tbody tr');
-    var k = 0;
-
-    for (i=0; i<table.length; i++) {
-        jQuery(table[i]).removeClass('row0');
-        jQuery(table[i]).removeClass('row1');
-        jQuery(table[i]).addClass('row' + k);
-        k = 1 - k;
-    }
-}
-
 function tidyOrderDir() {
     stateLoading();
 
@@ -84,18 +71,16 @@ function tidyOrderDir() {
     var cids = document.getElementsByName('dircid[]');
     var formId = document.getElementById('formId').value;
 
-    for (i=0; i<orders.length; i++) {
+    for (var i = 0; i < orders.length; i++) {
         params.push('cid[' + cids[i].value + ']=' + parseInt(i + 1));
         orders[i].value = i + 1;
     }
 
     params.push('formId='+formId);
 
-    toggleOrderSpansDir();
-
     var xml = buildXmlHttp();
 
-    var url = 'index.php?option=com_rsform&task=directory.save.ordering&randomTime=' + Math.random();
+    var url = 'index.php?option=com_rsform&task=directory.saveordering';
     xml.open("POST", url, true);
 
     params = params.join('&');
@@ -104,15 +89,11 @@ function tidyOrderDir() {
     xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
     xml.send(params);
-    xml.onreadystatechange=function()
+    xml.onreadystatechange = function()
     {
-        if(xml.readyState==4)
+        if (xml.readyState === 4)
         {
-            var autogenerate = document.getElementsByName('jform[ViewLayoutAutogenerate]');
-            for (var i=0;i<autogenerate.length;i++)
-                if (autogenerate[i].value == 1 && autogenerate[i].checked)
-                    generateDirectoryLayout(formId, 'no');
-
+            dirAutogenerateLayout();
             stateDone();
         }
     }
@@ -121,22 +102,23 @@ function tidyOrderDir() {
 function dirAutoGenerate() {
     stateLoading();
 
-    var params = [];
-    var cids = document.getElementsByName('dirindetails[]');
-    var formId = document.getElementById('formId').value;
+    var params  = [];
+    var cids    = document.getElementsByName('dirindetails[]');
+    var orders  = document.getElementsByName('dirorder[]');
+    var formId  = document.getElementById('formId').value;
 
-    for (i=0; i<cids.length; i++) {
-        if (cids[i].checked)
-            params.push('cid[' + cids[i].value + ']=1');
-        else
-            params.push('cid[' + cids[i].value + ']=0');
+    for (var i = 0; i < cids.length; i++)
+    {
+        params.push('cid[' + cids[i].value + ']=' + (cids[i].checked ? '1' : '0'));
+        params.push('order[' + cids[i].value + ']=' + parseInt(i + 1));
+        orders[i].value = i + 1;
     }
 
     params.push('formId='+formId);
 
     var xml = buildXmlHttp();
 
-    var url = 'index.php?option=com_rsform&task=directory.save.details&randomTime=' + Math.random();
+    var url = 'index.php?option=com_rsform&task=directory.savedetails';
     xml.open("POST", url, true);
 
     params = params.join('&');
@@ -145,17 +127,131 @@ function dirAutoGenerate() {
     xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
     xml.send(params);
-    xml.onreadystatechange=function()
+    xml.onreadystatechange = function()
     {
-        if(xml.readyState==4)
+        if (xml.readyState === 4)
         {
-            var autogenerate = document.getElementsByName('jform[ViewLayoutAutogenerate]');
-            for (var i=0;i<autogenerate.length;i++)
-                if (autogenerate[i].value == 1 && autogenerate[i].checked)
-                    generateDirectoryLayout(formId, 'no');
+            dirAutogenerateLayout();
+            stateDone();
+        }
+    }
+}
+
+function changeDirectoryAutoGenerateLayout(value) {
+    stateLoading();
+    var layoutName = document.querySelector('[name="jform[ViewLayoutName]"]:checked').value;
+    var formId = document.getElementById('formId').value;
+    value = parseInt(value);
+
+    var xml = buildXmlHttp();
+    xml.onreadystatechange = function () {
+        if (xml.readyState === 4) {
+            document.getElementById('ViewLayout').readOnly = value === 1;
+
+            if (typeof Joomla.editors.instances['ViewLayout'] != 'undefined')
+            {
+                Joomla.editors.instances['ViewLayout'].setOption('readOnly', value === 1);
+            }
+
+            Joomla.removeMessages();
+            if (value === 0)
+            {
+                Joomla.renderMessages({'warning': [Joomla.JText._('RSFP_SUBM_DIR_AUTOGENERATE_LAYOUT_DISABLED')]});
+            }
 
             stateDone();
         }
+    };
+    var data = [
+        'task=directory.changeAutoGenerateLayout',
+        'formId=' + formId,
+        'status=' + value,
+        'ViewLayoutName=' + layoutName
+    ];
+    xml.open('POST', 'index.php?option=com_rsform', true);
+    xml.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xml.send(data.join('&'));
+}
+
+function saveDirectoryLayoutName(layoutName) {
+    stateLoading();
+
+	var formId = document.getElementById('formId').value;
+    var xml = buildXmlHttp();
+    var data = [
+        'task=directory.savename',
+        'formId=' + formId,
+        'ViewLayoutName=' + layoutName
+    ];
+    xml.open('POST', 'index.php?option=com_rsform', true);
+    xml.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xml.send(data.join('&'));
+    xml.onreadystatechange = function () {
+        if (xml.readyState === 4) {
+			dirAutogenerateLayout();
+            stateDone();
+        }
+    }
+}
+
+function generateDirectoryLayout(alert) {
+    if (alert && !confirm(Joomla.JText._('RSFP_AUTOGENERATE_LAYOUT_WARNING_SURE'))) {
+        return;
+    }
+	var formId = document.getElementById('formId').value;
+	var layoutName = document.querySelector('[name="jform[ViewLayoutName]"]:checked').value;
+    var hideEmptyValues = document.querySelector('[name="jform[HideEmptyValues]"]:checked').value;
+    var showGoogleMap = document.querySelector('[name="jform[ShowGoogleMap]"]:checked').value;
+
+    stateLoading();
+    var xml = buildXmlHttp();
+    xml.onreadystatechange = function () {
+        if (xml.readyState === 4) {
+            document.getElementById('ViewLayout').value = xml.responseText;
+            if (typeof Joomla.editors.instances['ViewLayout'] != 'undefined')
+            {
+                Joomla.editors.instances['ViewLayout'].setValue(xml.responseText);
+            }
+            stateDone();
+        }
+    };
+    var data = [
+        'task=directory.generate',
+        'layoutName=' + layoutName,
+        'formId=' + formId,
+        'hideEmptyValues=' + hideEmptyValues,
+        'showGoogleMap=' + showGoogleMap
+    ];
+    xml.open('POST', 'index.php?option=com_rsform', true);
+    xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xml.send(data.join('&'));
+}
+
+function saveDirectorySetting(settingName, settingValue) {
+    stateLoading();
+
+	var formId = document.getElementById('formId').value;
+    var xml = buildXmlHttp();
+    var data = [
+        'task=directory.savesetting',
+        'formId=' + formId,
+        'settingName=' + settingName,
+        'settingValue=' + settingValue
+    ];
+    xml.open('POST', 'index.php?option=com_rsform', true);
+    xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xml.send(data.join('&'));
+    xml.onreadystatechange = function () {
+        if (xml.readyState === 4) {
+			dirAutogenerateLayout();
+            stateDone();
+        }
+    }
+}
+
+function dirAutogenerateLayout() {
+    if (document.querySelector('[name="jform[ViewLayoutAutogenerate]"]:checked').value === '1') {
+        generateDirectoryLayout(false);
     }
 }
 
@@ -165,9 +261,18 @@ function dirSelectAll(what) {
     $elements.prop('checked', $checkbox.prop('checked'));
 }
 
-function toggleQuickAddDirectory() {
-    var what = 'none';
-    if (document.getElementById('QuickAdd1').style.display == 'none')
-        what = '';
-    document.getElementById('QuickAdd1').style.display = what;
-}
+jQuery(document).ready(function($){
+    $('#rsform_directory_tab').formTabs(document.getElementById('ptab').value);
+    $('#dirSubmissionsTable tbody').tableDnD({
+        onDragClass: 'rsform_dragged',
+        onDragStop: function (table, row) {
+            tidyOrderDir();
+        }
+    });
+
+	toggleQuickAdd();
+
+	if (document.querySelector('[name="jform[ViewLayoutAutogenerate]"]:checked').value === '0') {
+		Joomla.renderMessages({'warning': [Joomla.JText._('RSFP_SUBM_DIR_AUTOGENERATE_LAYOUT_DISABLED')]});
+	}
+});

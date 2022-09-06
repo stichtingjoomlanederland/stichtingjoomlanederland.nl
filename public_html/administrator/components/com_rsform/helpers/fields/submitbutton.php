@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -12,14 +12,14 @@ require_once JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/fields/button.p
 class RSFormProFieldSubmitButton extends RSFormProFieldButton
 {
 	// backend preview
-	public function getPreviewInput() {
-		$caption 	= $this->getProperty('CAPTION', '');
+	public function getPreviewInput()
+	{
 		$reset		= $this->getProperty('RESET', 'NO');
 		$buttonType = $this->getProperty('BUTTONTYPE', 'TYPEINPUT') == 'TYPEBUTTON' ? 'button' : 'input';
 		$label		= $this->getProperty('LABEL', '');
-		$resetLabel		= $this->getProperty('RESETLABEL', '');
-		
-		$html = '<td>'.$caption.'</td><td>';
+		$resetLabel	= $this->getProperty('RESETLABEL', '');
+		$html 		= '';
+
 		if ($buttonType == 'button') {
 			$html .= '<button type="button" class="btn btn-primary">'.$this->escape($label).'</button>';
 		} else {
@@ -32,8 +32,6 @@ class RSFormProFieldSubmitButton extends RSFormProFieldButton
 				$html .= '&nbsp;&nbsp;<input type="reset" class="btn btn-danger" value="'.$this->escape($resetLabel).'"/>';
 			}
 		}
-		
-		$html .= '</td>';
 		
 		return $html;
 	}
@@ -49,6 +47,7 @@ class RSFormProFieldSubmitButton extends RSFormProFieldButton
 		$buttonType = $this->getProperty('BUTTONTYPE', 'TYPEINPUT') == 'TYPEBUTTON' ? 'button' : 'input';
 		$label		= $this->getProperty('LABEL', '');
 		$reset		= $this->getProperty('RESET', 'NO');
+		$allowHtml	= $this->getProperty('ALLOWHTML', 'NO');
 		$attr		= $this->getAttributes('button');
 		$type 		= $this->getProperty('INPUTTYPE', 'submit');
 		$additional = '';
@@ -85,7 +84,7 @@ class RSFormProFieldSubmitButton extends RSFormProFieldButton
 		$html .= $additional;
 		// Add the label & close the tag
 		if ($buttonType == 'button') {
-			$html .= ' >'.$this->escape($label).'</button>';
+			$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
 		} else {
 			$html .= ' value="'.$this->escape($label).'" />';
 		}
@@ -116,7 +115,7 @@ class RSFormProFieldSubmitButton extends RSFormProFieldButton
 			$html .= $additional;
 			// Add the label & close the tag
 			if ($buttonType == 'button') {
-				$html .= ' >'.$this->escape($label).'</button>';
+				$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
 			} else {
 				$html .= ' value="'.$this->escape($label).'" />';
 			}

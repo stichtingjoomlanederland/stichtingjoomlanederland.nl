@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -17,7 +17,7 @@ defined('_JEXEC') or die('Restricted access');
 <div class="well well-small">
 	<?php echo JText::_('RSFP_SEARCH'); ?> <input type="text" id="rsfilter" name="filter" value="<?php echo $this->escape($this->filter); ?>" onchange="document.adminForm.submit();" /> 
 	<button type="button" class="btn btn-primary button" onclick="document.adminForm.submit();"><?php echo JText::_('RSFP_GO'); ?></button> 
-	<button type="button" class="btn button" onclick="document.getElementById('rsfilter').value='';document.adminForm.submit();"><?php echo JText::_('RSFP_RESET'); ?></button>
+	<button type="button" class="btn btn-secondary" onclick="document.getElementById('rsfilter').value='';document.adminForm.submit();"><?php echo JText::_('RSFP_RESET'); ?></button>
 </div>
 <?php } ?>
 

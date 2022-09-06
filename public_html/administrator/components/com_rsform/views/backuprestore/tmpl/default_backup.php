@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -19,10 +19,12 @@ defined('_JEXEC') or die('Restricted access');
 	</tr>
 	</thead>
 	<?php
-	foreach ($this->forms as $i => $row) { ?>
-		<tr class="row<?php echo $i % 2; ?>">
+	foreach ($this->forms as $i => $row)
+	{
+		?>
+		<tr>
 			<td><?php echo JHtml::_('grid.id', $i, $row->FormId); ?></td>
-			<td><label for="cb<?php echo $i; ?>"><?php echo !empty($row->FormTitle) ? strip_tags($row->FormTitle) : '<em>no title</em>'; ?></label></td>
+			<td><label for="cb<?php echo $i; ?>"><?php echo !empty($row->FormTitle) ? strip_tags($row->FormTitle) : '<em>' . JText::_('RSFP_FORM_DEFAULT_TITLE') . '</em>'; ?></label></td>
 			<td><?php echo $this->escape($row->FormName); ?></td>
 			<td width="1%"><?php echo $row->FormId; ?></td>
 			<td width="1%"><?php echo $row->_allSubmissions; ?></td>

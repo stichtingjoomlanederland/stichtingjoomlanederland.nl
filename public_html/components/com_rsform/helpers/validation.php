@@ -1,77 +1,109 @@
 <?php
 /**
-* @package RSForm! Pro
-* @copyright (C) 2007-2018 www.rsjoomla.com
-* @license GPL, http://www.gnu.org/copyleft/gpl.html
-*/
+ * @package RSForm! Pro
+ * @copyright (C) 2007-2019 www.rsjoomla.com
+ * @license GPL, http://www.gnu.org/copyleft/gpl.html
+ */
 
 // no direct access
 defined( '_JEXEC' ) or die( 'Restricted access' );
 
 class RSFormProValidations
 {
-	public static function none($value,$extra=null,$data=null)
+	public static function none($value, $extra = null, $data = null)
 	{
 		return true;
 	}
 
-	public static function alpha($param,$extra=null,$data=null)
+	public static function alpha($param, $extra = null, $data = null)
 	{
-		if(strpos($param,"\n") !== false) 
-			$param = str_replace(array("\r","\n"),'',$param);
-			
-		for($i=0;$i<strlen($param);$i++)
-			if(strpos($extra,$param[$i]) === false && preg_match('#([^a-zA-Z ])#', $param[$i]))
+		if (strpos($param,"\n") !== false)
+		{
+			$param = str_replace(array("\r","\n"),'', $param);
+		}
+
+		for ($i = 0; $i < strlen($param); $i++)
+		{
+			if (strpos($extra, $param[$i]) === false && preg_match('#([^a-zA-Z ])#', $param[$i]))
+			{
 				return false;
-				
+			}
+		}
+
 		return true;
 	}
-	
-	public static function numeric($param,$extra=null,$data=null)
+
+	public static function numeric($param, $extra = null, $data = null)
 	{
-		if(strpos($param,"\n") !== false) 
-			$param = str_replace(array("\r","\n"),'',$param);
-		
-		for($i=0;$i<strlen($param);$i++)
-			if (strpos($extra,$param[$i]) === false && !is_numeric($param[$i]))
+		if (strpos($param,"\n") !== false)
+		{
+			$param = str_replace(array("\r","\n"),'', $param);
+		}
+
+		for ($i = 0; $i < strlen($param); $i++)
+		{
+			if (strpos($extra, $param[$i]) === false && !is_numeric($param[$i]))
+			{
 				return false;
-				
+			}
+		}
+
 		return true;
 	}
-	
-	public static function alphanumeric($param,$extra = null,$data=null)
+
+	public static function alphanumeric($param, $extra = null, $data = null)
 	{
-		if(strpos($param,"\n") !== false) 
-			$param = str_replace(array("\r","\n"),'',$param);
-		
-		for($i=0;$i<strlen($param);$i++)
-			if(strpos($extra,$param[$i]) === false && preg_match('#([^a-zA-Z0-9 ])#', $param[$i]))
+		if (strpos($param,"\n") !== false)
+		{
+			$param = str_replace(array("\r","\n"),'', $param);
+		}
+
+		for ($i = 0; $i < strlen($param); $i++)
+		{
+			if (strpos($extra, $param[$i]) === false && preg_match('#([^a-zA-Z0-9 ])#', $param[$i]))
+			{
 				return false;
-				
+			}
+		}
+
 		return true;
 	}
-	
-	public static function alphaaccented($value, $extra=null, $data=null) {
-		if (preg_match('#[^[:alpha:] ]#u', $value)) {
+
+	public static function alphaaccented($value, $extra = null, $data = null)
+	{
+		if (preg_match('#[^[:alpha:] ]#u', $value))
+		{
 			return false;
 		}
+
 		return true;
 	}
-	
-	public static function alphanumericaccented($value, $extra=null, $data=null) {
-		if (preg_match('#[^[:alpha:]0-9 ]#u', $value)) {
+
+	public static function alphanumericaccented($value, $extra = null, $data = null)
+	{
+		if (preg_match('#[^[:alpha:]0-9 ]#u', $value))
+		{
 			return false;
 		}
+
 		return true;
 	}
-	
+
 	public static function email($email, $extra = null, $data = null)
 	{
-		jimport('joomla.mail.helper');
+		if ($list = array_filter(RSFormProConfig::getInstance()->get('disposable_domains', array(), true)))
+		{
+			list($user, $domain) = explode('@', $email, 2);
+
+			if (in_array(strtolower($domain), $list))
+			{
+				return false;
+			}
+		}
 
 		return JMailHelper::isEmailAddress($email);
 	}
-	
+
 	public static function emaildns($email, $extra = null, $data = null)
 	{
 		// Check if it's an email address format
@@ -79,13 +111,13 @@ class RSFormProValidations
 		{
 			return false;
 		}
-		
+
 		// Fallback if we don't have these
 		if (!function_exists('checkdnsrr') || !is_callable('checkdnsrr'))
 		{
 			return true;
 		}
-		
+
 		// IDN convert
 		$email = JStringPunycode::emailToPunycode($email);
 		list($user, $domain) = explode('@', $email, 2);
@@ -113,14 +145,15 @@ class RSFormProValidations
 			->where($db->qn('FieldValue').'='.$db->q($value));
 
 		// Is this a directory edit?
-		if ($id && $option == 'com_rsform' && $ctrl == 'directory' && ($task == 'save' || $task == 'apply')) {
+		if ($id && $option == 'com_rsform' && $ctrl == 'directory' && ($task == 'save' || $task == 'apply'))
+		{
 			$query->where($db->qn('SubmissionId').' != '.$db->q($id));
 		}
 
 		return $db->setQuery($query)->loadResult() ? false : true;
 	}
 
-	public static function uniquefielduser($value, $extra=null,$data=null)
+	public static function uniquefielduser($value, $extra = null, $data = null)
 	{
 		$db 		= JFactory::getDbo();
 		$app		= JFactory::getApplication();
@@ -143,21 +176,25 @@ class RSFormProValidations
 			->where($db->qn('sv.FieldValue').'='.$db->q($value));
 
 		// Is this a directory edit?
-		if ($id && $option == 'com_rsform' && $ctrl == 'directory' && ($task == 'save' || $task == 'apply')) {
+		if ($id && $option == 'com_rsform' && $ctrl == 'directory' && ($task == 'save' || $task == 'apply'))
+		{
 			$query->where($db->qn('s.SubmissionId').' != '.$db->q($id));
-			
+
 			// Override the $userValue based on the submission original values
 			$newquery = $db->getQuery(true)
 				->select($db->qn('UserId'))
 				->select($db->qn('UserIp'))
 				->from($db->qn('#__rsform_submissions'))
 				->where($db->qn('SubmissionId').'='.$db->q($id));
-			
+
 			$submission = $db->setQuery($newquery)->loadObject();
-			if ($submission->UserId) {
+			if ($submission->UserId)
+			{
 				$userField = 's.UserId';
 				$userValue = $submission->UserId;
-			} else {
+			}
+			else
+			{
 				$userField = 's.UserIp';
 				$userValue = $submission->UserIp;
 			}
@@ -167,154 +204,169 @@ class RSFormProValidations
 
 		return $db->setQuery($query)->loadResult() ? false : true;
 	}
-	
-	public static function uszipcode($value)
+
+	public static function uszipcode($value, $extra = null, $data = null)
 	{
-		return preg_match("/^([0-9]{5})(-[0-9]{4})?$/i",$value);
+		return preg_match("/^([0-9]{5})(-[0-9]{4})?$/i", $value);
 	}
-	
-	public static function phonenumber($value)
+
+	public static function phonenumber($value, $extra = null, $data = null)
 	{
 		return preg_match("/\(?\b[0-9]{3}\)?[-. ]?[0-9]{3}[-. ]?[0-9]{4}\b/i", $value);
 	}
-	
-	public static function creditcard($value,$extra=null,$data=null)
+
+	public static function creditcard($value, $extra = null, $data = null)
 	{
 		$value = preg_replace('/[^0-9]+/', '', $value);
+
 		if (!$value)
+		{
 			return false;
-		
-		if (preg_match("/^([34|37]{2})([0-9]{13})$/", $value) && self::luhn($value)) // Amex
+		}
+
+		// Amex
+		if (preg_match("/^([34|37]{2})([0-9]{13})$/", $value) && self::luhn($value))
+		{
 			return true;
-		
-		if (preg_match("/^([30|36|38]{2})([0-9]{12})$/", $value) && self::luhn($value)) // Diners
+		}
+
+		// Diners
+		if (preg_match("/^([30|36|38]{2})([0-9]{12})$/", $value) && self::luhn($value))
+		{
 			return true;
-		
-		if (preg_match("/^(?:6(?:011|5[0-9][0-9])[0-9]{12})$/", $value) && self::luhn($value)) // Discover
+		}
+
+		// Discover
+		if (preg_match("/^(?:6(?:011|5[0-9][0-9])[0-9]{12})$/", $value) && self::luhn($value))
+		{
 			return true;
-			
-		if (preg_match("/^([51|52|53|54|55]{2})([0-9]{14})$/", $value) && self::luhn($value)) // Master
+		}
+
+		// Master
+		if (preg_match("/^([51|52|53|54|55]{2})([0-9]{14})$/", $value) && self::luhn($value))
+		{
 			return true;
-			
-		if (preg_match("/^([4]{1})([0-9]{12,15})$/", $value) && self::luhn($value)) // Visa
+		}
+
+		// Visa
+		if (preg_match("/^([4]{1})([0-9]{12,15})$/", $value) && self::luhn($value))
+		{
 			return true;
-		
+		}
+
 		return false;
 	}
 
-	public static function custom($param,$extra=null,$data=null)
+	public static function custom($param, $extra = null, $data = null)
 	{
-		if(strpos($param,"\n") !== FALSE) 
-			$param = str_replace(array("\r","\n"),'',$param);
-		
-		for($i=0;$i<strlen($param);$i++)
-			if(strpos($extra,$param[$i]) === false)
+		if (strpos($param,"\n") !== false)
+		{
+			$param = str_replace(array("\r","\n"),'', $param);
+		}
+
+		for ($i = 0; $i < strlen($param); $i++)
+		{
+			if (strpos($extra, $param[$i]) === false)
+			{
 				return false;
-				
+			}
+		}
+
 		return true;
 	}
 
-	public static function password($param,$extra=null,$data=null)
+	public static function password($param, $extra = null, $data = null)
 	{
 		if (RSFormProHelper::isCode($data['DEFAULTVALUE']) == $param)
+		{
 			return true;
-		
+		}
+
 		return false;
 	}
-	
-	public static function ipaddress($param,$extra=null,$data=null)
+
+	public static function ipaddress($param, $extra = null, $data = null)
 	{
-		return preg_match('#\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b#', $param, $match);
+		return filter_var($param, FILTER_VALIDATE_IP);
 	}
-	
-	public static function validurl($param,$extra=null,$data=null)
+
+	public static function validurl($url, $extra = null, $data = null)
 	{
 		try
 		{
-			// URLs need a scheme to be valid
-			if (!preg_match('/^(https?):\/\//i', $param, $match))
-			{
-				$param = 'http://'.$param;
-			}
-			
-			// But too many schemes don't do
-			if (substr_count($param, '://') > 1)
-			{
-				return false;
-			}
-			
 			// Let's encode utf-8 characters
-			$param = JStringPunycode::urlToPunycode($param);
-			
-			// Let's use the Joomla! Uri to grab the host
-			$uri = JUri::getInstance($param);
-			$host = $uri->getScheme().'://'.$uri->getHost();
-			
+			$url = JStringPunycode::urlToPunycode($url);
+
 			// Now FILTER_VALIDATE_URL should suffice
-			if (filter_var($host, FILTER_VALIDATE_URL))
-			{
-				return true;
-			}
-			
-			return false;
+			return filter_var($url, FILTER_VALIDATE_URL);
 		}
 		catch (Exception $e)
 		{
 			return false;
 		}
 	}
-	
-	public static function regex($value,$pattern=null,$data=null) {
+
+	public static function regex($value, $pattern = null, $data = null)
+	{
 		return preg_match($pattern, $value);
 	}
-	
-	public static function sameas($value, $secondField, $data) {
+
+	public static function sameas($value, $secondField, $data)
+	{
 		$valid 	= false;
 		$form 	= JFactory::getApplication()->input->get('form', array(), 'array');
-		if (isset($form[$secondField])) {
+		if (isset($form[$secondField]))
+		{
 			$secondValue = is_array($form[$secondField]) ? implode('', $form[$secondField]) : $form[$secondField];
-			if ($value == $secondValue) {
+			if ($value == $secondValue)
+			{
 				$valid = true;
 			}
 		}
-		
+
 		return $valid;
 	}
-	
-	public static function multiplerules($value, $extra = null, $data = null) {
+
+	public static function multiplerules($value, $extra = null, $data = null)
+	{
 		$validations 	= explode(',', $data['VALIDATIONMULTIPLE']);
 		$extra 			= json_decode($extra);
-	
-		if (!empty($validations)) {
-			foreach ($validations as $function) {
+
+		if (!empty($validations))
+		{
+			foreach ($validations as $function)
+			{
 				$newData = $data;
 				unset($newData['VALIDATIONMULTIPLE']);
-				
+
 				$newData['VALIDATIONRULE']  = $function;
 				$newData['VALIDATIONEXTRA'] = !empty($extra->{$function}) ? $extra->{$function} : null;
 
-				if (!call_user_func_array('static::'.$function, array($value, $newData['VALIDATIONEXTRA'], $newData))) {
+				if (!call_user_func_array('static::'.$function, array($value, $newData['VALIDATIONEXTRA'], $newData)))
+				{
 					return false;
 				}
 			}
 		}
-		
+
 		return true;
 	}
 
 	public static function iban($value, $extra = null, $data = null)
-    {
-        require_once __DIR__ . '/iban.php';
-        $iban = new RSFormIBAN($value);
-        return $iban->validate();
-    }
-	
-	protected static function luhn($value) {
+	{
+		require_once __DIR__ . '/iban.php';
+		$iban = new RSFormIBAN($value);
+		return $iban->validate();
+	}
+
+	protected static function luhn($value)
+	{
 		$sum = 0;
 		$odd = strlen($value) % 2;
 
 		// Calculate sum of digits.
-		for($i = 0; $i < strlen($value); $i++) {
+		for($i = 0; $i < strlen($value); $i++)
+		{
 			$sum += $odd ? $value[$i] : (($value[$i] * 2 > 9) ? $value[$i] * 2 - 9 : $value[$i] * 2);
 			$odd = !$odd;
 		}

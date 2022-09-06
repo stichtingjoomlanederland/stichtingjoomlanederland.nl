@@ -3,12 +3,16 @@
 	<name>System - RSForm! Pro Delete Submissions</name>
 	<author>RSJoomla!</author>
 	<creationDate>April 2018</creationDate>
-	<copyright>(C) 2007-2018 www.rsjoomla.com</copyright>
+	<copyright>(C) 2007-2019 www.rsjoomla.com</copyright>
 	<license>GNU General Public License</license>
 	<authorEmail>support@rsjoomla.com</authorEmail>
 	<authorUrl>www.rsjoomla.com</authorUrl>
 	<version>1.0.0</version>
 	<description><![CDATA[PLG_SYSTEM_RSFORMDELETESUBMISSIONS_DESC]]></description>
+
+	<updateservers>
+        <server type="extension" priority="1" name="System - RSForm! Pro Delete Submissions">https://www.rsjoomla.com/updates/com_rsform/Other/plg_rsformdeletesubmissions.xml</server>
+    </updateservers>
 
 	<files>
 		<filename plugin="rsformdeletesubmissions">rsformdeletesubmissions.php</filename>

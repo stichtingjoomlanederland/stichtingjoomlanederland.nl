@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--~
+  ~ @package   akeebabackup
+  ~ @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+  ~ @license   GNU General Public License version 3, or later
+  -->
+
+<extension version="3.9.0" type="package" method="upgrade">
+    <dlid prefix="dlid=" suffix=""/>
+    <name>Akeeba Backup for Joomla! package</name>
+    <author>Nicholas K. Dionysopoulos</author>
+    <creationDate>2022-08-22</creationDate>
+    <packagename>akeebabackup</packagename>
+    <version>9.3.0</version>
+    <url>https://www.akeeba.com</url>
+    <packager>Akeeba Ltd</packager>
+    <packagerurl>https://www.akeeba.com</packagerurl>
+    <copyright>Copyright (c)2006-2022 Akeeba Ltd / Nicholas K. Dionysopoulos</copyright>
+    <license>GNU GPL v3 or later</license>
+    <description>Akeeba Backup for Joomla! installation package v.9.3.0</description>
+
+    <!-- List of extensions to install -->
+    <files>
+        <!-- Component -->
+        <file type="component" id="com_akeebabackup">com_akeebabackup-pro.zip</file>
+
+        <!-- Plugins: console (Pro only) -->
+        <file type="plugin" group="console" id="akeebabackup">plg_console_akeebabackup.zip</file>
+
+        <!-- Plugins: quickicon -->
+        <file type="plugin" group="quickicon" id="akeebabackup">plg_quickicon_akeebabackup.zip</file>
+
+        <!-- Plugins: system (Pro only) -->
+        <file type="plugin" group="system" id="backuponupdate">plg_system_backuponupdate.zip</file>
+
+        <!-- Plugins: actionlog -->
+        <file type="plugin" group="actionlog" id="akeebabackup">plg_actionlog_akeebabackup.zip</file>
+
+        <!-- Plugins: task -->
+        <file type="plugin" group="task" id="akeebabackup">plg_task_akeebabackup.zip</file>
+    </files>
+
+    <!-- Installation script -->
+    <scriptfile>script.akeebabackup.php</scriptfile>
+
+    <!-- Update servers -->
+    <updateservers>
+        <server type="extension" priority="1" name="Akeeba Backup Professional for Joomla!">https://cdn.akeeba.com/updates/pkgakeebabackuppro.xml</server>
+    </updateservers>
+</extension>

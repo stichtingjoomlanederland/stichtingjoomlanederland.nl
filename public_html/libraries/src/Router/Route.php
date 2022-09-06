@@ -1,17 +1,22 @@
 <?php
+
 /**
  * Joomla! Content Management System
  *
- * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
+ * @copyright  (C) 2012 Open Source Matters, Inc. <https://www.joomla.org>
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 namespace Joomla\CMS\Router;
 
-defined('JPATH_PLATFORM') or die;
-
 use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 use Joomla\CMS\Uri\Uri;
+use Joomla\DI\Exception\KeyNotFoundException;
+
+// phpcs:disable PSR1.Files.SideEffects
+\defined('JPATH_PLATFORM') or die;
+// phpcs:enable PSR1.Files.SideEffects
 
 /**
  * Route handling class
@@ -20,122 +25,163 @@ use Joomla\CMS\Uri\Uri;
  */
 class Route
 {
-	/**
-	 * The route object so we don't have to keep fetching it.
-	 *
-	 * @var    Router[]
-	 * @since  3.0.1
-	 */
-	private static $_router = array();
+    /**
+     * No change, use the protocol currently used.
+     *
+     * @since  3.9.7
+     */
+    public const TLS_IGNORE = 0;
 
-	/**
-	 * Translates an internal Joomla URL to a humanly readable URL. This method builds links for the current active client.
-	 *
-	 * @param   string   $url    Absolute or Relative URI to Joomla resource.
-	 * @param   boolean  $xhtml  Replace & by &amp; for XML compliance.
-	 * @param   integer  $ssl    Secure state for the resolved URI.
-	 *                             0: (default) No change, use the protocol currently used in the request
-	 *                             1: Make URI secure using global secure site URI.
-	 *                             2: Make URI unsecure using the global unsecure site URI.
-	 *
-	 * @return  string  The translated humanly readable URL.
-	 *
-	 * @since   1.7.0
-	 */
-	public static function _($url, $xhtml = true, $ssl = null)
-	{
-		try
-		{
-			$app    = Factory::getApplication();
-			$client = $app->getName();
+    /**
+     * Make URI secure using http over TLS (https).
+     *
+     * @since  3.9.7
+     */
+    public const TLS_FORCE = 1;
 
-			return static::link($client, $url, $xhtml, $ssl);
-		}
-		catch (\RuntimeException $e)
-		{
-			// Before 3.9.0 this method failed silently on router error. This B/C will be removed in Joomla 4.0.
-			return null;
-		}
-	}
+    /**
+     * Make URI unsecure using plain http (http).
+     *
+     * @since  3.9.7
+     */
+    public const TLS_DISABLE = 2;
 
-	/**
-	 * Translates an internal Joomla URL to a humanly readable URL.
-	 * NOTE: To build link for active client instead of a specific client, you can use <var>JRoute::_()</var>
-	 *
-	 * @param   string   $client  The client name for which to build the link.
-	 * @param   string   $url     Absolute or Relative URI to Joomla resource.
-	 * @param   boolean  $xhtml   Replace & by &amp; for XML compliance.
-	 * @param   integer  $ssl     Secure state for the resolved URI.
-	 *                              0: (default) No change, use the protocol currently used in the request
-	 *                              1: Make URI secure using global secure site URI.
-	 *                              2: Make URI unsecure using the global unsecure site URI.
-	 *
-	 * @return  string  The translated humanly readable URL.
-	 *
-	 * @throws  \RuntimeException
-	 *
-	 * @since   3.9.0
-	 */
-	public static function link($client, $url, $xhtml = true, $ssl = null)
-	{
-		// If we cannot process this $url exit early.
-		if (!is_array($url) && (strpos($url, '&') !== 0) && (strpos($url, 'index.php') !== 0))
-		{
-			return $url;
-		}
+    /**
+     * The route object so we don't have to keep fetching it.
+     *
+     * @var    Router[]
+     * @since  3.0.1
+     */
+    private static $_router = array();
 
-		// Get the router instance, only attempt when a client name is given.
-		if ($client && !isset(self::$_router[$client]))
-		{
-			$app = Factory::getApplication();
+    /**
+     * Translates an internal Joomla URL to a humanly readable URL. This method builds links for the current active client.
+     *
+     * @param   string   $url       Absolute or Relative URI to Joomla resource.
+     * @param   boolean  $xhtml     Replace & by &amp; for XML compliance.
+     * @param   integer  $tls       Secure state for the resolved URI. Use Route::TLS_* constants
+     *                                0: (default) No change, use the protocol currently used in the request
+     *                                1: Make URI secure using global secure site URI.
+     *                                2: Make URI unsecure using the global unsecure site URI.
+     * @param   boolean  $absolute  Return an absolute URL
+     *
+     * @return  string  The translated humanly readable URL.
+     *
+     * @since   1.7.0
+     */
+    public static function _($url, $xhtml = true, $tls = self::TLS_IGNORE, $absolute = false)
+    {
+        try {
+            // @deprecated  4.0 Before 3.9.7 this method silently converted $tls to integer
+            if (!is_int($tls)) {
+                @trigger_error(
+                    __METHOD__ . '() called with incompatible variable type on parameter $tls.',
+                    E_USER_DEPRECATED
+                );
 
-			self::$_router[$client] = $app->getRouter($client);
-		}
+                $tls = (int) $tls;
+            }
 
-		// Make sure that we have our router
-		if (!isset(self::$_router[$client]))
-		{
-			throw new \RuntimeException(\JText::sprintf('JLIB_APPLICATION_ERROR_ROUTER_LOAD', $client), 500);
-		}
+            // @todo  Deprecate in 4.0 Before 3.9.7 this method accepted -1.
+            if ($tls === -1) {
+                $tls = self::TLS_DISABLE;
+            }
 
-		// Build route.
-		$uri    = self::$_router[$client]->build($url);
-		$scheme = array('path', 'query', 'fragment');
+            $app    = Factory::getApplication();
+            $client = $app->getName();
 
-		/*
-		 * Get the secure/unsecure URLs.
-		 *
-		 * If the first 5 characters of the BASE are 'https', then we are on an ssl connection over
-		 * https and need to set our secure URL to the current request URL, if not, and the scheme is
-		 * 'http', then we need to do a quick string manipulation to switch schemes.
-		 */
-		if ((int) $ssl || $uri->isSsl())
-		{
-			static $host_port;
+            return static::link($client, $url, $xhtml, $tls, $absolute);
+        } catch (\RuntimeException $e) {
+            // @deprecated  4.0 Before 3.9.0 this method failed silently on router error. This B/C will be removed in Joomla 4.0.
+            return null;
+        }
+    }
 
-			if (!is_array($host_port))
-			{
-				$uri2      = Uri::getInstance();
-				$host_port = array($uri2->getHost(), $uri2->getPort());
-			}
+    /**
+     * Translates an internal Joomla URL to a humanly readable URL.
+     * NOTE: To build link for active client instead of a specific client, you can use <var>Route::_()</var>
+     *
+     * @param   string   $client    The client name for which to build the link.
+     * @param   string   $url       Absolute or Relative URI to Joomla resource.
+     * @param   boolean  $xhtml     Replace & by &amp; for XML compliance.
+     * @param   integer  $tls       Secure state for the resolved URI. Use Route::TLS_* constants
+     *                                0: (default) No change, use the protocol currently used in the request
+     *                                1: Make URI secure using global secure site URI.
+     *                                2: Make URI unsecure using the global unsecure site URI.
+     * @param   boolean  $absolute  Return an absolute URL
+     *
+     * @return  string  The translated humanly readable URL.
+     *
+     * @throws  \RuntimeException
+     *
+     * @since   3.9.0
+     */
+    public static function link($client, $url, $xhtml = true, $tls = self::TLS_IGNORE, $absolute = false)
+    {
+        // If we cannot process this $url exit early.
+        if (!\is_array($url) && (strpos($url, '&') !== 0) && (strpos($url, 'index.php') !== 0)) {
+            return $url;
+        }
 
-			// Determine which scheme we want.
-			$uri->setScheme(((int) $ssl === 1 || $uri->isSsl()) ? 'https' : 'http');
-			$uri->setHost($host_port[0]);
-			$uri->setPort($host_port[1]);
-			$scheme = array_merge($scheme, array('host', 'port', 'scheme'));
-		}
+        // Get the router instance, only attempt when a client name is given.
+        if ($client && !isset(self::$_router[$client])) {
+            try {
+                self::$_router[$client] = Factory::getContainer()->get(ucfirst($client) . 'Router') ?: Factory::getApplication()::getRouter($client);
+            } catch (KeyNotFoundException $e) {
+                self::$_router[$client] = Factory::getApplication()::getRouter($client);
+            }
+        }
 
-		$url = $uri->toString($scheme);
+        // Make sure that we have our router
+        if (!isset(self::$_router[$client])) {
+            throw new \RuntimeException(Text::sprintf('JLIB_APPLICATION_ERROR_ROUTER_LOAD', $client), 500);
+        }
 
-		// Replace spaces.
-		$url = preg_replace('/\s/u', '%20', $url);
+        // Build route.
+        $uri    = self::$_router[$client]->build($url);
+        $scheme = array('path', 'query', 'fragment');
 
-		if ($xhtml)
-		{
-			$url = htmlspecialchars($url, ENT_COMPAT, 'UTF-8');
-		}
+        /*
+         * Get the secure/unsecure URLs.
+         *
+         * If the first 5 characters of the BASE are 'https', then we are on an ssl connection over
+         * https and need to set our secure URL to the current request URL, if not, and the scheme is
+         * 'http', then we need to do a quick string manipulation to switch schemes.
+         */
+        if ($tls === self::TLS_FORCE) {
+            $uri->setScheme('https');
+        } elseif ($tls === self::TLS_DISABLE) {
+            $uri->setScheme('http');
+        }
 
-		return $url;
-	}
+        // Set scheme if requested or
+        if ($absolute || $tls > 0) {
+            static $scheme_host_port;
+
+            if (!\is_array($scheme_host_port)) {
+                $uri2             = Uri::getInstance();
+                $scheme_host_port = array($uri2->getScheme(), $uri2->getHost(), $uri2->getPort());
+            }
+
+            if (is_null($uri->getScheme())) {
+                $uri->setScheme($scheme_host_port[0]);
+            }
+
+            $uri->setHost($scheme_host_port[1]);
+            $uri->setPort($scheme_host_port[2]);
+
+            $scheme = array_merge($scheme, array('host', 'port', 'scheme'));
+        }
+
+        $url = $uri->toString($scheme);
+
+        // Replace spaces.
+        $url = preg_replace('/\s/u', '%20', $url);
+
+        if ($xhtml) {
+            $url = htmlspecialchars($url, ENT_COMPAT, 'UTF-8');
+        }
+
+        return $url;
+    }
 }

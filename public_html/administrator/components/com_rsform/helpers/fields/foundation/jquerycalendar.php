@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -13,9 +13,9 @@ class RSFormProFieldFoundationJqueryCalendar extends RSFormProFieldJqueryCalenda
 {
 	protected function setFieldOutput($input, $button, $container, $hidden, $layout) {
 		if ($layout == 'FLAT') {
-			return '<div class="row"><div class="medium-12 columns">'.$input.'</div>'.'<div class="medium-12 columns end">'.$container.'</div>'.$hidden.'</div>';
+			return '<div class="grid-x"><div class="medium-12 cell">'.$input.'</div>'.'<div class="medium-12 cell">'.$container.'</div>'.$hidden.'</div>';
 		} else {
-			return '<div class="row"><div class="medium-6 columns">'.$input.'</div>'.'<div class="medium-6 columns">'.$button.'</div>'.$container.$hidden.'</div>';
+			return '<div class="input-group">' . $input . '<div class="input-group-button">' . $button . '</div></div>'.$container.$hidden;
 		}
 	}
 	
@@ -29,6 +29,11 @@ class RSFormProFieldFoundationJqueryCalendar extends RSFormProFieldJqueryCalenda
 		
 		if ($type == 'button') {
 			$attr['class'] .= 'button secondary';
+		}
+
+		if ($type === 'input')
+		{
+			$attr['class'] .= 'input-group-field';
 		}
 		
 		return $attr;

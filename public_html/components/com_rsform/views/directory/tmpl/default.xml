@@ -6,19 +6,35 @@
 		</message>
 	</layout>
 	<config>
-	<fields name="params">
-		<fieldset name="basic" addfieldpath="/administrator/components/com_rsform/models/fields">
-			<field name="formId" type="directories" required="true" default="" label="RSFP_SUBM_DIR_FORM" description="RSFP_SUBM_DIR_FORM" />
+	<fields name="params" addfieldpath="/administrator/components/com_rsform/models/fields">
+		<fieldset name="basic">
+			<field name="formId" type="directories" onchange="generateDirectoryLink();" required="true" default="" label="RSFP_SUBM_DIR_FORM" description="RSFP_SUBM_DIR_FORM" />
 			<field name="lang" type="lang" default="" label="RSFP_SUBM_DIR_LANGUAGE" description="RSFP_SUBM_DIR_LANGUAGE_DESC" />
-			<field name="enable_directory" type="radio" class="btn-group" default="0" label="RSFP_SUBM_DIR_ENABLE_DIRECTORY" description="RSFP_SUBM_DIR_ENABLE_DIRECTORY_DESC">
+			<field name="enable_directory" type="radio" class="btn-group btn-group-yesno" default="" label="RSFP_SUBM_DIR_ENABLE_DIRECTORY" description="RSFP_SUBM_DIR_ENABLE_DIRECTORY_DESC" required="true">
 				<option value="0">JNO</option>
 				<option value="1">JYES</option>
 			</field>
-			<field name="show_confirmed" type="radio" class="btn-group" default="0" label="RSFP_SUBM_DIR_CONFIRMED" description="RSFP_SUBM_DIR_CONFIRMED_DESC">
+			<field name="show_descriptions" type="radio" class="btn-group btn-group-yesno" default="0" label="RSFP_SUBM_DIR_SHOW_DESCRIPTIONS" description="RSFP_SUBM_DIR_SHOW_DESCRIPTIONS_DESC">
 				<option value="0">JNO</option>
 				<option value="1">JYES</option>
 			</field>
-			<field name="userId" type="text" default="0" label="RSFP_SUBM_DIR_USERID" description="RSFP_SUBM_DIR_USERID_DESC" />
+			<field name="show_confirmed" type="radio" class="btn-group btn-group-yesno" default="0" label="RSFP_SUBM_DIR_CONFIRMED" description="RSFP_SUBM_DIR_CONFIRMED_DESC">
+				<option value="0">JNO</option>
+				<option value="1">JYES</option>
+			</field>
+			<field name="show_filtering_result" type="radio" class="btn-group btn-group-yesno" default="0" label="COM_RSFORM_SHOW_FILTERING_RESULT" description="COM_RSFORM_SHOW_FILTERING_RESULT_DESC">
+				<option value="0">JNO</option>
+				<option value="1">JYES</option>
+			</field>
+			<field name="show_all_submissions" type="radio" class="btn-group btn-group-yesno" default="1" label="COM_RSFORM_SHOW_ALL_SUBMISSIONS" description="COM_RSFORM_SHOW_ALL_SUBMISSIONS_DESC" showon="show_logged_in_submissions:0">
+				<option value="0">JNO</option>
+				<option value="1">JYES</option>
+			</field>
+			<field name="show_logged_in_submissions" type="radio" class="btn-group btn-group-yesno" default="0" label="COM_RSFORM_SHOW_LOGGED_IN_SUBMISSIONS" description="COM_RSFORM_SHOW_LOGGED_IN_SUBMISSIONS_DESC" showon="show_all_submissions:0">
+				<option value="0">JNO</option>
+				<option value="1">JYES</option>
+			</field>
+			<field name="userId" type="text" default="" label="RSFP_SUBM_DIR_USERID" description="RSFP_SUBM_DIR_USERID_DESC" showon="show_all_submissions:0[AND]show_logged_in_submissions:0" />
 			<field name="display_num" type="list" default="10" label="RSFP_SUBM_DIR_ITEMS" description="RSFP_SUBM_DIR_ITEMS_DESC">
 				<option value="5">5</option>
 				<option value="10">10</option>
@@ -30,6 +46,29 @@
 				<option value="100">100</option>
 				<option value="0">JALL</option>
 			</field>
+			<field name="enclosure" type="text" default="&quot;" label="COM_RSFORM_DIR_ENCLOSURE" description="COM_RSFORM_DIR_ENCLOSURE_DESC" />
+			<field name="delimiter" type="text" default="," label="COM_RSFORM_DIR_DELIMITER" description="COM_RSFORM_DIR_DELIMITER_DESC" />
+			<field name="total_cache" type="number" min="0" filter="integer" validate="number" default="0" label="COM_RSFORM_DIR_TOTAL_CACHE" description="COM_RSFORM_DIR_TOTAL_CACHE_DESC" />
+		</fieldset>
+		<fieldset name="advanced">
+			<field name="default_ordering" type="formfields" label="COM_RSFORM_DIR_DEFAULT_ORDERING" description="COM_RSFORM_DIR_DEFAULT_ORDERING_DESC" default="SubmissionId">
+				<option value="SubmissionId">RSFP_SUBMISSIONID</option>
+				<option value="DateSubmitted">RSFP_DATESUBMITTED</option>
+				<option value="UserIp">RSFP_USERIP</option>
+				<option value="Username">RSFP_USERNAME</option>
+				<option value="UserId">RSFP_USERID</option>
+				<option value="Lang">RSFP_LANG</option>
+				<option value="confirmed">RSFP_CONFIRMED</option>
+			</field>
+			<field name="default_direction" type="list" default="desc" label="COM_RSFORM_DIR_DEFAULT_DIRECTION" description="COM_RSFORM_DIR_DEFAULT_DIRECTION_DESC">
+				<option value="desc">JGLOBAL_ORDER_DESCENDING</option>
+				<option value="asc">JGLOBAL_ORDER_ASCENDING</option>
+			</field>
+			<field name="filter_glue" type="list" default="OR" label="COM_RSFORM_FILTER_GLUE" description="COM_RSFORM_FILTER_GLUE_DESC">
+				<option value="OR">COM_RSFORM_OR</option>
+				<option value="AND">COM_RSFORM_AND</option>
+			</field>
+			<field name="filter_values" type="submissionvalues" label="COM_RSFORM_FILTER_VALUES" description="COM_RSFORM_FILTER_VALUES_DESC" />
 		</fieldset>
 	</fields>
 	</config>

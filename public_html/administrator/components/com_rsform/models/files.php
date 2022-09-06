@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -10,14 +10,11 @@ defined('_JEXEC') or die('Restricted access');
 class RsformModelFiles extends JModelLegacy
 {
 	protected $_folder = null;
-	
-	public function __construct() {
-		parent::__construct();
-		
-		jimport('joomla.filesystem.file');
-		jimport('joomla.filesystem.folder');
-		jimport('joomla.filesystem.path');
-		
+
+	public function __construct($config = array())
+	{
+		parent::__construct($config);
+
 		$this->_folder = JPATH_SITE;
 
 		$folder = JFactory::getApplication()->input->getString('folder');

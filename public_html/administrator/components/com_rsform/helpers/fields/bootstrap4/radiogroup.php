@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -11,16 +11,19 @@ require_once JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/fields/radiogro
 
 class RSFormProFieldBootstrap4RadioGroup extends RSFormProFieldRadioGroup
 {
-	protected function buildLabel($data) {
+	public function buildItem($data)
+	{
+		$flow = $data['flow'];
+
+		return '<div class="' . ($flow == 'HORIZONTAL' ? 'form-check form-check-inline' : 'form-check') . '">' . $this->buildInput($data) . ' ' . $this->buildLabel($data) . '</div> ';
+	}
+
+	protected function buildLabel($data)
+	{
 		// For convenience
 		extract($data);
-		
-		return '<div class="form-check'.($flow == 'HORIZONTAL' ? ' form-check-inline' : '').'">'.'<label for="'.$this->escape($id).$i.'" class="form-check-label">'.$this->buildInput($data).$item->label.'</label>'.'</div>';
-	}
-	
-	public function buildItem($data) {
-		// BS4 - <label><input></label>
-		return $this->buildLabel($data);
+
+		return '<label id="'.$this->escape($id).$i.'-lbl" for="'.$this->escape($id).$i.'" class="form-check-label">'.$item->label.'</label>';
 	}
 	
 	public function setFlow() {

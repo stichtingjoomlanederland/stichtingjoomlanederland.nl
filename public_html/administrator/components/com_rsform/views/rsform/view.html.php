@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2018 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -21,10 +21,8 @@ class RsformViewRsform extends JViewLegacy
 		$this->buttons  = $this->get('Buttons');
 		$this->code		= $this->get('code');
 		$this->version	= (string) new RSFormProVersion();
-		
-		$this->sidebar	= $this->get('SideBar');
 
-        JHtml::stylesheet('com_rsform/admin/dashboard.css', array('relative' => true, 'version' => 'auto'));
+        JHtml::_('stylesheet', 'com_rsform/admin/dashboard.css', array('relative' => true, 'version' => 'auto'));
 		
 		parent::display($tpl);
 	}

@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -25,7 +25,7 @@ class RsformViewSubmissions extends JViewLegacy
         $filename = 'export.pdf';
 
         // Allow plugins to use their own PDF library
-        $app->triggerEvent('rsfp_onPDFView', array($contents, $filename));
+        $app->triggerEvent('onRsformPdfView', array($contents, $filename));
 
         /*
          * Setup external configuration options
@@ -37,7 +37,7 @@ class RsformViewSubmissions extends JViewLegacy
          */
 
         // Installation path
-        define("K_PATH_MAIN", JPATH_LIBRARIES."/tcpdf");
+        define("K_PATH_MAIN", JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/tcpdf');
 
         // URL path
         define("K_PATH_URL", JPATH_BASE);
@@ -77,7 +77,10 @@ class RsformViewSubmissions extends JViewLegacy
          * Create the pdf document
          */
 
-        jimport('tcpdf.tcpdf');
+		if (!class_exists('TCPDF'))
+		{
+			require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/tcpdf/tcpdf.php';
+		}
 
         $pdf = new TCPDF();
         $pdf->SetMargins(15, 27, 15);

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<extension version="3.5" type="plugin" group="system" method="upgrade">
+    <name>PLG_RSFP_PAYMENT_JDIDEAL_TITLE</name>
+    <creationDate>12 July 2022</creationDate>
+    <author>RolandD Cyber Produksi</author>
+    <authorEmail>contact@rolandd.com</authorEmail>
+    <authorUrl>https://rolandd.com</authorUrl>
+    <copyright>Copyright (C) 2009 - 2022 RolandD Cyber Produksi. All rights reserved.</copyright>
+    <license>GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html</license>
+    <version>8.0.2</version>
+    <description>PLG_RSFP_PAYMENT_JDIDEAL_DESCRIPTION</description>
+
+    <scriptfile>script.php</scriptfile>
+
+    <install>
+        <sql>
+            <file driver="mysql" charset="utf8">sql/install.mysql.rsfpjdideal.sql</file>
+        </sql>
+    </install>
+
+    <uninstall>
+        <sql>
+            <file driver="mysql" charset="utf8">sql/uninstall.mysql.rsfpjdideal.sql</file>
+        </sql>
+    </uninstall>
+
+    <files>
+        <filename plugin="rsfpjdideal">rsfpjdideal.php</filename>
+        <filename>configuration.xml</filename>
+        <filename>Price.php</filename>
+        <filename>Settings.php</filename>
+        <folder>addons</folder>
+        <folder>language</folder>
+        <folder>Layouts</folder>
+        <folder>media</folder>
+        <folder>sql</folder>
+    </files>
+
+    <media folder="media" destination="plg_system_rsfpjdideal">
+        <folder>css</folder>
+        <folder>js</folder>
+    </media>
+
+    <config>
+        <fields name="params">
+            <fieldset name="basic">
+                <field
+                        name="extensions"
+                        type="textarea"
+                        label="PLG_RSFP_JDIDEAL_FIELD_EXTENSIONS_LABEL"
+                        description="PLG_RSFP_JDIDEAL_FIELD_EXTENSIONS_DESC"
+                />
+                <field
+                        name="expireHours"
+                        type="number"
+                        label="PLG_RSFP_JDIDEAL_FIELD_EXPIRE_HOURS_LABEL"
+                        description="PLG_RSFP_JDIDEAL_FIELD_EXPIRE_HOURS_DESC"
+                        min="1"
+                        default="12"
+                />
+                <field name="forceScript"
+                       type="radio"
+                       class="btn-group btn-group-yesno"
+                       description="PLG_RSFP_JDIDEAL_FIELD_FORCE_SCRIPT_DESC"
+                       label="PLG_RSFP_JDIDEAL_FIELD_FORCE_SCRIPT_LABEL"
+                       default="0"
+                >
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+            </fieldset>
+        </fields>
+    </config>
+
+    <updateservers>
+        <server type="extension" priority="1" name="RO Payments - RSForm! Pro">
+            https://rolandd.com/updates/ropayments/rsformpro
+        </server>
+    </updateservers>
+</extension>

@@ -2,7 +2,7 @@
 /**
  * Part of the Joomla Framework Event Package
  *
- * @copyright  Copyright (C) 2005 - 2016 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2021 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -23,7 +23,7 @@ class Event extends AbstractEvent
 	 * @param   string  $name   The argument name.
 	 * @param   mixed   $value  The argument value.
 	 *
-	 * @return  Event  This method is chainable.
+	 * @return  $this
 	 *
 	 * @since   1.0
 	 */
@@ -38,13 +38,12 @@ class Event extends AbstractEvent
 	}
 
 	/**
-	 * Set the value of an event argument.
-	 * If the argument already exists, it will be overridden.
+	 * Add argument to event.
 	 *
-	 * @param   string  $name   The argument name.
-	 * @param   mixed   $value  The argument value.
+	 * @param   string  $name   Argument name.
+	 * @param   mixed   $value  Value.
 	 *
-	 * @return  Event  This method is chainable.
+	 * @return  $this
 	 *
 	 * @since   1.0
 	 */
@@ -86,8 +85,8 @@ class Event extends AbstractEvent
 	 */
 	public function clearArguments()
 	{
-		$arguments = $this->arguments;
-		$this->arguments = array();
+		$arguments       = $this->arguments;
+		$this->arguments = [];
 
 		return $arguments;
 	}
@@ -98,10 +97,19 @@ class Event extends AbstractEvent
 	 * @return  void
 	 *
 	 * @since   1.0
+	 * @deprecated  3.0  Use stopPropogation instead
 	 */
 	public function stop()
 	{
-		$this->stopped = true;
+		trigger_deprecation(
+			'joomla/event',
+			'2.0.0',
+			'%s() is deprecated and will be removed in 3.0, use %s::stopPropagation() instead.',
+			__METHOD__,
+			EventInterface::class
+		);
+
+		$this->stopPropagation();
 	}
 
 	/**
@@ -112,13 +120,13 @@ class Event extends AbstractEvent
 	 *
 	 * @return  void
 	 *
-	 * @throws  InvalidArgumentException  If the argument name is null.
-	 *
 	 * @since   1.0
+	 * @throws  InvalidArgumentException  If the argument name is null.
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetSet($name, $value)
 	{
-		if (is_null($name))
+		if ($name === null)
 		{
 			throw new InvalidArgumentException('The argument name cannot be null.');
 		}
@@ -135,6 +143,7 @@ class Event extends AbstractEvent
 	 *
 	 * @since   1.0
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($name)
 	{
 		$this->removeArgument($name);

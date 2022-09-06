@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -16,7 +16,7 @@ class RsformControllerRestore extends RsformController
 		$model	= $this->getModel('restore');
 		
 		// Redirect back to the backup restore screen.
-		$this->setRedirect('index.php?option=com_rsform&view=backuprestore');
+		$this->setRedirect('index.php?option=com_rsform&view=restorescreen');
 		
 		try {
 			// Attempt at restoring the file.

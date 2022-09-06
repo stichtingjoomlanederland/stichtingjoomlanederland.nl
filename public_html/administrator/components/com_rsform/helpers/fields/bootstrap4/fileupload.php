@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -20,4 +20,9 @@ class RSFormProFieldBootstrap4Fileupload extends RSFormProFieldFileUpload
 
         return $attr;
     }
+
+	protected function getButtonAttributes()
+	{
+		return array('class' => 'btn btn-secondary btn-sm rsfp-field-multiple-plus-button');
+	}
 }

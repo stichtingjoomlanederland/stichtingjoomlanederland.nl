@@ -1,13 +1,11 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
 defined('_JEXEC') or die('Restricted access');
-
-jimport('joomla.filesystem.folder');
 
 if (!function_exists('gzopen') && function_exists('gzopen64')) {
 	function gzopen($filename, $mode, $use_include_path = 0) {
@@ -74,8 +72,6 @@ class RSFormProRestore
 	}
 	
 	public function upload($file) {
-		jimport('joomla.filesystem.file');
-		
 		// Upload it to the temp location.
 		if (!JFile::upload($file['tmp_name'], $this->getPath(), false, true)) {
 			throw new Exception(sprintf('Could not copy "%s" to "%s"!', $file['name'], $this->path));
@@ -98,13 +94,11 @@ class RSFormProRestore
 		if (!$gzHandle) {
 			throw new Exception(sprintf('Could not open %s for reading!', $tgzFilePath));
 		}
-
-		jimport('joomla.filesystem.file');
 		
 		while (!gzeof($gzHandle)) {
 			if ($block = gzread($gzHandle, 512)) {				
 				$meta['filename']  	= trim(substr($block, 0, 99));
-				$meta['filesize']  	= octdec(substr($block, 124, 12));
+				$meta['filesize']  	= octdec(trim(substr($block, 124, 12)));
 				if ($bytes = ($meta['filesize'] % 512)) {
 					$meta['nullbytes'] = 512 - $bytes;
 				} else {
@@ -255,7 +249,7 @@ class RSFormProRestore
 			}
 			
 			// Allow plugins to clear their tables as well
-			JFactory::getApplication()->triggerEvent('rsfp_bk_onFormRestoreTruncate');
+			JFactory::getApplication()->triggerEvent('onRsformBackendFormRestoreTruncate');
 		}
 	}
 	

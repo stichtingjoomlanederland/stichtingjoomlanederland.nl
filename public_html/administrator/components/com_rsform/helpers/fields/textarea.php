@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -12,10 +12,9 @@ require_once JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/field.php';
 class RSFormProFieldTextarea extends RSFormProField
 {
 	// backend preview
-	public function getPreviewInput() {
+	public function getPreviewInput()
+	{
 		$value 		 = (string) $this->getProperty('DEFAULTVALUE', '');
-		$caption 	 = $this->getProperty('CAPTION','');
-		$size 		 = $this->getProperty('SIZE', 0);
 		$rows 		 = $this->getProperty('ROWS', 5);
 		$cols  		 = $this->getProperty('COLS', 50);
 		$placeholder = $this->getProperty('PLACEHOLDER', '');
@@ -25,17 +24,12 @@ class RSFormProFieldTextarea extends RSFormProField
 			$value 		= JText::_('RSFP_PHP_CODE_PLACEHOLDER');
 			$codeIcon	= RSFormProHelper::getIcon('php');
 		}
-		
-		$html = '<td>'.$caption.'</td>';
-		$html .= '<td>'.$codeIcon.'<textarea cols="'.(int) $cols.'" rows="'.(int) $rows.'" '.(!empty($placeholder) ? 'placeholder="'.$this->escape($placeholder).'"' : '').'>'.$this->escape($value).'</textarea></td>';
-		
-		return $html;
+
+		return $codeIcon . '<textarea cols="'.(int) $cols.'" rows="'.(int) $rows.'" '.(!empty($placeholder) ? 'placeholder="'.$this->escape($placeholder).'"' : '').'>'.$this->escape($value).'</textarea>';
 	}
 	
 	// functions used for rendering in front view
 	protected function getEditor() {
-		jimport('joomla.html.editor');
-		
 		static $editor = null;
 		
 		if (is_null($editor)) {
@@ -59,10 +53,11 @@ class RSFormProFieldTextarea extends RSFormProField
 		$attr			= $this->getAttributes();
 		$additional 	= '';
 		
-		if ($editor) {
-			$this->addScriptDeclaration('RSFormPro.Editors['.json_encode($name).'] = function() { try { return '.$this->getEditor()->getContent($id).' } catch (e) {} };');
+		if ($editor)
+		{
+			$this->addScriptDeclaration('RSFormPro.Editors[' . json_encode($name) . '] = function() { try { return Joomla.editors.instances[' . json_encode($id) . '].getValue(); } catch (e) { return null; } };');
 
-			return $this->getEditor()->display($name, $this->escape($value), $cols*10, $rows*10, $cols, $rows, $this->getProperty('WYSIWYGBUTTONS', 'NO'), $id, null, null,
+			return $this->getEditor()->display($name, $this->escape($value), ($cols ? $cols * 10 : 0), ($rows ? $rows * 10 : 0), $cols, $rows, $this->getProperty('WYSIWYGBUTTONS', 'NO'), $id, null, null,
 				array('relative_urls' => '0',
 				'cleanup_save' => '0',
 				'cleanup_startup' => '0',

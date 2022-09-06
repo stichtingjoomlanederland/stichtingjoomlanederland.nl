@@ -1,14 +1,22 @@
 <?php
+
 /**
  * Joomla! Content Management System
  *
- * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
+ * @copyright  (C) 2012 Open Source Matters, Inc. <https://www.joomla.org>
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 namespace Joomla\CMS\Exception;
 
-defined('JPATH_PLATFORM') or die;
+use Joomla\CMS\Application\CMSApplication;
+use Joomla\CMS\Error\AbstractRenderer;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Log\Log;
+
+// phpcs:disable PSR1.Files.SideEffects
+\defined('JPATH_PLATFORM') or die;
+// phpcs:enable PSR1.Files.SideEffects
 
 /**
  * Displays the custom error page when an uncaught exception occurs.
@@ -17,155 +25,193 @@ defined('JPATH_PLATFORM') or die;
  */
 class ExceptionHandler
 {
-	/**
-	 * Render the error page based on an exception.
-	 *
-	 * @param   \Exception|\Throwable  $error  An Exception or Throwable (PHP 7+) object for which to render the error page.
-	 *
-	 * @return  void
-	 *
-	 * @since   3.0
-	 */
-	public static function render($error)
-	{
-		$expectedClass = PHP_MAJOR_VERSION >= 7 ? '\Throwable' : '\Exception';
-		$isException   = $error instanceof $expectedClass;
+    /**
+     * Handles an error triggered with the E_USER_DEPRECATED level.
+     *
+     * @param   integer  $errorNumber   The level of the raised error, represented by the E_* constants.
+     * @param   string   $errorMessage  The error message.
+     * @param   string   $errorFile     The file the error was triggered from.
+     * @param   integer  $errorLine     The line number the error was triggered from.
+     *
+     * @return  boolean
+     *
+     * @since   4.0.0
+     */
+    public static function handleUserDeprecatedErrors(int $errorNumber, string $errorMessage, string $errorFile, int $errorLine): bool
+    {
+        // We only want to handle user deprecation messages, these will be triggered in code
+        if ($errorNumber === E_USER_DEPRECATED) {
+            try {
+                Log::add("$errorMessage - $errorFile - Line $errorLine", Log::WARNING, 'deprecated');
+            } catch (\Exception $e) {
+                // Silence
+            }
 
-		// In PHP 5, the $error object should be an instance of \Exception; PHP 7 should be a Throwable implementation
-		if ($isException)
-		{
-			try
-			{
-				// Try to log the error, but don't let the logging cause a fatal error
-				try
-				{
-					\JLog::add(
-						sprintf(
-							'Uncaught %1$s of type %2$s thrown. Stack trace: %3$s',
-							$expectedClass,
-							get_class($error),
-							$error->getTraceAsString()
-						),
-						\JLog::CRITICAL,
-						'error'
-					);
-				}
-				catch (\Throwable $e)
-				{
-					// Logging failed, don't make a stink about it though
-				}
-				catch (\Exception $e)
-				{
-					// Logging failed, don't make a stink about it though
-				}
+            // If debug mode is enabled, we want to let PHP continue to handle the error; otherwise, we can bail early
+            if (\defined('JDEBUG') && JDEBUG) {
+                return true;
+            }
+        }
 
-				$app = \JFactory::getApplication();
+        // Always return false, this will tell PHP to handle the error internally
+        return false;
+    }
 
-				// If site is offline and it's a 404 error, just go to index (to see offline message, instead of 404)
-				if ($error->getCode() == '404' && $app->get('offline') == 1)
-				{
-					$app->redirect('index.php');
-				}
+    /**
+     * Handles exceptions: logs errors and renders error page.
+     *
+     * @param   \Exception|\Throwable  $error  An Exception or Throwable (PHP 7+) object for which to render the error page.
+     *
+     * @return  void
+     *
+     * @since   3.10.0
+     */
+    public static function handleException(\Throwable $error)
+    {
+        static::logException($error);
+        static::render($error);
+    }
 
-				$attributes = array(
-					'charset'   => 'utf-8',
-					'lineend'   => 'unix',
-					'tab'       => "\t",
-					'language'  => 'en-GB',
-					'direction' => 'ltr',
-				);
+    /**
+     * Render the error page based on an exception.
+     *
+     * @param   \Throwable  $error  An Exception or Throwable (PHP 7+) object for which to render the error page.
+     *
+     * @return  void
+     *
+     * @since   3.0
+     */
+    public static function render(\Throwable $error)
+    {
+        try {
+            $app = Factory::getApplication();
 
-				// If there is a \JLanguage instance in \JFactory then let's pull the language and direction from its metadata
-				if (\JFactory::$language)
-				{
-					$attributes['language']  = \JFactory::getLanguage()->getTag();
-					$attributes['direction'] = \JFactory::getLanguage()->isRtl() ? 'rtl' : 'ltr';
-				}
+            // Flag if we are on cli
+            $isCli = $app->isClient('cli');
 
-				$document = \JDocument::getInstance('error', $attributes);
+            // If site is offline and it's a 404 error, just go to index (to see offline message, instead of 404)
+            if (!$isCli && $error->getCode() == '404' && $app->get('offline') == 1) {
+                $app->redirect('index.php');
+            }
 
-				if (!$document)
-				{
-					// We're probably in an CLI environment
-					jexit($error->getMessage());
-				}
+            /*
+             * Try and determine the format to render the error page in
+             *
+             * First we check if a Document instance was registered to Factory and use the type from that if available
+             * If a type doesn't exist for that format, we try to use the format from the application's Input object
+             * Lastly, if all else fails, we default onto the HTML format to at least render something
+             */
+            if (Factory::$document) {
+                $format = Factory::$document->getType();
+            } else {
+                $format = $app->input->getString('format', 'html');
+            }
 
-				// Get the current template from the application
-				$template = $app->getTemplate();
+            try {
+                $renderer = AbstractRenderer::getRenderer($format);
+            } catch (\InvalidArgumentException $e) {
+                // Default to the HTML renderer
+                $renderer = AbstractRenderer::getRenderer('html');
+            }
 
-				// Push the error object into the document
-				$document->setError($error);
+            // Reset the document object in the factory, this gives us a clean slate and lets everything render properly
+            Factory::$document = $renderer->getDocument();
+            Factory::getApplication()->loadDocument(Factory::$document);
 
-				if (ob_get_contents())
-				{
-					ob_end_clean();
-				}
+            $data = $renderer->render($error);
 
-				$document->setTitle(\JText::_('ERROR') . ': ' . $error->getCode());
+            // If nothing was rendered, just use the message from the Exception
+            if (empty($data)) {
+                $data = $error->getMessage();
+            }
 
-				$data = $document->render(
-					false,
-					array(
-						'template'  => $template,
-						'directory' => JPATH_THEMES,
-						'debug'     => JDEBUG,
-					)
-				);
+            if ($isCli) {
+                echo $data;
+            } else {
+                /** @var CMSApplication $app */
 
-				// Do not allow cache
-				$app->allowCache(false);
+                // Do not allow cache
+                $app->allowCache(false);
 
-				// If nothing was rendered, just use the message from the Exception
-				if (empty($data))
-				{
-					$data = $error->getMessage();
-				}
+                $app->setBody($data);
+            }
 
-				$app->setBody($data);
+            // This return is needed to ensure the test suite does not trigger the non-Exception handling below
+            return;
+        } catch (\Throwable $errorRendererError) {
+            // Pass the error down
+        }
 
-				echo $app->toString();
+        /*
+         * To reach this point in the code means there was an error creating the error page.
+         *
+         * Let global handler to handle the error, @see bootstrap.php
+         */
+        if (isset($errorRendererError)) {
+            /*
+             * Here the thing, at this point we have 2 exceptions:
+             * $errorRendererError  - the error caused by error renderer
+             * $error               - the main error
+             *
+             * We need to show both exceptions, without loss of trace information, so use a bit of magic to merge them.
+             *
+             * Use exception nesting feature: rethrow the exceptions, an exception thrown in a finally block
+             * will take unhandled exception as previous.
+             * So PHP will add $error Exception as previous to $errorRendererError Exception to keep full error stack.
+             */
+            try {
+                try {
+                    throw $error;
+                } finally {
+                    throw $errorRendererError;
+                }
+            } catch (\Throwable $finalError) {
+                throw $finalError;
+            }
+        } else {
+            throw $error;
+        }
+    }
 
-				$app->close(0);
+    /**
+     * Checks if given error belong to PHP exception class (\Throwable for PHP 7+, \Exception for PHP 5-).
+     *
+     * @param   mixed  $error  Any error value.
+     *
+     * @return  boolean
+     *
+     * @since   3.10.0
+     */
+    protected static function isException($error)
+    {
+        return $error instanceof \Throwable;
+    }
 
-				// This return is needed to ensure the test suite does not trigger the non-Exception handling below
-				return;
-			}
-			catch (\Throwable $e)
-			{
-				// Pass the error down
-			}
-			catch (\Exception $e)
-			{
-				// Pass the error down
-			}
-		}
-
-		// This isn't an Exception, we can't handle it.
-		if (!headers_sent())
-		{
-			header('HTTP/1.1 500 Internal Server Error');
-		}
-
-		$message = 'Error';
-
-		if ($isException)
-		{
-			// Make sure we do not display sensitive data in production environments
-			if (ini_get('display_errors'))
-			{
-				$message .= ': ';
-
-				if (isset($e))
-				{
-					$message .= $e->getMessage() . ': ';
-				}
-
-				$message .= $error->getMessage();
-			}
-		}
-
-		echo $message;
-
-		jexit(1);
-	}
+    /**
+     * Logs exception, catching all possible errors during logging.
+     *
+     * @param   \Throwable  $error  An Exception or Throwable (PHP 7+) object to get error message from.
+     *
+     * @return  void
+     *
+     * @since   3.10.0
+     */
+    protected static function logException(\Throwable $error)
+    {
+        // Try to log the error, but don't let the logging cause a fatal error
+        try {
+            Log::add(
+                sprintf(
+                    'Uncaught Throwable of type %1$s thrown with message "%2$s". Stack trace: %3$s',
+                    \get_class($error),
+                    $error->getMessage(),
+                    $error->getTraceAsString()
+                ),
+                Log::CRITICAL,
+                'error'
+            );
+        } catch (\Throwable $e) {
+            // Logging failed, don't make a stink about it though
+        }
+    }
 }

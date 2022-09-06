@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -40,19 +40,19 @@ class RsformViewDirectory extends JViewLegacy
         }
 
         // Add own CSS
-        if ($css_path = realpath($site_path.'/' . JHtml::stylesheet('com_rsform/directory.css', array('pathOnly' => true, 'relative' => true))))
+        if ($css_path = realpath($site_path.'/' . JHtml::_('stylesheet', 'com_rsform/directory.css', array('pathOnly' => true, 'relative' => true))))
         {
             $contents = '<link rel="stylesheet" href="' . $this->escape($css_path) . '" type="text/css"/>' . $contents;
         }
 
         // Allow plugins to use their own PDF library
-        $this->app->triggerEvent('rsfp_onPDFView', array($contents, $filename));
+        $this->app->triggerEvent('onRsformPdfView', array($contents, $filename));
 
         /*
          * Setup external configuration options
          */
         define('K_TCPDF_EXTERNAL_CONFIG', true);
-        define("K_PATH_MAIN", JPATH_LIBRARIES."/tcpdf");
+        define("K_PATH_MAIN", JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/tcpdf');
         define("K_PATH_URL", JPATH_BASE);
         define("K_PATH_FONTS", K_PATH_MAIN.'/fonts/');
         define("K_PATH_CACHE", K_PATH_MAIN."/cache");
@@ -68,7 +68,10 @@ class RsformViewDirectory extends JViewLegacy
          * Create the pdf document
          */
 
-        jimport('tcpdf.tcpdf');
+		if (!class_exists('TCPDF'))
+		{
+			require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/tcpdf/tcpdf.php';
+		}
 
         $pdf = new TCPDF();
         $pdf->SetMargins(15, 27, 15);

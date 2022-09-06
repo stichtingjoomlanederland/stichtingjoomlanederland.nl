@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -9,114 +9,79 @@ defined('_JEXEC') or die('Restricted access');
 
 class RsformControllerMappings extends RsformController
 {
-	public function getTables() {
-		$model		= $this->getModel('mappings');
-		$input		= JFactory::getApplication()->input;
+	public function getTables()
+	{
+		$app    = JFactory::getApplication();
+		$model	= $this->getModel('mappings');
+		$config	= $app->input->get('jform', array(), 'array');
 		
-		$config = array(
-			'connection' => $input->getInt('connection'),
-			'host' 		 => $input->get('host', '', 'raw'),
-			'driver'	 => $input->getCmd('driver'),
-			'port' 		 => $input->getInt('port'),
-			'username' 	 => $input->get('username', '', 'raw'),
-			'password' 	 => $input->get('password', '', 'raw'),
-			'database'   => $input->get('database', '', 'raw')
-		);
-
-		$html = '';
-		
-		try {
+		try
+		{
 			$tables = $model->getTables($config);
-			if (!is_array($tables)) {
-				$msg = 0;
-			} else {
-				$msg = 1;
-				$mtables = array(
-					JHtml::_('select.option', '0', JText::_('RSFP_FORM_MAPPINGS_SELECT_TABLE'))
-				);
-				if (!empty($tables) && is_array($tables)) {
-					foreach ($tables as $table) {
-						$mtables[] = JHtml::_('select.option',  $table);
-					}
-				}
-				
-				$html = '<table class="admintable">
-							<tr>
-								<td width="160" style="width: 160px;" align="right" class="key">'.JText::_('RSFP_FORM_MAPPINGS_TABLE').'</td>
-								<td>' . JHtml::_('select.genericlist',  $mtables, 'table', 'class="inputbox" onchange="mpColumns(this.value)"', 'value', 'text') . JHtml::image('com_rsform/admin/loading.gif', '', 'id="mappingloader2" style="vertical-align: middle; display: none;"',true) . '</td>
-							</tr>
-						</table>';
-			}
-			
-			echo $msg.'|'.$html;
-		} catch (Exception $e) {
-			echo $e->getMessage().'|';
+
+			echo json_encode(array('tables' => $tables));
+		}
+		catch (Exception $e)
+		{
+			echo json_encode(array('message' => $e->getMessage()));
 		}
 		
-		JFactory::getApplication()->close();
+		$app->close();
 	}
 	
-	public function getColumns() {
-		try {
-			$input = JFactory::getApplication()->input;
-			$cid   = $input->getInt('cid');
+	public function getColumns()
+	{
+		try
+		{
+			$app    = JFactory::getApplication();
+			$cid    = $app->input->getInt('cid');
+			$config	= $app->input->get('jform', array(), 'array');
+			$type   = $app->input->get('type', 'set');
+			$row    = null;
 			
-			if ($cid) {
+			if ($cid)
+			{
 				$row = JTable::getInstance('RSForm_Mappings', 'Table');
 				$row->load($cid);
 			}
-			
-			$config = array(
-				'connection' => $input->getInt('connection'),
-				'host' 		 => $input->get('host', '', 'raw'),
-				'driver'	 => $input->getCmd('driver'),
-				'port' 		 => $input->getInt('port'),
-				'username' 	 => $input->get('username', '', 'raw'),
-				'password' 	 => $input->get('password', '', 'raw'),
-				'database'   => $input->get('database', '', 'raw'),
-				'table'   	 => $input->get('table', '', 'raw')
-			);
-			
-			echo RSFormProHelper::mappingsColumns($config, $input->getCmd('type', 'set'), !empty($row) ? $row : null);
-		} catch (Exception $e) {
-			echo $e->getMessage().'|';
+
+			echo RSFormProHelper::mappingsColumns($config, $type, $row);
+		}
+		catch (Exception $e)
+		{
+			echo $e->getMessage();
 		}
 		
-		JFactory::getApplication()->close();
+		$app->close();
 	}
 	
-	public function save() {
-		$model 	= $this->getModel('mappings');
-		$row 	= $model->save();
+	public function save()
+	{
+		$app    = JFactory::getApplication();
+		$data   = $app->input->post->getArray(array(), null, 'raw');
+		$config	= $app->input->get('jform', array(), 'array');
+		$data   = array_merge($data, $config);
 
-		?>
-		<script type="text/javascript">
-		window.close();
-		
-		<?php if ($row !== false) { ?>
-			window.opener.ShowMappings(<?php echo $row->formId; ?>);
-		<?php } ?>
-		</script>
-		<?php
-		JFactory::getApplication()->close();
+		unset($data['jform']);
+
+		$model = $this->getModel('mappings');
+		$model->save($data);
+
+		JFactory::getDocument()->addScriptDeclaration("window.opener.mappingsShow(); window.close();");
 	}
 	
-	public function ordering() {
-		$db   		= JFactory::getDbo();
-		$post 		= RSFormProHelper::getRawPost();
+	public function saveOrdering()
+	{
+		$db   = JFactory::getDbo();
+		$data = JFactory::getApplication()->input->post->get('cid', array(), 'array');
 		
-		foreach ($post as $key => $val) {
-			$key = (int) str_replace('mpid_', '', $key);
-			$val = (int) $val;
-			if (empty($key)) {
-				continue;
-			}
-			
+		foreach ($data as $id => $val)
+		{
 			$query = $db->getQuery(true)
 						->update($db->qn('#__rsform_mappings'))
-						->set($db->qn('ordering').'='.$db->q($val))
-						->where($db->qn('id').'='.$db->q($key));
-			
+						->set($db->qn('ordering') . '=' . $db->q($val))
+						->where($db->qn('id') . '=' . $db->q($id));
+
 			$db->setQuery($query)
 			   ->execute();
 		}
@@ -124,7 +89,8 @@ class RsformControllerMappings extends RsformController
 		JFactory::getApplication()->close();
 	}
 	
-	public function remove() {
+	public function remove()
+	{
 		$input  = JFactory::getApplication()->input;
 		$model  = $this->getModel('mappings');
 		$formId = $input->getInt('formId');
@@ -141,7 +107,8 @@ class RsformControllerMappings extends RsformController
 		JFactory::getApplication()->close();
 	}
 	
-	public function showMappings() {
+	public function showMappings()
+	{
 		$input  = JFactory::getApplication()->input;
 		$formId = $input->getInt('formId');
 		

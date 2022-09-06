@@ -1,23 +1,25 @@
 <?php
+
 /**
  * @package     Joomla.Site
  * @subpackage  mod_breadcrumbs
  *
- * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
+ * @copyright   (C) 2005 Open Source Matters, Inc. <https://www.joomla.org>
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
 
-// Include the breadcrumbs functions only once
-JLoader::register('ModBreadCrumbsHelper', __DIR__ . '/helper.php');
+use Joomla\CMS\Helper\ModuleHelper;
+use Joomla\Module\Breadcrumbs\Site\Helper\BreadcrumbsHelper;
 
 // Get the breadcrumbs
-$list  = ModBreadCrumbsHelper::getList($params);
+$list  = BreadcrumbsHelper::getList($params, $app);
 $count = count($list);
 
-// Set the default separator
-$separator = ModBreadCrumbsHelper::setSeparator($params->get('separator'));
-$moduleclass_sfx = htmlspecialchars($params->get('moduleclass_sfx'), ENT_COMPAT, 'UTF-8');
+// Get the home fallback for json+ld
+if (!$params->get('showHome', 1)) {
+    $homeCrumb = BreadcrumbsHelper::getHome($params, $app);
+}
 
-require JModuleHelper::getLayoutPath('mod_breadcrumbs', $params->get('layout', 'default'));
+require ModuleHelper::getLayoutPath('mod_breadcrumbs', $params->get('layout', 'default'));

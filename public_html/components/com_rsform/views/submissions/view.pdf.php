@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -9,11 +9,16 @@ defined('_JEXEC') or die('Restricted access');
 
 class RsformViewSubmissions extends JViewLegacy
 {
+	/* @var $params Joomla\Registry\Registry */
+	protected $params;
+
+	protected $app;
+
 	public function display($tpl = null)
     {
         $this->app      = JFactory::getApplication();
 		$this->params 	= $this->app->getParams('com_rsform');
-		$this->template = $this->get('template');
+		$this->template = $this->get('detailTemplate');
 		
 		parent::display($tpl);
 
@@ -21,10 +26,23 @@ class RsformViewSubmissions extends JViewLegacy
         $contents = ob_get_contents();
         ob_end_clean();
 
-        $filename = 'export.pdf';
+        $filename = $this->params->get('export_filename', 'export.pdf');
+
+        // We're using placeholders, load and replace them
+        if (strpos($filename, '{') !== false)
+		{
+			list($replace, $with) = RSFormProHelper::getReplacements($this->app->input->getInt('cid'));
+
+			$filename = str_replace($replace, $with, $filename);
+		}
+
+        if (strtolower(substr($filename, -4)) !== '.pdf')
+		{
+			$filename .= '.pdf';
+		}
 
         // Allow plugins to use their own PDF library
-        $this->app->triggerEvent('rsfp_onPDFView', array($contents, $filename));
+        $this->app->triggerEvent('onRsformPdfView', array($contents, $filename));
 
         /*
          * Setup external configuration options
@@ -36,7 +54,7 @@ class RsformViewSubmissions extends JViewLegacy
          */
 
         // Installation path
-        define("K_PATH_MAIN", JPATH_LIBRARIES . "/tcpdf");
+        define("K_PATH_MAIN", JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/tcpdf');
 
         // URL path
         define("K_PATH_URL", JPATH_BASE);
@@ -76,7 +94,10 @@ class RsformViewSubmissions extends JViewLegacy
          * Create the pdf document
          */
 
-        jimport('tcpdf.tcpdf');
+		if (!class_exists('TCPDF'))
+		{
+			require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/tcpdf/tcpdf.php';
+		}
 
         $pdf = new TCPDF();
         $pdf->SetMargins(15, 27, 15);

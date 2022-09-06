@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -69,23 +69,28 @@ class RSFormProConfig
 		}
 	}
 	
-	public function set($key, $value) {
-		if (isset($this->config->$key)) {
+	public function set($key, $value, $updateDb = true) {
+		if (isset($this->config->{$key})) {
 			// convert values to appropriate type
 			$this->convert($key, $value);
 			
 			// refresh our value
-			$this->config->$key = $value;
-			
-			// prepare the query
-			$query = $this->db->getQuery(true);
-			$query->update('#__rsform_config')
-				  ->set($this->db->qn('SettingValue').'='.$this->db->q($value))
-				  ->where($this->db->qn('SettingName').'='.$this->db->q($key));
-			$this->db->setQuery($query);
-			
-			// run the query
-			return $this->db->execute();
+			$this->config->{$key} = $value;
+
+			if ($updateDb)
+			{
+				// prepare the query
+				$query = $this->db->getQuery(true);
+				$query->update('#__rsform_config')
+					->set($this->db->qn('SettingValue').'='.$this->db->q($value))
+					->where($this->db->qn('SettingName').'='.$this->db->q($key));
+				$this->db->setQuery($query);
+
+				// run the query
+				return $this->db->execute();
+			}
+
+			return true;
 		}
 		
 		return false;

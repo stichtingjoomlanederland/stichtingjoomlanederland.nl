@@ -10,6 +10,8 @@ RSFormPro.Restore = {
 	
 	currentFormId: 0,
 	keepId: 0,
+
+	key: '',
 	
 	requestTimeOut: {
 		Seconds : 0,
@@ -62,35 +64,33 @@ RSFormPro.Restore = {
 	// Show the list of forms to be restored
 	showList: function(metadata) {
 		// build the metadata info
-		var metaInfo = '<div class="alert alert-warning">';
-		metaInfo += '<h3>' + Joomla.JText._('RSFP_BACKUP_INFORMATION') + '</h3>';
-		metaInfo += '<dl class="dl-horizontal">';
-		metaInfo += '<dt>RSForm! Pro:</dt><dd>' + metadata.metaInfo.version + '</dd>';
-		metaInfo += '<dt>Joomla!:</dt><dd>' + metadata.metaInfo.cms + '</dd>';
-		metaInfo += '<dt>PHP:</dt><dd>' + metadata.metaInfo.php + '</dd>';
-		metaInfo += '<dt>' + Joomla.JText._('RSFP_BACKUP_OS') + ':</dt><dd>' + metadata.metaInfo.os + '</dd>';
-		metaInfo += '<dt>' + Joomla.JText._('RSFP_BACKUP_WEBSITE') + ':</dt><dd>' + metadata.metaInfo.url + '</dd>';
-		metaInfo += '<dt>' + Joomla.JText._('RSFP_BACKUP_AUTHOR') + ':</dt><dd>' + metadata.metaInfo.author + '</dd>';
-		metaInfo += '<dt>' + Joomla.JText._('RSFP_BACKUP_DATE') + ':</dt><dd>' + metadata.metaInfo.date + '</dd>';
-		metaInfo += '</dl>';
-		metaInfo += '</div>';
+
+		var backupContainer = jQuery('#backup-info-container');
+
+		backupContainer.find('#backup-rsform-pro-version').text(metadata.metaInfo.version);
+		backupContainer.find('#backup-joomla-version').text(metadata.metaInfo.cms);
+		backupContainer.find('#backup-php-version').text(metadata.metaInfo.php);
+		backupContainer.find('#backup-os').text(metadata.metaInfo.os);
+		backupContainer.find('#backup-url').text(metadata.metaInfo.url);
+		backupContainer.find('#backup-author').text(metadata.metaInfo.author);
+		backupContainer.find('#backup-date').text(metadata.metaInfo.date);
+
+		backupContainer.show();
 		
 		// build the Forms List
 		var forms = metadata.info;
-		var table = jQuery("<table>",{"class":"restoreForms table table-striped"});
-		// add the table headers
-		table.append('<th style="width:2%;">#</th><th>Form</th><th class="center" nowrap="nowrap" width="1%">Structure</th><th class="center" nowrap="nowrap" width="1%">Submissions</th>');
-		for(var i = 0; i < forms.length; i++) {
+
+		var contentsContainer = jQuery('#backup-contents-container');
+		var table = contentsContainer.find('tbody');
+
+		for (var i = 0; i < forms.length; i++) {
 			var tr 				= jQuery("<tr>");
 			var title 			= jQuery("<td>");
-			var statusForm 		= jQuery("<td>", {"class":"center", "id":'form-'+forms[i].id});
-			var submissionsForm = jQuery("<td>", {"class":"center", "id":'submissions-'+ forms[i].id});
+			var statusForm 		= jQuery("<td>", {"class":"center text-center", "id":'form-'+forms[i].id});
+			var submissionsForm = jQuery("<td>", {"class":"center text-center", "id":'submissions-'+ forms[i].id});
 			
 			// add the title of the form
 			title.append(forms[i].title + ' (' + forms[i].submissions + ')');
-			
-			// fill with blank space the columns for now
-			statusForm.append();
 			
 			// add the columns to the row
 			tr.append('<td>'+(i+1)+'</td>');
@@ -101,18 +101,12 @@ RSFormPro.Restore = {
 			// add the table row
 			table.append(tr);
 		}
-		if (jQuery('.alert').length > 0) {
-			jQuery('.alert-info').after(metaInfo);
-			jQuery('.alert-warning').after(table);
-		}
-		else {
-			jQuery('.progressWrapper').after(metaInfo);
-			jQuery('.alert-warning').after(table);
-		}
+
+		contentsContainer.show();
 	},
 	
 	getFormSubmissions : function(FormId) {
-		for (i=0; i < RSFormPro.Restore.formsFound.length; i++) {
+		for (var i=0; i < RSFormPro.Restore.formsFound.length; i++) {
 			if (FormId == RSFormPro.Restore.formsFound[i].id) {
 				return RSFormPro.Restore.formsFound[i].submissions;
 			}
@@ -239,10 +233,10 @@ RSFormPro.Restore = {
 		data['option'] 		= 'com_rsform';
 		data['controller'] 	= 'restore';
 		data['task']		= task;
-		data['key'] 		= jQuery('#restoreKey').val();
+		data['key'] 		= RSFormPro.Restore.key;
 		data['overwrite'] 	= RSFormPro.Restore.overwrite;
 		
-		if (RSFormPro.Restore.requestTimeOut.Seconds != 0 && task !='decompress') {
+		if (RSFormPro.Restore.requestTimeOut.Seconds > 0 && task !== 'decompress') {
 			setTimeout(function(){RSFormPro.Restore.ajaxRequest(data)}, RSFormPro.Restore.requestTimeOut.Milliseconds());
 		} else {
 			RSFormPro.Restore.ajaxRequest(data);
@@ -286,8 +280,6 @@ RSFormPro.Restore = {
 	
 	// Starts the restore process
 	start: function() {
-		RSFormPro.Restore.overwrite = parseInt(jQuery('#overwriteOption').val());
-		RSFormPro.Restore.keepId    = parseInt(jQuery('#keepIdOption').val());
 		RSFormPro.Restore.sendRequest('decompress');
 		RSFormPro.Restore.showStatus(Joomla.JText._('RSFP_DECOMPRESSING_ARCHIVE'));
 	},

@@ -1,0 +1,337 @@
+/**
+ * RBS5
+ *
+ * @author       R2H <post@r2h.nl>
+ * @copyright    R2H Marketing & Internet Solutions
+ * @license      GNU/GPLv3
+ */
+
+// Overwite core components
+//************************************************************
+
+// Body Font Weight
+body {
+  font-weight: var(--rbs5-body-font-weight);
+}
+
+.back-to-top-link {
+  position: fixed;
+}
+
+.aos-init {
+  overflow: visible;
+}
+
+// Layout styling
+/* -------------------------------------------------------- */
+/* Type */
+html {
+  font-size: 18pt;
+  }
+@media screen and (max-width: 1680px) {
+  html {
+    font-size: 14pt;
+  }
+}
+@media screen and (max-width: 1280px) {
+  html {
+    font-size: 12pt;
+  }
+}
+@media screen and (max-width: 736px) {
+  html {
+    font-size: 11pt;
+  }
+}
+@media screen and (max-width: 360px) {
+  html {
+    font-size: 10pt;
+  }
+}
+
+body {
+  background-color: #ffffff;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.container-component > * + *,
+.container-sidebar-left > * + *,
+.container-sidebar-right > * + * {
+  margin-top: 0;
+}
+
+// BLog layout styling
+// --------------------------------------------
+.blog-items {
+    margin: 0;
+    gap: 0;
+}
+
+.blog-item .item-image {
+  margin-top: 0;
+  margin-bottom: 0;
+  overflow: hidden;
+}
+
+// BLog layout styling: Leading items
+// --------------------------------------------
+.item-content {
+  padding: 7rem 7rem 5rem 7rem;
+
+  @include media-breakpoint-down(xl) {
+    padding: 3.75rem 3rem 1.75rem 3rem;
+  }
+
+  @include media-breakpoint-down(lg) {
+    padding: 2.5rem 2rem 0.5rem 2rem;
+  }
+}
+
+.items-leading .blog-item {
+  display: flex;
+  padding: 0;
+  overflow: hidden;
+  flex-direction: column-reverse;
+
+  .item-image {
+    width: 100%;
+
+    @include media-breakpoint-down(md) {
+      max-height: 380px;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  @include media-breakpoint-up(md) {
+    flex-direction: row;
+
+    .item-content {
+      width: 50%;
+    }
+
+    .item-image {
+      width: 50%;
+    }
+  }
+
+  &:nth-of-type(1) .item-image {
+    order: 1;
+  }
+}
+
+// BLog layout styling: Sub items
+// --------------------------------------------
+.image-alternate .blog-item {
+  display: flex;
+  padding: 0;
+  overflow: hidden;
+
+  box-shadow: inset 0 1px 0 0 rgb(0 0 0 / 8%);
+
+  @include media-breakpoint-up(md) {
+    flex-direction: row;
+  }
+
+  .item-image {
+    width: 100%;
+
+    @include media-breakpoint-down(md) {
+      max-height: 380px;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    @include media-breakpoint-up(md) {
+      width: 35%;
+      min-width: 25rem;
+    }
+  }
+
+  @include media-breakpoint-up(md) {
+    &:nth-of-type(2n) .item-image {
+      order: 1;
+    }
+
+    &:nth-of-type(2n) .item-content {
+      order: 0;
+    }
+  }
+}
+
+// Text styling
+// --------------------------------------------
+body, input, select, textarea {
+  line-height: 1.65;
+}
+
+.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
+  color: var(--heading-color);
+}
+
+p {
+  margin: 0 0 2rem 0;
+}
+
+blockquote {
+  font-size: 1.25rem;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+a {
+  transition: color 0.2s ease-in-out;
+  text-decoration: underline;
+}
+
+.fields-container {
+  list-style-type: none;
+  padding: 0;
+}
+
+.subtitel {
+  font-size: 1.25rem;
+  color: rgba(0, 0, 0, 0.75);
+  margin: -0.65rem 0 1.5rem 0;
+  font-style: italic;
+}
+
+.image-alternate .blog-item .item-content.small-content-block {
+  max-width: 1360px;
+  padding: 7rem 2rem;
+  margin: auto;
+}
+
+// RS Form Styling
+// ----------------------------------------------------------
+#rsform_1_page_0 {
+  .col-md-12 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    max-width: 800px;
+    margin: auto;
+  }
+
+  .rsform-block-bericht,
+  .rsform-block-verstuur {
+    grid-column-start: span 2;
+  }
+
+  .formControls {
+    text-align: center;
+  }
+}
+
+// Custom button | Link class: btn btn-joomla
+// ----------------------------------------------------------
+.btn-joomla {
+  transition: all 0.2s ease-in-out;
+  background-color: transparent;
+  color: var(--cassiopeia-color-primary);
+  border-color: #ccc;
+  border-radius: 30rem;
+  padding-left:2rem;
+  padding-right: 2rem;
+  text-transform: uppercase;
+  &:hover, &:focus {
+    background-color: transparent;
+    border-color: var(--cassiopeia-color-hover);
+    color: var(--cassiopeia-color-hover);
+  }
+}
+
+// Menu item page class | class: small-content
+// ----------------------------------------------------------
+.small-content {
+  .site-grid {
+    max-width: 1200px;
+    margin: 7rem auto;
+  }
+}
+
+// RSform JDideal dropdown
+// ----------------------------------------------------------
+.rsform-select-box {
+  width: 100%;
+  display: block;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #22262a;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+// Footer
+// ----------------------------------------------------------
+.container-footer-top {
+  background-color: #91c5ea;
+  .grid-child-footer {
+    max-width: 1200px;
+    margin: auto;
+    display: flex;
+    > * {
+
+
+      @include media-breakpoint-up(md) {
+        width: 50%;
+        padding-top: 2rem;
+
+        &:first-child {
+          border-right: 1px solid #749ebb;
+        }
+      }
+      @include media-breakpoint-down(md) {
+
+        &:first-child {
+
+          margin-bottom: 2rem;
+
+          &:after {
+            display: block;
+            content: '';
+            border-bottom: 1px solid #749ebb;
+            margin: auto;
+            max-width: 60%;
+          }
+
+        }
+      }
+    }
+
+    @include media-breakpoint-down(md) {
+      display: block;
+    }
+  }
+}
+
+.footer {
+  margin-top: 0;
+  color: var(--body-color-rgb);
+  background-color: #91c5ea;
+  background-image: none;
+}
+
+// Make module 100% width and break out of container / wrapper
+.stretch {
+  width: 100vw;
+  position: relative;
+  left: calc(-50vw + 50% - 1rem);
+  margin-top: 5rem;
+}

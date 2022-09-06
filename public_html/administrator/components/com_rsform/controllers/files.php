@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -18,7 +18,7 @@ class RsformControllerFiles extends RsformController
 	
 	public function upload() {
 		// Check for request forgeries
-		JSession::checkToken() or jexit('Invalid Token');
+		$this->checkToken();
 
 		// Get the model
 		$model  = $this->getModel('files');

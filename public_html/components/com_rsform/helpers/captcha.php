@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -17,62 +17,40 @@ class RSFormProCaptcha
     public $fontpath;
     public $fonts;
     public $data;
+    public $componentId;
 
-    public function __construct($componentId=0)
+    public function __construct($componentId)
 	{
+		$this->componentId = $componentId;
+
 		$this->data = RSFormProHelper::getComponentProperties($componentId);
 		
 		if (!isset($this->data['IMAGETYPE']))
+		{
 			$this->data['IMAGETYPE'] = 'FREETYPE';
+		}
+
 		if (!isset($this->data['LENGTH']))
+		{
 			$this->data['LENGTH'] = 4;
+		}
 		
-		if ($this->data['IMAGETYPE'] == 'INVISIBLE') {
+		if ($this->data['IMAGETYPE'] == 'INVISIBLE')
+		{
             die();
         }
-		
-		if (!function_exists('imagecreate'))
-		{
-		    JFactory::getApplication()->redirect(JHtml::_('image', 'com_rsform/nogd.gif', '', null, true, 1));
-		}
-		
-		if (JFactory::getDocument()->getType() != 'image')
-		{
-			header('Content-Type: image/png');
-		}
 		
 	    $this->Length = $this->data['LENGTH'];
 		$this->Size = !empty($this->data['SIZE']) && is_numeric($this->data['SIZE']) && $this->data['SIZE'] > 0 ? $this->data['SIZE'] : 15;
 
 	    $this->fontpath = JPATH_SITE.'/components/com_rsform/assets/fonts';
 	    $this->fonts    = $this->getFonts();
-		
-		if ($this->data['IMAGETYPE'] == 'FREETYPE')
-		{
-			if (!count($this->fonts))
-			{
-				$error = new RSFormProCaptchaError;
-				$error->addError('No fonts available!');
-				$error->displayError();
-				die();
-			}
-		
-			if (!function_exists('imagettftext'))
-			{
-				$error = new RSFormProCaptchaError;
-				$error->addError('The function imagettftext does not exist.');
-				$error->displayError();
-				die();
-			}
-		}
-		
+
 	    $this->stringGenerate();
-	    $this->makeCaptcha($componentId);
     }
 
     public function getFonts()
 	{
-		jimport('joomla.filesystem.folder');
 		return JFolder::files($this->fontpath, '\.ttf');
 	}
 	
@@ -84,7 +62,9 @@ class RSFormProCaptcha
 	public function stringGenerate()
 	{
 		if (!isset($this->data['TYPE']))
+		{
 			$this->data['TYPE'] = 'ALPHANUMERIC';
+		}
 			
     	switch ($this->data['TYPE'])
 		{
@@ -92,18 +72,50 @@ class RSFormProCaptcha
     		case 'NUMERIC': $CharPool = range('0','9'); break;
     		case 'ALPHANUMERIC': default: $CharPool = array_merge(range('0','9'),range('a','z')); break;
     	}
+
 		$PoolLength = count($CharPool) - 1;
 
 		for ($i = 0; $i < $this->Length; $i++)
+		{
 			$this->CaptchaString .= $CharPool[mt_rand(0, $PoolLength)];
+		}
+
+		$this->setSession();
     }
 
-    public function makeCaptcha($componentId=0)
+    public function makeCaptcha()
 	{
+		if (!function_exists('imagecreate'))
+		{
+			return file_get_contents(JPATH_SITE . '/media/com_rsform/images/nogd.gif');
+		}
+
+		if ($this->data['IMAGETYPE'] == 'FREETYPE')
+		{
+			if (!$this->fonts)
+			{
+				$error = new RSFormProCaptchaError;
+				$error->addError('No fonts available!');
+				return $error->displayError();
+			}
+
+			if (!function_exists('imagettftext'))
+			{
+				$error = new RSFormProCaptchaError;
+				$error->addError('The function imagettftext does not exist.');
+				return $error->displayError();
+			}
+		}
+
 		if (!isset($this->data['BACKGROUNDCOLOR']))
+		{
 			$this->data['BACKGROUNDCOLOR'] = '#FFFFFF';
+		}
+
 		if (!isset($this->data['TEXTCOLOR']))
+		{
 			$this->data['TEXTCOLOR'] = '#000000';
+		}
 			
 		$imagelength = $this->Length * $this->Size + 10;
 		$imageheight = $this->Size*1.6;
@@ -115,21 +127,29 @@ class RSFormProCaptcha
 		$stringcolor = imagecolorallocate($image, $usestrcolor[0], $usestrcolor[1], $usestrcolor[2]);
 
 		if ($this->data['IMAGETYPE'] == 'FREETYPE')
+		{
 			for ($i = 0; $i < strlen($this->CaptchaString); $i++)
 			{
 				imagettftext($image,$this->Size, mt_rand(-15,15), $i * $this->Size + 10,
-						$imageheight/100*80,
-						$stringcolor,
-						$this->getRandomFont(),
-						$this->CaptchaString{$i});
+					round($imageheight/100*80),
+					$stringcolor,
+					$this->getRandomFont(),
+					$this->CaptchaString[$i]);
 			}
+		}
 		
 		if ($this->data['IMAGETYPE'] == 'NOFREETYPE')
-			imagestring($image, mt_rand(3,5), 10, 0,  $this->CaptchaString, $stringcolor); 
-		
-		$this->addNoise($image, 7);
+		{
+			imagestring($image, mt_rand(3,5), 10, 0,  $this->CaptchaString, $stringcolor);
+		}
+
+		ob_start();
 		imagepng($image);
 		imagedestroy($image);
+		$data = ob_get_contents();
+		ob_end_clean();
+
+		return $data;
     }
 
 	public function addNoise(&$image, $runs = 30)
@@ -138,17 +158,24 @@ class RSFormProCaptcha
 		$h = imagesy($image);
 
 		for ($n = 0; $n < $runs; $n++)
+		{
 			for ($i = 1; $i <= $h; $i++)
 			{
 				$randcolor = imagecolorallocate($image, mt_rand(0, 255), mt_rand(0, 255), mt_rand(0, 255));
 				imagesetpixel($image, mt_rand(1, $w), mt_rand(1, $h), $randcolor);
 			}
+		}
     }
 	
     public function getCaptcha()
     {
 		return $this->CaptchaString;
     }
+
+    public function setSession()
+	{
+		JFactory::getSession()->set('com_rsform.captcha.captchaId' . $this->componentId, $this->getCaptcha());
+	}
 }
 
 class RSFormProCaptchaError
@@ -172,7 +199,13 @@ class RSFormProCaptchaError
 			$imx = ($i == 0) ? $i * 20 + 5 : $i * 20;
 			imagestring($image, 5, 5, $imx, $this->errors[$i], $stringcolor);
 		}
+
+		ob_start();
 		imagepng($image);
 		imagedestroy($image);
+		$data = ob_get_contents();
+		ob_end_clean();
+
+		return $data;
     }
 }

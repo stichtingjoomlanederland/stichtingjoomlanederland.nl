@@ -1,15 +1,15 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
 defined('_JEXEC') or die('Restricted access');
 ?>
 <form action="index.php" method="post" name="adminForm" id="adminForm">
-	<p><?php JText::sprintf('RSFP_ADD_TO_MENU', $this->formTitle); ?></p>
-	<table class="adminlist table table-striped" id="articleList">
+	<p><?php echo JText::sprintf('RSFP_ADD_TO_MENU', $this->formTitle); ?></p>
+	<table class="table table-striped">
 	<thead>
 		<tr>
 			<th width="20"><?php echo JText::_('#'); ?></th>

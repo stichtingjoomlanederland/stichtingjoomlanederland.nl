@@ -2,12 +2,11 @@
 /**
  * Part of the Joomla Framework Application Package
  *
- * @copyright  Copyright (C) 2005 - 2018 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2021 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
 namespace Joomla\Application\Web;
-
 
 /**
  * Class to model a Web Client.
@@ -30,105 +29,132 @@ namespace Joomla\Application\Web;
  */
 class WebClient
 {
-	const WINDOWS = 1;
+	const WINDOWS       = 1;
 	const WINDOWS_PHONE = 2;
-	const WINDOWS_CE = 3;
-	const IPHONE = 4;
-	const IPAD = 5;
-	const IPOD = 6;
-	const MAC = 7;
-	const BLACKBERRY = 8;
-	const ANDROID = 9;
-	const LINUX = 10;
-	const TRIDENT = 11;
-	const WEBKIT = 12;
-	const GECKO = 13;
-	const PRESTO = 14;
-	const KHTML = 15;
-	const AMAYA = 16;
-	const IE = 17;
-	const FIREFOX = 18;
-	const CHROME = 19;
-	const SAFARI = 20;
-	const OPERA = 21;
+	const WINDOWS_CE    = 3;
+	const IPHONE        = 4;
+	const IPAD          = 5;
+	const IPOD          = 6;
+	const MAC           = 7;
+	const BLACKBERRY    = 8;
+	const ANDROID       = 9;
+	const LINUX         = 10;
+	const TRIDENT       = 11;
+	const WEBKIT        = 12;
+	const GECKO         = 13;
+	const PRESTO        = 14;
+	const KHTML         = 15;
+	const AMAYA         = 16;
+	const IE            = 17;
+	const FIREFOX       = 18;
+	const CHROME        = 19;
+	const SAFARI        = 20;
+	const OPERA         = 21;
 	const ANDROIDTABLET = 22;
-	const EDGE = 23;
-	const BLINK = 24;
+	const EDGE          = 23;
+	const BLINK         = 24;
+	const EDG           = 25;
 
 	/**
-	 * @var    integer  The detected platform on which the web client runs.
+	 * The detected platform on which the web client runs.
+	 *
+	 * @var    integer
 	 * @since  1.0
 	 */
 	protected $platform;
 
 	/**
-	 * @var    boolean  True if the web client is a mobile device.
+	 * True if the web client is a mobile device.
+	 *
+	 * @var    boolean
 	 * @since  1.0
 	 */
 	protected $mobile = false;
 
 	/**
-	 * @var    integer  The detected rendering engine used by the web client.
+	 * The detected rendering engine used by the web client.
+	 *
+	 * @var    integer
 	 * @since  1.0
 	 */
 	protected $engine;
 
 	/**
-	 * @var    integer  The detected browser used by the web client.
+	 * The detected browser used by the web client.
+	 *
+	 * @var    integer
 	 * @since  1.0
 	 */
 	protected $browser;
 
 	/**
-	 * @var    string  The detected browser version used by the web client.
+	 * The detected browser version used by the web client.
+	 *
+	 * @var    string
 	 * @since  1.0
 	 */
 	protected $browserVersion;
 
 	/**
-	 * @var    array  The priority order detected accepted languages for the client.
+	 * The priority order detected accepted languages for the client.
+	 *
+	 * @var    array
 	 * @since  1.0
 	 */
-	protected $languages = array();
+	protected $languages = [];
 
 	/**
-	 * @var    array  The priority order detected accepted encodings for the client.
+	 * The priority order detected accepted encodings for the client.
+	 *
+	 * @var    array
 	 * @since  1.0
 	 */
-	protected $encodings = array();
+	protected $encodings = [];
 
 	/**
-	 * @var    string  The web client's user agent string.
+	 * The web client's user agent string.
+	 *
+	 * @var    string
 	 * @since  1.0
 	 */
 	protected $userAgent;
 
 	/**
-	 * @var    string  The web client's accepted encoding string.
+	 * The web client's accepted encoding string.
+	 *
+	 * @var    string
 	 * @since  1.0
 	 */
 	protected $acceptEncoding;
 
 	/**
-	 * @var    string  The web client's accepted languages string.
+	 * The web client's accepted languages string.
+	 *
+	 * @var    string
 	 * @since  1.0
 	 */
 	protected $acceptLanguage;
 
 	/**
-	 * @var    boolean  True if the web client is a robot.
+	 * True if the web client is a robot.
+	 *
+	 * @var    boolean
 	 * @since  1.0
 	 */
 	protected $robot = false;
 
 	/**
-	 * @var    array  An array of flags determining whether or not a detection routine has been run.
+	 * An array of flags determining whether or not a detection routine has been run.
+	 *
+	 * @var    array
 	 * @since  1.0
 	 */
-	protected $detection = array();
+	protected $detection = [];
 
 	/**
-	 * @var    array  An array of headers sent by client
+	 * An array of headers sent by client.
+	 *
+	 * @var    array
 	 * @since  1.3.0
 	 */
 	protected $headers;
@@ -194,6 +220,7 @@ class WebClient
 				{
 					$this->detectPlatform($this->userAgent);
 				}
+
 				break;
 
 			case 'engine':
@@ -201,6 +228,7 @@ class WebClient
 				{
 					$this->detectEngine($this->userAgent);
 				}
+
 				break;
 
 			case 'browser':
@@ -209,6 +237,7 @@ class WebClient
 				{
 					$this->detectBrowser($this->userAgent);
 				}
+
 				break;
 
 			case 'languages':
@@ -216,6 +245,7 @@ class WebClient
 				{
 					$this->detectLanguage($this->acceptLanguage);
 				}
+
 				break;
 
 			case 'encodings':
@@ -223,6 +253,7 @@ class WebClient
 				{
 					$this->detectEncoding($this->acceptEncoding);
 				}
+
 				break;
 
 			case 'robot':
@@ -230,20 +261,29 @@ class WebClient
 				{
 					$this->detectRobot($this->userAgent);
 				}
+
 				break;
+
 			case 'headers':
 				if (empty($this->detection['headers']))
 				{
 					$this->detectHeaders();
 				}
+
 				break;
 		}
 
 		// Return the property if it exists.
-		if (isset($this->$name))
+		if (property_exists($this, $name))
 		{
 			return $this->$name;
 		}
+
+		$trace = debug_backtrace();
+		trigger_error(
+			'Undefined property via __get(): ' . $name . ' in ' . $trace[0]['file'] . ' on line ' . $trace[0]['line'],
+			E_USER_NOTICE
+		);
 	}
 
 	/**
@@ -257,45 +297,52 @@ class WebClient
 	 */
 	protected function detectBrowser($userAgent)
 	{
+		$patternBrowser = '';
+
 		// Attempt to detect the browser type.  Obviously we are only worried about major browsers.
 		if ((stripos($userAgent, 'MSIE') !== false) && (stripos($userAgent, 'Opera') === false))
 		{
-			$this->browser = self::IE;
+			$this->browser  = self::IE;
 			$patternBrowser = 'MSIE';
 		}
 		elseif (stripos($userAgent, 'Trident') !== false)
 		{
-			$this->browser = self::IE;
+			$this->browser  = self::IE;
 			$patternBrowser = ' rv';
 		}
 		elseif (stripos($userAgent, 'Edge') !== false)
 		{
-			$this->browser = self::EDGE;
+			$this->browser  = self::EDGE;
 			$patternBrowser = 'Edge';
+		}
+		elseif (stripos($userAgent, 'Edg') !== false)
+		{
+			$this->browser  = self::EDG;
+			$patternBrowser = 'Edg';
 		}
 		elseif ((stripos($userAgent, 'Firefox') !== false) && (stripos($userAgent, 'like Firefox') === false))
 		{
-			$this->browser = self::FIREFOX;
+			$this->browser  = self::FIREFOX;
 			$patternBrowser = 'Firefox';
 		}
 		elseif (stripos($userAgent, 'OPR') !== false)
 		{
-			$this->browser = self::OPERA;
+			$this->browser  = self::OPERA;
 			$patternBrowser = 'OPR';
 		}
 		elseif (stripos($userAgent, 'Chrome') !== false)
 		{
-			$this->browser = self::CHROME;
+			$this->browser  = self::CHROME;
 			$patternBrowser = 'Chrome';
 		}
 		elseif (stripos($userAgent, 'Safari') !== false)
 		{
-			$this->browser = self::SAFARI;
+			$this->browser  = self::SAFARI;
 			$patternBrowser = 'Safari';
 		}
 		elseif (stripos($userAgent, 'Opera') !== false)
 		{
-			$this->browser = self::OPERA;
+			$this->browser  = self::OPERA;
 			$patternBrowser = 'Opera';
 		}
 
@@ -306,12 +353,12 @@ class WebClient
 			$pattern = '#(?<browser>Version|' . $patternBrowser . ')[/ :]+(?<version>[0-9.|a-zA-Z.]*)#';
 
 			// Attempt to find version strings in the user agent string.
-			$matches = array();
+			$matches = [];
 
 			if (preg_match_all($pattern, $userAgent, $matches))
 			{
 				// Do we have both a Version and browser match?
-				if (count($matches['browser']) == 2)
+				if (\count($matches['browser']) == 2)
 				{
 					// See whether Version or browser came first, and use the number accordingly.
 					if (strripos($userAgent, 'Version') < strripos($userAgent, $patternBrowser))
@@ -323,7 +370,7 @@ class WebClient
 						$this->browserVersion = $matches['version'][1];
 					}
 				}
-				elseif (count($matches['browser']) > 2)
+				elseif (\count($matches['browser']) > 2)
 				{
 					$key = array_search('Version', $matches['browser']);
 
@@ -333,8 +380,8 @@ class WebClient
 					}
 				}
 				else
-				// We only have a Version or a browser so use what we have.
 				{
+					// We only have a Version or a browser so use what we have.
 					$this->browserVersion = $matches['version'][0];
 				}
 			}
@@ -382,6 +429,10 @@ class WebClient
 		{
 			$this->engine = self::EDGE;
 		}
+		elseif (stripos($userAgent, 'Edg') !== false)
+		{
+			$this->engine = self::BLINK;
+		}
 		elseif (stripos($userAgent, 'Chrome') !== false)
 		{
 			$result  = explode('/', stristr($userAgent, 'Chrome'));
@@ -424,14 +475,14 @@ class WebClient
 
 			if (preg_match('/Opera[\/| ]?([0-9.]+)/u', $userAgent, $match))
 			{
-				$version = floatval($match[1]);
+				$version = (float) ($match[1]);
 			}
 
 			if (preg_match('/Version\/([0-9.]+)/u', $userAgent, $match))
 			{
-				if (floatval($match[1]) >= 10)
+				if ((float) ($match[1]) >= 10)
 				{
-					$version = floatval($match[1]);
+					$version = (float) ($match[1]);
 				}
 			}
 
@@ -496,19 +547,19 @@ class WebClient
 			// Let's look at the specific mobile options in the Windows space.
 			if (stripos($userAgent, 'Windows Phone') !== false)
 			{
-				$this->mobile = true;
+				$this->mobile   = true;
 				$this->platform = self::WINDOWS_PHONE;
 			}
 			elseif (stripos($userAgent, 'Windows CE') !== false)
 			{
-				$this->mobile = true;
+				$this->mobile   = true;
 				$this->platform = self::WINDOWS_CE;
 			}
 		}
 		elseif (stripos($userAgent, 'iPhone') !== false)
 		{
 			// Interestingly 'iPhone' is present in all iOS devices so far including iPad and iPods.
-			$this->mobile = true;
+			$this->mobile   = true;
 			$this->platform = self::IPHONE;
 
 			// Let's look at the specific mobile options in the iOS space.
@@ -524,13 +575,13 @@ class WebClient
 		elseif (stripos($userAgent, 'iPad') !== false)
 		{
 			// In case where iPhone is not mentioed in iPad user agent string
-			$this->mobile = true;
+			$this->mobile   = true;
 			$this->platform = self::IPAD;
 		}
 		elseif (stripos($userAgent, 'iPod') !== false)
 		{
 			// In case where iPhone is not mentioed in iPod user agent string
-			$this->mobile = true;
+			$this->mobile   = true;
 			$this->platform = self::IPOD;
 		}
 		elseif (preg_match('/macintosh|mac os x/i', $userAgent))
@@ -540,14 +591,15 @@ class WebClient
 		}
 		elseif (stripos($userAgent, 'Blackberry') !== false)
 		{
-			$this->mobile = true;
+			$this->mobile   = true;
 			$this->platform = self::BLACKBERRY;
 		}
 		elseif (stripos($userAgent, 'Android') !== false)
 		{
-			$this->mobile = true;
+			$this->mobile   = true;
 			$this->platform = self::ANDROID;
-			/**
+
+			/*
 			 * Attempt to distinguish between Android phones and tablets
 			 * There is no totally foolproof method but certain rules almost always hold
 			 *   Android 3.x is only used for tablets
@@ -556,7 +608,7 @@ class WebClient
 			 *   In some modes Kindle Android devices include the string Mobile but they include the string Silk.
 			 */
 			if (stripos($userAgent, 'Android 3') !== false || stripos($userAgent, 'Tablet') !== false
-				|| stripos($userAgent, 'Mobile') === false || stripos($userAgent, 'Silk') !== false )
+				|| stripos($userAgent, 'Mobile') === false || stripos($userAgent, 'Silk') !== false)
 			{
 				$this->platform = self::ANDROIDTABLET;
 			}
@@ -581,14 +633,7 @@ class WebClient
 	 */
 	protected function detectRobot($userAgent)
 	{
-		if (preg_match('/http|bot|bingbot|googlebot|robot|spider|slurp|crawler|curl|^$/i', $userAgent))
-		{
-			$this->robot = true;
-		}
-		else
-		{
-			$this->robot = false;
-		}
+		$this->robot = (bool) preg_match('/http|bot|robot|spider|crawler|curl|^$/i', $userAgent);
 
 		$this->detection['robot'] = true;
 	}
@@ -602,15 +647,15 @@ class WebClient
 	 */
 	protected function detectHeaders()
 	{
-		if (function_exists('getallheaders'))
-		// If php is working under Apache, there is a special function
+		if (\function_exists('getallheaders'))
 		{
+			// If php is working under Apache, there is a special function
 			$this->headers = getallheaders();
 		}
 		else
-		// Else we fill headers from $_SERVER variable
 		{
-			$this->headers = array();
+			// Else we fill headers from $_SERVER variable
+			$this->headers = [];
 
 			foreach ($_SERVER as $name => $value)
 			{

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="component" version="3.7.0" method="upgrade">
 	<name>com_rsform</name>
-	<creationDate>March 2018</creationDate>
+	<creationDate>June 2021</creationDate>
 	<author>RSJoomla!</author>
 	<authorEmail>support@rsjoomla.com</authorEmail>
 	<authorUrl>www.rsjoomla.com</authorUrl>
-	<copyright>(C) 2007-2018 www.rsjoomla.com</copyright>
+	<copyright>(C) 2007-2022 www.rsjoomla.com</copyright>
 	<license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license> 
-	<version>2.1.4</version>
+	<version>3.1.0</version>
 	<description>COM_RSFORM_INSTALL_DESC</description>
 	<scriptfile>script.rsform.php</scriptfile>
 
@@ -78,11 +78,13 @@
 	<administration>
 		<menu>RSFormPro</menu>
 		<submenu>
+			  <menu link="option=com_rsform">COM_RSFORM_DASHBOARD</menu>
 			  <menu view="forms">COM_RSFORM_MANAGE_FORMS</menu>
 			  <menu view="submissions">COM_RSFORM_MANAGE_SUBMISSIONS</menu>
 			  <menu view="directory">COM_RSFORM_MANAGE_DIRECTORY_SUBMISSIONS</menu>
 			  <menu view="configuration">COM_RSFORM_CONFIGURATION</menu>
-			  <menu view="backuprestore">COM_RSFORM_BACKUP_RESTORE</menu>
+			  <menu view="backupscreen">COM_RSFORM_BACKUP_SCREEN</menu>
+			  <menu view="restorescreen">COM_RSFORM_RESTORE_SCREEN</menu>
 		</submenu>
 		
 		<files folder="admin">			
@@ -95,12 +97,10 @@
 			<folder>tables</folder>
 			<folder>views</folder>
 			<filename>access.xml</filename>
-			<filename>admin.rsform.php</filename>
 			<filename>config.xml</filename>
 			<filename>controller.php</filename>
 			<filename>index.html</filename>
 			<filename>rsform.php</filename>
-			<filename>toolbar.rsform.php</filename>
 		</files>
 		
 		<languages folder="admin/language">

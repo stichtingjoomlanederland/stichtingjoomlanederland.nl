@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -84,11 +84,29 @@ class RSFormProBackupXML
 		return $this->add('?xml version="1.0" encoding="utf-8"?');
 	}
 	
-	public function add($tag, $value = null) {
+	public function add()
+	{
+		$args = func_get_args();
+
+		if (count($args) === 1)
+		{
+			$single = true;
+			$tag = $args[0];
+		}
+		else
+		{
+			$single = false;
+			$tag = $args[0];
+			$value = $args[1];
+		}
+
 		// If a value is not supplied, this means that we're adding a single tag.
-		if (is_null($value)) {
+		if ($single)
+		{
 			$this->buffer .= "<$tag>\n";
-		} else {
+		}
+		else
+		{
 			$this->buffer .= "<$tag>".$this->escape($value)."</$tag>\n";
 		}
 		

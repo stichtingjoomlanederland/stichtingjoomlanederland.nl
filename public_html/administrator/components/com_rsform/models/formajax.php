@@ -1,7 +1,7 @@
 <?php
 /**
  * @package RSForm! Pro
- * @copyright (C) 2007-2014 www.rsjoomla.com
+ * @copyright (C) 2007-2019 www.rsjoomla.com
  * @license GPL, http://www.gnu.org/copyleft/gpl.html
  */
 
@@ -15,15 +15,11 @@ class RsformModelFormajax extends JModelLegacy
 		return ($a->Ordering < $b->Ordering) ? -1 : 1;
 	}
 	
-	protected function getTooltip($name) {
-		static $lang;
-		if (!$lang) {
-			$lang = JFactory::getLanguage();
-		}
-		
+	protected function getTooltip($name)
+	{
 		$tooltip = '';
 		
-		if ($lang->hasKey('RSFP_COMP_FIELD_'.$name.'_DESC')) {
+		if (JFactory::getLanguage()->hasKey('RSFP_COMP_FIELD_'.$name.'_DESC')) {
 			$title = JText::_('RSFP_COMP_FIELD_'.$name);
 			$content = JText::_('RSFP_COMP_FIELD_'.$name.'_DESC');
 			$tooltip .= ' class="fieldHasTooltip" data-content="'. $content .'" data-title="' . $title . '"';
@@ -39,12 +35,14 @@ class RsformModelFormajax extends JModelLegacy
 		$return = array(
 			'general'		=> array(),
 			'validations' 	=> array(),
-			'attributes' 	=> array()
+			'attributes' 	=> array(),
+			'editor'		=> array()
 		);
 		$data = $this->getComponentData();
 
-		$general		= array('NAME','CAPTION','LABEL','DEFAULTVALUE','ITEMS','TEXT','DESCRIPTION','COMPONENTTYPE');
+		$general		= array('NAME','CAPTION','LABEL','DEFAULTVALUE','ITEMS','DESCRIPTION','COMPONENTTYPE');
 		$validations	= array('REQUIRED','VALIDATIONRULE','VALIDATIONMESSAGE','VALIDATIONEXTRA', 'VALIDATIONDATE');
+		$editor			= array('TEXT');
 
 		$componentId = $this->getComponentId();
 		$componentType = $this->getComponentType();
@@ -61,10 +59,15 @@ class RsformModelFormajax extends JModelLegacy
 		foreach ($results as $i => $result)
 		{
 			if ($result->FieldName == 'ADDITIONALATTRIBUTES')
+			{
 				$results[$i]->Ordering = 1001;
+			}
 		}
 
 		usort($results, array($this, 'sortFields'));
+
+		$multilanguageDisabled = RSFormProHelper::getConfig('global.disable_multilanguage');
+		$translateIcon = RSFormProHelper::translateIcon();
 
 		foreach ($results as $result)
 		{
@@ -74,6 +77,9 @@ class RsformModelFormajax extends JModelLegacy
 			$field->label = '<label for="'.$field->name.'" id="caption' . $field->name.'" '.$this->getTooltip($field->name).'>'.$field->caption.'</label>';
 			$field->body = '';
 			$field->type = $result->FieldType;
+			$field->translatable = !$multilanguageDisabled && in_array($result->FieldName, $translatable) && $result->FieldType != 'hiddenparam' && $result->FieldType != 'hidden';
+
+			$additional = 'class="form-control"';
 
 			switch ($result->FieldType)
 			{
@@ -92,15 +98,18 @@ class RsformModelFormajax extends JModelLegacy
 							$value = $values;
 					}
 
-					$additional = '';
-
 					if ($result->Properties != ''){
 						$additional .= ' data-properties="'. $result->Properties .'"';
 					}
 
 					$type = $result->FieldType == 'textbox' ? 'text' : 'color';
 
-					$field->body .= '<input type="' . $type . '" id="'.$field->name.'" name="param['.$field->name.']" value="'.RSFormProHelper::htmlEscape($value).'" '.$additional.' class="rsform_inp" />';
+					$field->body .= '<input type="' . $type . '" id="'.$field->name.'" name="param['.$field->name.']" value="'.RSFormProHelper::htmlEscape($value).'" '.$additional.' />';
+
+					if ($field->translatable)
+					{
+						$field->body = RSFormProAdapterGrid::inputAppend($field->body, $translateIcon);
+					}
 				}
 					break;
 
@@ -109,38 +118,53 @@ class RsformModelFormajax extends JModelLegacy
 					if ($componentId > 0)
 					{
 						if (!isset($data[$field->name]))
+						{
 							$data[$field->name] = '';
+						}
 
 						if ($lang->hasKey('RSFP_COMP_FVALUE_'.$data[$field->name]))
+						{
 							$value = JText::_('RSFP_COMP_FVALUE_'.$data[$field->name]);
+						}
 						else
+						{
 							$value = $data[$field->name];
+						}
 					}
 					else
 					{
 						$values = RSFormProHelper::isCode($result->FieldValues);
 
 						if ($lang->hasKey('RSFP_COMP_FVALUE_'.$values))
+						{
 							$value = JText::_('RSFP_COMP_FVALUE_'.$values);
+						}
 						else
+						{
 							$value = $values;
+						}
 					}
 
-					$additional = '';
-
-					if ($result->Properties != ''){
-						$additional .= 'data-properties="'. $result->Properties .'"';
+					if ($result->Properties != '')
+					{
+						$additional .= ' data-properties="'. $result->Properties .'"';
 						$additional .= ' data-tags="' .RSFormProHelper::htmlEscape($value). '" ';
 					}
 
-					$field->body .= '<textarea id="'.$field->name.'" name="param['.$field->name.']" rows="5" cols="20" class="rsform_txtarea" '. $additional .'>'.RSFormProHelper::htmlEscape($value).'</textarea>';
+					$field->body .= '<textarea id="'.$field->name.'" name="param['.$field->name.']" rows="5" cols="20" '. $additional .'>'.RSFormProHelper::htmlEscape($value).'</textarea>';
+
+					if ($field->translatable)
+					{
+						$field->body = RSFormProAdapterGrid::inputAppend($field->body, $translateIcon);
+					}
 				}
 					break;
 
 				case 'select':
 				case 'selectmultiple':
-				{					
-					$additional = '';
+				{
+					$additional = 'class="form-control form-select"';
+
 					/**
 					 * determine if we have a json in the properties.
 					 * used to create the conditional fields
@@ -211,12 +235,12 @@ class RsformModelFormajax extends JModelLegacy
 					break;
 			}
 
-			$field->translatable = (in_array($result->FieldName, $translatable) && $result->FieldType != 'hiddenparam' && $result->FieldType != 'hidden');
-
 			if (in_array($field->name, $general) || $result->FieldType == 'hidden' || $result->FieldType == 'hiddenparam')
 				$return['general'][] = $field;
 			elseif (in_array($field->name, $validations) || strpos($field->name, 'VALIDATION') !== false)
 				$return['validations'][] = $field;
+			elseif (in_array($field->name, $editor))
+				$return['editor'][] = $field;
 			else
 				$return['attributes'][] = $field;
 		}
@@ -254,22 +278,21 @@ class RsformModelFormajax extends JModelLegacy
 		return $cid;
 	}
 
-	public function getI()
-	{
-		return JFactory::getApplication()->input->getInt('i');
-	}
-
 	public function getComponent()
 	{
-		$componentId = $this->getComponentId();
-		$return 	 = new stdClass();
-		
-		$query = $this->_db->getQuery(true)
-			->select($this->_db->qn('Published'))
-			->from($this->_db->qn('#__rsform_components'))
-			->where($this->_db->qn('ComponentId') . ' = ' . $this->_db->q($componentId));
-		
-		$return->published = $this->_db->setQuery($query)->loadResult();
+		$componentId 		= $this->getComponentId();
+		$return 	 		= new stdClass();
+		$return->published 	= 1;
+
+		if ($componentId)
+		{
+			$query = $this->_db->getQuery(true)
+				->select($this->_db->qn('Published'))
+				->from($this->_db->qn('#__rsform_components'))
+				->where($this->_db->qn('ComponentId') . ' = ' . $this->_db->q($componentId));
+
+			$return->published = $this->_db->setQuery($query)->loadResult();
+		}
 
 		// required?
 		$data = $this->getComponentData();
@@ -324,5 +347,12 @@ class RsformModelFormajax extends JModelLegacy
 		}
 
 		$this->_db->setQuery($query)->execute();
+	}
+
+	public function getPublished()
+	{
+		$component = $this->getComponent();
+
+		return JHtml::_('select.booleanlist', 'Published', '', $component->published);
 	}
 }

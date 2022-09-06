@@ -21,13 +21,14 @@
 				$filter_src,
 				$action,
 				$skip,
-				$array;
+				$array,
+				$el = $(element);
 
-			$action = $(element).attr('data-filter-type') ? $(element).attr('data-filter-type') : '';
-			$filter_src = $(element).attr('data-filter') ? $(element).attr('data-filter').split(',') : [];
-			$skip = $(element).attr('data-skip') ? $(element).attr('data-skip').split(',') : [];
+			$action = $el.attr('data-filter-type') ? $el.attr('data-filter-type') : '';
+			$filter_src = $el.attr('data-filter') ? $el.attr('data-filter').split(',') : [];
+			$skip = $el.attr('data-skip') ? $el.attr('data-skip').split(',') : [];
 
-			$filter = {
+			var $filter = {
 				action: $action,
 				filter: $filter_src,
 				skip  : $skip
@@ -39,9 +40,17 @@
 				$html += '<li><a href="javascript:void(0)" class="rsfp-dropdown-placeholder" data-value="' + this + '">' + this + '</a></li>'
 			});
 
-			$(element).after('<div class="rsfp-dropdown-list-container"><button class="placeholders-input-append" id="' + $(element).attr('id') + '-list" type="button">&#9660;</button><ul class="rsfp-dropdown-list" data-target="' + $(element).attr('id') + '-list">' + $html + '</ul></div>');
+			var classes = ['placeholders-input-append', 'btn', 'btn-primary'];
+			if (!$el.hasClass('form-control'))
+			{
+				classes.push('btn-sm');
+			}
 
-			this.initDropdowns($('#' + $(element).attr('id') + '-list'));
+			$el.after('<div class="rsfp-dropdown-list-container"><button class="' + classes.join(' ') + '" id="' + $el.attr('id') + '-list" type="button">&#9660;</button><ul class="rsfp-dropdown-list" data-target="' + $el.attr('id') + '-list">' + $html + '</ul></div>');
+
+			var escapedId = CSS.escape($el.attr('id'));
+
+			this.initDropdowns($('#' + escapedId + '-list'));
 		};
 
 		this.initDropdowns = function (element) {
@@ -65,7 +74,7 @@
 
 		this.filterPlaceholders = function (filter, placeholders) {
 			$.each(filter.skip, function (e, value) {
-				$filter = value;
+				var $filter = value;
 				placeholders = $.grep(placeholders, function (value, index) {
 					return !String(value).match($filter);
 				});
@@ -73,9 +82,9 @@
 
 			switch (filter.action) {
 				case 'include':
-					$newArray = [];
+					var $newArray = [];
 					$.each(filter.filter, function () {
-						$filter = this;
+						var $filter = this;
 						$.each(placeholders, function (e, value) {
 							if (String(value).match($filter)) {
 								$newArray.push(this);
@@ -86,7 +95,7 @@
 					break;
 				case 'exclude':
 					$.each(filter.filter, function (e, value) {
-						$filter = value;
+						var $filter = value;
 						placeholders = $.grep(placeholders, function (value, index) {
 							return !String(value).match($filter);
 						});
@@ -151,7 +160,7 @@
 			}
 			
 			$('html').click(function (e) {
-				if (e.target.className !== 'placeholders-input-append') {
+				if (!e.target.classList.contains('placeholders-input-append')) {
 					$('.rsfp-dropdown-list').hide();
 				}
 			});

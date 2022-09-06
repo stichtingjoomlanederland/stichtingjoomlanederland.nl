@@ -1,20 +1,25 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
 defined('_JEXEC') or die('Restricted access');
 ?>
-<h3 class="rsfp-legend"><?php echo JText::_('RSFP_SCRIPTS_DISPLAY'); ?></h3>
-<p class="alert alert-info"><?php echo JText::_('RSFP_SCRIPTS_DISPLAY_DESC'); ?></p>
-<?php echo RSFormProHelper::showEditor('ScriptDisplay', $this->form->ScriptDisplay, array('classes' => 'rs_100', 'syntax' => 'php')); ?>
-
-<h3 class="rsfp-legend"><?php echo JText::_('RSFP_SCRIPTS_PROCESS'); ?></h3>
-<p class="alert alert-info"><?php echo JText::_('RSFP_SCRIPTS_PROCESS_DESC'); ?></p>
-<?php echo RSFormProHelper::showEditor('ScriptProcess', $this->form->ScriptProcess, array('classes' => 'rs_100', 'syntax' => 'php')); ?>
-
-<h3 class="rsfp-legend"><?php echo JText::_('RSFP_SCRIPTS_PROCESS2'); ?></h3>
-<p class="alert alert-info"><?php echo JText::_('RSFP_SCRIPTS_PROCESS2_DESC'); ?></p>
-<?php echo RSFormProHelper::showEditor('ScriptProcess2', $this->form->ScriptProcess2, array('classes' => 'rs_100', 'syntax' => 'php')); ?>
+<div class="<?php echo RSFormProAdapterGrid::row(); ?>">
+	<div class="<?php echo RSFormProAdapterGrid::column(12); ?>">
+		<fieldset>
+			<?php
+			foreach ($this->jform->getFieldset('scripts') as $field)
+			{
+				?>
+				<legend class="rsfp-legend"><?php echo $field->title; ?></legend>
+				<div class="alert alert-info"><?php echo JText::_($field->description); ?></div>
+				<?php
+				echo $field->input;
+			}
+			?>
+		</fieldset>
+	</div>
+</div>

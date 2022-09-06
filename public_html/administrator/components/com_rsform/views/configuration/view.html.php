@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -21,16 +21,10 @@ class RsformViewConfiguration extends JViewLegacy
 		JToolbarHelper::apply('configuration.apply');
 		JToolbarHelper::save('configuration.save');
 		JToolbarHelper::cancel('configuration.cancel');
-		
-		// tabs
+
 		$this->tabs		 = $this->get('RSTabs');
-		// fields
-		$this->field	 = $this->get('RSFieldset');
-		// form
 		$this->form		 = $this->get('Form');
 		$this->fieldsets = $this->form->getFieldsets();
-		
-		$this->sidebar	= $this->get('SideBar');
 		
 		parent::display($tpl);
 	}

@@ -1,0 +1,26 @@
+{
+  "name": "rolandd/ropayments",
+  "description": "Payment support for Joomla",
+  "minimum-stability": "stable",
+  "license": "GPL v3",
+  "authors": [
+    {
+      "name": "RolandD Cyber Produksi",
+      "email": "contact@rolandd.com"
+    }
+  ],
+  "require": {
+    "gingerpayments/ginger-php": "^2.1",
+    "mollie/mollie-api-php": "^2.0",
+    "opensdks/omnikassa2-sdk": "^1.6",
+    "sisow/php-client": "^1.0",
+    "stripe/stripe-php": "^v7.0"
+  },
+  "config": {
+    "process-timeout": 0,
+    "sort-packages": true,
+    "platform": {
+      "php": "7.4.0"
+    }
+  }
+}

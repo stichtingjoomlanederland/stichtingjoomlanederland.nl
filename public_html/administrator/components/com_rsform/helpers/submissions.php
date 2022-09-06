@@ -1,7 +1,7 @@
 <?php
 /**
  * @package RSForm! Pro
- * @copyright (C) 2007-2014 www.rsjoomla.com
+ * @copyright (C) 2007-2019 www.rsjoomla.com
  * @license GPL, http://www.gnu.org/copyleft/gpl.html
  */
 
@@ -64,7 +64,7 @@ abstract class RSFormProSubmissionsHelper
 
             // Load form
             $query
-                ->select(array('DeletionEmailTo', 'DeletionEmailCC', 'DeletionEmailBCC', 'DeletionEmailFrom', 'DeletionEmailReplyTo', 'DeletionEmailFromName', 'DeletionEmailText', 'DeletionEmailSubject', 'DeletionEmailMode'))
+                ->select(array('DeletionEmailTo', 'DeletionEmailCC', 'DeletionEmailBCC', 'DeletionEmailFrom', 'DeletionEmailReplyTo', 'DeletionEmailReplyToName', 'DeletionEmailFromName', 'DeletionEmailText', 'DeletionEmailSubject', 'DeletionEmailMode'))
                 ->from($db->qn('#__rsform_forms'))
                 ->where($db->qn('FormId') . ' = ' . $db->q($formId));
             $form = $db->setQuery($query)->loadObject();
@@ -97,6 +97,7 @@ abstract class RSFormProSubmissionsHelper
                 'bcc' => str_replace($placeholders, $values, $form->DeletionEmailBCC),
                 'from' => str_replace($placeholders, $values, $form->DeletionEmailFrom),
                 'replyto' => str_replace($placeholders, $values, $form->DeletionEmailReplyTo),
+                'replytoName' => str_replace($placeholders, $values, $form->DeletionEmailReplyToName),
                 'fromName' => str_replace($placeholders, $values, $form->DeletionEmailFromName),
                 'text' => str_replace($placeholders, $values, $form->DeletionEmailText),
                 'subject' => str_replace($placeholders, $values, $form->DeletionEmailSubject),
@@ -112,13 +113,13 @@ abstract class RSFormProSubmissionsHelper
                 $deletionEmail['bcc'] = explode(',', $deletionEmail['bcc']);
             }
 
-            JFactory::getApplication()->triggerEvent('rsfp_beforeDeletionEmail', array(array('form' => &$form, 'placeholders' => &$placeholders, 'values' => &$values, 'submissionId' => $SubmissionId, 'userEmail'=> &$deletionEmail)));
+            JFactory::getApplication()->triggerEvent('onRsformBeforeDeletionEmail', array(array('form' => &$form, 'placeholders' => &$placeholders, 'values' => &$values, 'submissionId' => $SubmissionId, 'deletionEmail'=> &$deletionEmail)));
 
             if ($deletionEmail['to'])
             {
                 $recipients = explode(',', $deletionEmail['to']);
 
-                RSFormProHelper::sendMail($deletionEmail['from'], $deletionEmail['fromName'], $recipients, $deletionEmail['subject'], $deletionEmail['text'], $deletionEmail['mode'], !empty($deletionEmail['cc']) ? $deletionEmail['cc'] : null, !empty($deletionEmail['bcc']) ? $deletionEmail['bcc'] : null, null, !empty($deletionEmail['replyto']) ? $deletionEmail['replyto'] : '');
+                RSFormProHelper::sendMail($deletionEmail['from'], $deletionEmail['fromName'], $recipients, $deletionEmail['subject'], $deletionEmail['text'], $deletionEmail['mode'], !empty($deletionEmail['cc']) ? $deletionEmail['cc'] : null, !empty($deletionEmail['bcc']) ? $deletionEmail['bcc'] : null, null, !empty($deletionEmail['replyto']) ? $deletionEmail['replyto'] : '', !empty($deletionEmail['replytoName']) ? $deletionEmail['replytoName'] : null, '', $formId);
             }
         }
 
@@ -159,7 +160,11 @@ abstract class RSFormProSubmissionsHelper
 
             foreach ($formIds as $formId)
             {
-                if ($fields = RSFormProHelper::componentExists($formId, RSFORM_FIELD_FILEUPLOAD, false))
+				$fields = RSFormProHelper::componentExists($formId, RSFORM_FIELD_FILEUPLOAD, false);
+
+				JFactory::getApplication()->triggerEvent('onRsformDeleteSubmissionFiles', array($fields, $formId, $cid));
+
+                if ($fields)
                 {
                     $allData = RSFormProHelper::getComponentProperties($fields);
                     foreach ($fields as $field)
@@ -179,14 +184,17 @@ abstract class RSFormProSubmissionsHelper
                             ->where($db->qn('FieldValue') . ' != ' . $db->q(''));
                         if ($files = $db->setQuery($query)->loadColumn())
                         {
-                            jimport('joomla.filesystem.file');
-
                             foreach ($files as $file)
                             {
-                                if (file_exists($file) && is_file($file))
-                                {
-                                    JFile::delete($file);
-                                }
+                            	$file = RSFormProHelper::explode($file);
+
+                            	foreach ($file as $actualFile)
+								{
+									if (file_exists($actualFile) && is_file($actualFile))
+									{
+										JFile::delete($actualFile);
+									}
+								}
                             }
                         }
                     }
@@ -251,8 +259,6 @@ abstract class RSFormProSubmissionsHelper
                     ->where($db->qn('FieldValue') . ' != ' . $db->q(''));
                 if ($files = $db->setQuery($query)->loadColumn())
                 {
-                    jimport('joomla.filesystem.file');
-
                     foreach ($files as $file)
                     {
                         if (file_exists($file) && is_file($file))

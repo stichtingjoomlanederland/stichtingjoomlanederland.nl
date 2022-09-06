@@ -3,12 +3,13 @@
  * @package     Joomla.Administrator
  * @subpackage  com_search
  *
- * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
+ * @copyright   (C) 2006 Open Source Matters, Inc. <https://www.joomla.org>
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
 
+use Joomla\CMS\Component\ComponentHelper;
 use Joomla\String\StringHelper;
 
 /**
@@ -148,34 +149,6 @@ class SearchHelper
 	}
 
 	/**
-	 * Logs a search term.
-	 *
-	 * @param   string  $search_term  The term being searched.
-	 *
-	 * @return  void
-	 *
-	 * @since   1.5
-	 * @deprecated  4.0  Use \Joomla\CMS\Helper\SearchHelper::logSearch() instead.
-	 */
-	public static function logSearch($search_term)
-	{
-		try
-		{
-			JLog::add(
-				sprintf('%s() is deprecated. Use \Joomla\CMS\Helper\SearchHelper::logSearch() instead.', __METHOD__),
-				JLog::WARNING,
-				'deprecated'
-			);
-		}
-		catch (RuntimeException $exception)
-		{
-			// Informational log only
-		}
-
-		\Joomla\CMS\Helper\SearchHelper::logSearch($search_term, 'com_search');
-	}
-
-	/**
 	 * Prepares results from search for display.
 	 *
 	 * @param   string  $text        The source string.
@@ -287,8 +260,9 @@ class SearchHelper
 		$lsearchword = StringHelper::strtolower(self::remove_accents($searchword));
 		$wordfound   = false;
 		$pos         = 0;
+		$length      = $length > $textlen ? $textlen : $length;
 
-		while ($wordfound === false && $pos < $textlen)
+		while ($wordfound === false && $pos + $length < $textlen)
 		{
 			if (($wordpos = @StringHelper::strpos($ltext, ' ', $pos + $length)) !== false)
 			{
@@ -310,11 +284,48 @@ class SearchHelper
 
 		if ($wordfound !== false)
 		{
-			return (($pos > 0) ? '...&#160;' : '') . StringHelper::substr($text, $pos, $chunk_size) . '&#160;...';
+			// Check if original text is different length than searched text (changed by function self::remove_accents)
+			// Displayed text only, adjust $chunk_size
+			if ($pos === 0)
+			{
+				$iOriLen = StringHelper::strlen(StringHelper::substr($text, 0, $pos + $chunk_size));
+				$iModLen = StringHelper::strlen(self::remove_accents(StringHelper::substr($text, 0, $pos + $chunk_size)));
+
+				$chunk_size += $iOriLen - $iModLen;
+			}
+			else
+			{
+				$iOriSkippedLen = StringHelper::strlen(StringHelper::substr($text, 0, $pos));
+				$iModSkippedLen = StringHelper::strlen(self::remove_accents(StringHelper::substr($text, 0, $pos)));
+
+				// Adjust starting position $pos
+				if ($iOriSkippedLen !== $iModSkippedLen)
+				{
+					$pos += $iOriSkippedLen - $iModSkippedLen;
+				}
+
+				$iOriReturnLen = StringHelper::strlen(StringHelper::substr($text, $pos, $chunk_size));
+				$iModReturnLen = StringHelper::strlen(self::remove_accents(StringHelper::substr($text, $pos, $chunk_size)));
+
+				if ($iOriReturnLen !== $iModReturnLen)
+				{
+					$chunk_size += $iOriReturnLen - $iModReturnLen;
+				}
+			}
+
+			$sPre = $pos > 0 ? '...&#160;' : '';
+			$sPost = ($pos + $chunk_size) >= StringHelper::strlen($text) ? '' : '&#160;...';
+
+			return $sPre . StringHelper::substr($text, $pos, $chunk_size) . $sPost;
 		}
 		else
 		{
-			if (($wordpos = @StringHelper::strpos($text, ' ', $length)) !== false)
+			if (($mbtextlen = StringHelper::strlen($text)) < $length)
+			{
+				$length = $mbtextlen;
+			}
+
+			if (($wordpos = StringHelper::strpos($text, ' ', $length)) !== false)
 			{
 				return StringHelper::substr($text, 0, $wordpos) . '&#160;...';
 			}
@@ -322,6 +333,58 @@ class SearchHelper
 			{
 				return StringHelper::substr($text, 0, $length);
 			}
+		}
+	}
+
+	/**
+	 * Method to log search terms to the database
+	 *
+	 * @param   string  $term       The term being searched
+	 * @param   string  $component  The component being used for the search
+	 *
+	 * @return  void
+	 *
+	 * @since   3.0
+	 */
+	public static function oldlogSearch($term, $component)
+	{
+		// Initialise our variables
+		$db = \JFactory::getDbo();
+		$query = $db->getQuery(true);
+		$enable_log_searches = ComponentHelper::getParams($component)->get('enabled');
+
+		// Sanitise the term for the database
+		$search_term = $db->escape(trim(strtolower($term)));
+
+		if ($enable_log_searches)
+		{
+			// Query the table to determine if the term has been searched previously
+			$query->select($db->quoteName('hits'))
+				->from($db->quoteName('#__core_log_searches'))
+				->where($db->quoteName('search_term') . ' = ' . $db->quote($search_term));
+			$db->setQuery($query);
+			$hits = (int) $db->loadResult();
+
+			// Reset the $query object
+			$query->clear();
+
+			// Update the table based on the results
+			if ($hits)
+			{
+				$query->update($db->quoteName('#__core_log_searches'))
+					->set('hits = (hits + 1)')
+					->where($db->quoteName('search_term') . ' = ' . $db->quote($search_term));
+			}
+			else
+			{
+				$query->insert($db->quoteName('#__core_log_searches'))
+					->columns(array($db->quoteName('search_term'), $db->quoteName('hits')))
+					->values($db->quote($search_term) . ', 1');
+			}
+
+			// Execute the update query
+			$db->setQuery($query);
+			$db->execute();
 		}
 	}
 }

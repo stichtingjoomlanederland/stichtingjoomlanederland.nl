@@ -1,13 +1,14 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
 defined('_JEXEC') or die('Restricted access');
 $listOrder	= $this->escape($this->filter_order);
 $listDirn	= $this->escape($this->filter_order_Dir);
+
 JHtml::_('bootstrap.tooltip');
 
 JText::script('RSFP_SUBM_DIR_PLEASE_SELECT_AT_LEAST_ONE');
@@ -19,14 +20,14 @@ JText::script('RSFP_SUBM_DIR_PLEASE_SELECT_AT_LEAST_ONE');
 
 <form action="<?php echo $this->escape($this->url); ?>" method="post" name="adminForm" id="adminForm" class="form-inline">
 	<?php if ($this->hasSearchFields || $this->directory->enablecsv) { ?>
-	<div class="well well-small">
+	<div class="rsfp-directory-search">
 		<?php if ($this->hasSearchFields) { ?>
 		<?php echo JText::_('RSFP_SEARCH'); ?> <input type="text" id="rsfilter" name="filter_search" value="<?php echo $this->escape($this->filter_search); ?>" onchange="RSFormProDirectory.submit();" />
-		<button type="button" class="btn btn-primary button" onclick="RSFormProDirectory.submit();"><?php echo JText::_('RSFP_GO'); ?></button>
-		<button type="button" class="btn button" onclick="RSFormProDirectory.reset();"><?php echo JText::_('RSFP_RESET'); ?></button>
+		<button type="button" class="btn btn-primary" onclick="RSFormProDirectory.submit();"><?php echo JText::_('RSFP_GO'); ?></button>
+		<button type="button" class="btn btn-secondary" onclick="RSFormProDirectory.reset();"><?php echo JText::_('RSFP_RESET'); ?></button>
 		<?php } ?>
 		<?php if ($this->directory->enablecsv) { ?>
-		<button onclick="RSFormProDirectory.downloadCSV();" type="button" class="btn button pull-right"><?php echo JText::_('RSFP_SUBM_DIR_DOWNLOAD_CSV'); ?></button>
+		<button onclick="RSFormProDirectory.downloadCSV();" type="button" class="btn btn-secondary"><?php echo JText::_('RSFP_SUBM_DIR_DOWNLOAD_CSV'); ?></button>
 		<div class="clearfix"></div>
 		<?php } ?>
 	</div>

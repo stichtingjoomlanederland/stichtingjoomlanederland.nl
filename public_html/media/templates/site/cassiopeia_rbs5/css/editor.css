@@ -1,0 +1,6 @@
+@import "../../cassiopeia/css/global/colors_standard.css";
+@import "template.min.css";
+
+html, body {
+    font-size: 16px;
+}

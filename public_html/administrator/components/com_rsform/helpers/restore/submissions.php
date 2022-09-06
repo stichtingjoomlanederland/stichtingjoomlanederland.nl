@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -54,41 +54,51 @@ class RSFormProRestoreSubmissions
 		}
 	}
 	
-	public function restore() {		
-		foreach ($this->xml->children() as $submission) {
+	public function restore()
+	{
+		foreach ($this->xml->children() as $submission)
+		{
 			$data = array(
-				$this->db->qn('FormId').'='.$this->db->q($this->formId)
+				'FormId' => $this->formId
 			);
 		
-			foreach ($submission as $property => $value) {
+			foreach ($submission as $property => $value)
+			{
 				// Skip form ID for now
-				if ($property == 'values') {
+				if ($property == 'values')
+				{
 					continue;
 				}
-				
-				$data[] = $this->db->qn($property).'='.$this->db->q((string) $value);
+
+				if ($property === 'UserId')
+				{
+					$value = (int) (string) $value;
+				}
+
+				$data[$property] = (string) $value;
 			}
+
+			$data = (object) $data;
+
+			$this->db->insertObject('#__rsform_submissions', $data, 'SubmissionId');
 			
-			$query = $this->db->getQuery(true);
-			$query	->insert('#__rsform_submissions')
-					->set($data);
-			$this->db->setQuery($query)->execute();
-			
-			$submissionId = $this->db->insertid();
+			$submissionId = $data->SubmissionId;
 			
 			// insert submission values
-			if (isset($submission->values)) {
-				foreach ($submission->values->children() as $value) {
-					
-					$query = $this->db->getQuery(true);
-					$query	->insert('#__rsform_submission_values')
-							->set(array(
-									$this->db->qn('FormId')			.'='.$this->db->q($this->formId),
-									$this->db->qn('SubmissionId')	.'='.$this->db->q($submissionId),
-									$this->db->qn('FieldName')		.'='.$this->db->q((string) $value->fieldname),
-									$this->db->qn('FieldValue')		.'='.$this->db->q((string) $value->fieldvalue)
-							));
-					$this->db->setQuery($query)->execute();
+			if (isset($submission->values))
+			{
+				foreach ($submission->values->children() as $value)
+				{
+					$data = array(
+						'FormId' => $this->formId,
+						'SubmissionId' => $submissionId,
+						'FieldName' => (string) $value->fieldname,
+						'FieldValue' => (string) $value->fieldvalue
+					);
+
+					$data = (object) $data;
+
+					$this->db->insertObject('#__rsform_submission_values', $data);
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -10,8 +10,6 @@ defined('_JEXEC') or die('Restricted access');
 require_once dirname(__FILE__).'/helper.php';
 require_once dirname(__FILE__).'/xml.php';
 require_once dirname(__FILE__).'/tar.php';
-
-jimport('joomla.filesystem.folder');
 
 class RSFormProBackup
 {
@@ -192,7 +190,16 @@ class RSFormProBackup
 		} else {
 			$name = 'backup';
 		}
-		RSFormProHelper::readFile($gzip, $name.'.tgz');
+		RSFormProHelper::readFile($gzip, $name.'.tgz', false);
+
+		unlink($gzip);
+
+		if (is_dir($this->path))
+		{
+			JFolder::delete($this->path);
+		}
+
+		exit();
 	}
 	
 	public function getPath() {

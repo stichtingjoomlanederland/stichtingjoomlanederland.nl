@@ -1,0 +1,98 @@
+/**
+ * RBS5
+ *
+ * @author       R2H <post@r2h.nl>
+ * @copyright    R2H Marketing & Internet Solutions
+ * @license      GNU/GPLv3
+ */
+
+// Scale breakpoint up for the grid layout
+@supports (display: grid) {
+  .site-grid {
+    @include media-breakpoint-up(md) {
+      grid-template-areas: ". head head head head ."
+      ". banner banner banner banner ."
+      ". top-a top-a top-a top-a ."
+      ". top-b top-b top-b top-b ."
+      ". comp comp comp comp ."
+      ". side-r side-r side-r side-r ."
+      ". side-l side-l side-l side-l ."
+      ". bot-a bot-a bot-a bot-a ."
+      ". bot-b bot-b bot-b bot-b ."
+      ". footer footer footer footer ."
+      ". debug debug debug debug .";
+    }
+
+    @include media-breakpoint-up(lg) {
+      grid-template-areas: ". head head head head ."
+        ". banner banner banner banner ."
+        ". top-a top-a top-a top-a ."
+        ". top-b top-b top-b top-b ."
+        ". side-l comp comp side-r ."
+        ". bot-a bot-a bot-a bot-a ."
+        ". bot-b bot-b bot-b bot-b ."
+        ". footer footer footer footer ."
+        ". debug debug debug debug .";
+    }
+  }
+
+  // Remove the side gutters for 100% width
+  body.wrapper-fluid.no-side-gutters .site-grid {
+    grid-template-columns: [main-start] repeat(4, minmax(0, 25%)) [main-end];
+    grid-gap: 0 2em;
+  }
+
+  .no-side-gutters {
+    .site-grid {
+      grid-template-areas:
+        "head head head head"
+        "banner banner banner banner"
+        "top-a top-a top-a top-a"
+        "top-b top-b top-b top-b"
+        "side-l comp comp side-r"
+        "bot-a bot-a bot-a bot-a"
+        "bot-b bot-b bot-b bot-b"
+        "footer footer footer footer"
+        "debug debug debug debug";
+
+      @include media-breakpoint-up(md) {
+        grid-template-areas: "head head head head"
+        "banner banner banner banner"
+        "top-a top-a top-a top-a"
+        "top-b top-b top-b top-b"
+        "comp comp comp comp"
+        "side-r side-r side-r side-r"
+        "side-l side-l side-l side-l"
+        "bot-a bot-a bot-a bot-a"
+        "bot-b bot-b bot-b bot-b"
+        "footer footer footer footer"
+        "debug debug debug debug";
+      }
+
+      @include media-breakpoint-up(lg) {
+        grid-template-areas: "head head head head"
+          "banner banner banner banner"
+          "top-a top-a top-a top-a"
+          "top-b top-b top-b top-b"
+          "side-l comp comp side-r"
+          "bot-a bot-a bot-a bot-a"
+          "bot-b bot-b bot-b bot-b"
+          "footer footer footer footer"
+          "debug debug debug debug";
+      }
+    }
+  }
+}
+
+// Let bootstrap respond to Cassiopeia fluid setting
+.wrapper-fluid {
+  .container-xxl {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .container-fluid {
+    padding-right: 2em;
+    padding-left: 2em;
+  }
+}

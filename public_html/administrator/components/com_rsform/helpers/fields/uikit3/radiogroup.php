@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -15,7 +15,7 @@ class RSFormProFieldUikit3RadioGroup extends RSFormProFieldRadioGroup
 		// For convenience
 		extract($data);
 		
-		return '<label for="'.$this->escape($id).$i.'">'.$this->buildInput($data).$item->label.'</label> ';
+		return '<label id="'.$this->escape($id).$i.'-lbl" for="'.$this->escape($id).$i.'">'.$this->buildInput($data) . ' ' . $item->label.'</label> ';
 	}
 	
 	public function buildItem($data) {

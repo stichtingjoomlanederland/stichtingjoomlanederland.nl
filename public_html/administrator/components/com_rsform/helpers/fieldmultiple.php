@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -38,16 +38,21 @@ class RSFormProFieldMultiple extends RSFormProField
 	public function getItems() {
 		// Get defined items list
 		$items = array();
-		if ($items = $this->getProperty('ITEMS')) {
-			if ($this->preview) {
-				if ($this->hasCode($items)) {
-					$items 	= JText::_('RSFP_PHP_CODE_PLACEHOLDER');
-					$codeIcon = RSFormProHelper::getIcon('php');
+		if ($items = $this->getProperty('ITEMS'))
+		{
+			if ($this->preview)
+			{
+				if ($this->hasCode($items))
+				{
+					$items = JText::_('RSFP_PHP_CODE_PLACEHOLDER');
 				}
-			} else {
+			}
+			else
+			{
 				// Check if it's a PHP code
 				$items = $this->isCode($items);
 			}
+
 			// Split them by newline
 			$items = $this->explode($items);
 		}

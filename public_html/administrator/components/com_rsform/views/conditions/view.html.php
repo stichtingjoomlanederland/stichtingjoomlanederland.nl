@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -20,25 +20,25 @@ class RsformViewConditions extends JViewLegacy
 		$condition		= $this->get('condition');
 		$allFields 		= $this->get('allFields');
 
-        $lists['allfields'] = JHtml::_('select.genericlist', $allFields, 'component_id', '', 'ComponentId', 'PropertyValue', $condition->component_id);
+        $lists['allfields'] = JHtml::_('select.genericlist', $allFields, 'component_id[]', array('multiple' => 'multiple', 'size' => 5, 'class' => 'advancedSelect conditionsSelect'), 'ComponentId', 'PropertyValue', $condition->component_id);
 
 		$actions = array(
 			JHtml::_('select.option', 'show', JText::_('RSFP_CONDITION_SHOW')),
 			JHtml::_('select.option', 'hide', JText::_('RSFP_CONDITION_HIDE'))
 		);
-		$lists['action'] = JHtml::_('select.genericlist', $actions, 'action', '', 'value', 'text', $condition->action);
+		$lists['action'] = JHtml::_('select.genericlist', $actions, 'action', array('class' => 'form-select d-inline-block w-auto'), 'value', 'text', $condition->action);
 		
 		$blocks = array(
 			JHtml::_('select.option', 1, JText::_('RSFP_CONDITION_BLOCK')),
 			JHtml::_('select.option', 0, JText::_('RSFP_CONDITION_FIELD'))
 		);
-		$lists['block'] = JHtml::_('select.genericlist', $blocks, 'block', '', 'value', 'text', $condition->block);
+		$lists['block'] = JHtml::_('select.genericlist', $blocks, 'block', array('class' => 'form-select d-inline-block w-auto'), 'value', 'text', $condition->block);
 		
 		$conditions = array(
 			JHtml::_('select.option', 'all', JText::_('RSFP_CONDITION_ALL')),
 			JHtml::_('select.option', 'any', JText::_('RSFP_CONDITION_ANY'))
 		);
-		$lists['condition'] = JHtml::_('select.genericlist', $conditions, 'condition', '', 'value', 'text', $condition->condition);
+		$lists['condition'] = JHtml::_('select.genericlist', $conditions, 'condition', array('class' => 'form-select d-inline-block w-auto'), 'value', 'text', $condition->condition);
 		
 		$operators = array(
 			JHtml::_('select.option', 'is', JText::_('RSFP_CONDITION_IS')),

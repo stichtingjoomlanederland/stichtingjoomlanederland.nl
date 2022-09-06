@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -15,10 +15,20 @@ defined('_JEXEC') or die('Restricted access');
 			</span>
 		</td>
 		<td>
-			<input type="checkbox" style="text-align: center" onchange="updateCSVPreview();" name="ExportHeaders" value="1" checked="checked" />
+			<input type="checkbox" onchange="updateCSVPreview();" name="ExportHeaders" value="1" checked="checked" />
 		</td>
 	</tr>
 	<?php if ($this->exportType == 'csv') { ?>
+	<tr>
+		<td width="200" style="width: 200px;" align="right" class="key">
+		<span class="<?php echo $this->tooltipClass; ?>" title="<?php echo RSFormProHelper::getTooltipText(JText::_('RSFP_EXPORT_STRIP_LINES'), JText::_('RSFP_EXPORT_STRIP_LINES_DESC')); ?>">
+			<?php echo JText::_('RSFP_EXPORT_STRIP_LINES');?>
+		</span>
+		</td>
+		<td>
+			<input type="checkbox" name="StripLines" value="1" />
+		</td>
+	</tr>
 	<tr>
 		<td width="200" style="width: 200px;" align="right" class="key">
 			<span class="<?php echo $this->tooltipClass; ?>" title="<?php echo RSFormProHelper::getTooltipText(JText::_('RSFP_EXPORT_DELIMITER'), JText::_('RSFP_EXPORT_DELIMITER_DESC')); ?>">

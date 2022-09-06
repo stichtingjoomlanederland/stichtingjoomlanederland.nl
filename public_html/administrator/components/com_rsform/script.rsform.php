@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2017 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/licenses/gpl-2.0.html
 */
 
@@ -10,6 +10,10 @@ defined('_JEXEC') or die('Restricted access');
 class com_rsformInstallerScript
 {
 	protected $source;
+
+	protected static $legacy = array('inline', '2lines', '2colsinline', '2cols2lines', 'inline-xhtml', '2lines-xhtml');
+
+	protected $warnPlugins = false;
 	
 	public function update($parent) {
 		$db = JFactory::getDbo();
@@ -19,13 +23,28 @@ class com_rsformInstallerScript
 		 * Create column here, so we can run the SQL immediately after
 		 */
 		$columns = $db->getTableColumns('#__rsform_component_type_fields', false);
-		if (!isset($columns['Properties'])) {
+		if (!isset($columns['Properties']))
+		{
 			$db->setQuery("ALTER TABLE `#__rsform_component_type_fields` ADD `Properties` TEXT NOT NULL AFTER `FieldValues`");
 			$db->execute();
 		}
 		if ($columns['FieldType']->Type != "varchar(32)") {
 			$db->setQuery("ALTER TABLE `#__rsform_component_type_fields` CHANGE `FieldType` `FieldType` VARCHAR( 32 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT 'hidden'");
 			$db->execute();
+		}
+
+		$columns = $db->getTableColumns('#__rsform_component_types');
+		if (!isset($columns['CanBeDuplicated']))
+		{
+			$db->setQuery("ALTER TABLE `#__rsform_component_types` ADD `CanBeDuplicated` tinyint(1) NOT NULL DEFAULT '1' AFTER `ComponentTypeName`");
+			$db->execute();
+
+			$query = $db->getQuery(true);
+			$query->update('#__rsform_component_types')
+				->set($db->qn('CanBeDuplicated') . ' = ' . $db->q(0))
+				->where($db->qn('ComponentTypeId') . ' = '. $db->q(8));
+
+			$db->setQuery($query)->execute();
 		}
 
 		// Add config data
@@ -55,7 +74,7 @@ class com_rsformInstallerScript
 			$db->execute();
 		}
 		if (!isset($columns['ScriptProcess2'])) {
-			$db->setQuery("ALTER TABLE #__rsform_forms ADD `ScriptProcess2` TEXT NOT NULL AFTER `ScriptProcess`");
+			$db->setQuery("ALTER TABLE #__rsform_forms ADD `ScriptProcess2` mediumtext NOT NULL AFTER `ScriptProcess`");
 			$db->execute();
 		}
 		if (!isset($columns['UserEmailCC'])) {
@@ -70,6 +89,10 @@ class com_rsformInstallerScript
 			$db->setQuery("ALTER TABLE #__rsform_forms ADD `UserEmailReplyTo` VARCHAR (255) NOT NULL AFTER `UserEmailBCC`");
 			$db->execute();
 		}
+		if (!isset($columns['UserEmailReplyToName'])) {
+			$db->setQuery("ALTER TABLE #__rsform_forms ADD `UserEmailReplyToName` VARCHAR (255) NOT NULL AFTER `UserEmailReplyTo`");
+			$db->execute();
+		}
 		if (!isset($columns['AdminEmailCC'])) {
 			$db->setQuery("ALTER TABLE #__rsform_forms ADD `AdminEmailCC` VARCHAR (255) NOT NULL AFTER `AdminEmailTo`");
 			$db->execute();
@@ -80,6 +103,10 @@ class com_rsformInstallerScript
 		}
 		if (!isset($columns['AdminEmailReplyTo'])) {
 			$db->setQuery("ALTER TABLE #__rsform_forms ADD `AdminEmailReplyTo` VARCHAR (255) NOT NULL AFTER `AdminEmailBCC`");
+			$db->execute();
+		}
+		if (!isset($columns['AdminEmailReplyToName'])) {
+			$db->setQuery("ALTER TABLE #__rsform_forms ADD `AdminEmailReplyToName` VARCHAR (255) NOT NULL AFTER `AdminEmailReplyTo`");
 			$db->execute();
 		}
 		if (!isset($columns['LoadFormLayoutFramework'])) {
@@ -110,11 +137,11 @@ class com_rsformInstallerScript
 			}
 		}
 		if (!isset($columns['CSS'])) {
-			$db->setQuery("ALTER TABLE `#__rsform_forms` ADD `CSS` TEXT NOT NULL AFTER `FormLayoutAutogenerate` ,".
-						  " ADD `JS` TEXT NOT NULL AFTER `CSS` ,".
+			$db->setQuery("ALTER TABLE `#__rsform_forms` ADD `CSS` mediumtext NOT NULL AFTER `FormLayoutAutogenerate` ,".
+						  " ADD `JS` mediumtext NOT NULL AFTER `CSS` ,".
 						  " ADD `ShowThankyou` TINYINT( 1 ) NOT NULL DEFAULT '1' AFTER `ReturnUrl` ,".
-						  " ADD `UserEmailScript` TEXT NOT NULL AFTER `ScriptDisplay` ,".
-						  " ADD `AdminEmailScript` TEXT NOT NULL AFTER `UserEmailScript` ,".
+						  " ADD `UserEmailScript` mediumtext NOT NULL AFTER `ScriptDisplay` ,".
+						  " ADD `AdminEmailScript` mediumtext NOT NULL AFTER `UserEmailScript` ,".
 						  " ADD `MultipleSeparator` VARCHAR( 64 ) NOT NULL AFTER `ErrorMessage` ,".
 						  " ADD `TextareaNewLines` TINYINT( 1 ) NOT NULL AFTER `MultipleSeparator`");
 			$db->execute();
@@ -130,6 +157,11 @@ class com_rsformInstallerScript
 		}
 		if (isset($columns['UserEmailConfirmation'])) {
 			$db->setQuery("ALTER TABLE `#__rsform_forms` DROP `UserEmailConfirmation`");
+			$db->execute();
+		}
+		if (isset($columns['ThemeParams']))
+		{
+			$db->setQuery("ALTER TABLE `#__rsform_forms` DROP `ThemeParams`");
 			$db->execute();
 		}
 		if (!isset($columns['ShowContinue'])) {
@@ -165,8 +197,12 @@ class com_rsformInstallerScript
 			$db->setQuery("ALTER TABLE `#__rsform_forms` ADD `ConfirmSubmission` TINYINT( 1 ) NOT NULL DEFAULT '0'");
 			$db->execute();
 		}
+		if (!isset($columns['ConfirmSubmissionUrl'])) {
+			$db->setQuery("ALTER TABLE `#__rsform_forms` ADD `ConfirmSubmissionUrl` TEXT NOT NULL AFTER `ConfirmSubmission`");
+			$db->execute();
+		}
 		if (!isset($columns['AdditionalEmailsScript'])) {
-			$db->setQuery("ALTER TABLE `#__rsform_forms` ADD `AdditionalEmailsScript` TEXT NOT NULL AFTER `AdminEmailScript`");
+			$db->setQuery("ALTER TABLE `#__rsform_forms` ADD `AdditionalEmailsScript` mediumtext NOT NULL AFTER `AdminEmailScript`");
 			$db->execute();
 		}
 		if (!isset($columns['ShowFormTitle'])) {
@@ -175,6 +211,10 @@ class com_rsformInstallerScript
 		}
 		if (!isset($columns['Access'])) {
 			$db->setQuery("ALTER TABLE `#__rsform_forms` ADD `Access` VARCHAR( 5 ) NOT NULL");
+			$db->execute();
+		}
+		if (!isset($columns['LimitSubmissions'])) {
+			$db->setQuery("ALTER TABLE `#__rsform_forms` ADD `LimitSubmissions` INT( 11 ) NOT NULL default '0'");
 			$db->execute();
 		}
 		if (!isset($columns['ScrollToThankYou'])) {
@@ -203,7 +243,7 @@ class com_rsformInstallerScript
 		}
         if (!isset($columns['DeletionEmailText']))
         {
-            $db->setQuery("ALTER TABLE #__rsform_forms ADD `DeletionEmailText` text NOT NULL AFTER `AdminEmailMode`");
+            $db->setQuery("ALTER TABLE #__rsform_forms ADD `DeletionEmailText` mediumtext NOT NULL AFTER `AdminEmailMode`");
             $db->execute();
         }
         if (!isset($columns['DeletionEmailTo']))
@@ -231,6 +271,11 @@ class com_rsformInstallerScript
             $db->setQuery("ALTER TABLE #__rsform_forms ADD `DeletionEmailReplyTo` varchar(255) NOT NULL AFTER `DeletionEmailFrom`");
             $db->execute();
         }
+		if (!isset($columns['DeletionEmailReplyToName']))
+		{
+			$db->setQuery("ALTER TABLE #__rsform_forms ADD `DeletionEmailReplyToName` varchar(255) NOT NULL AFTER `DeletionEmailReplyTo`");
+			$db->execute();
+		}
         if (!isset($columns['DeletionEmailFromName']))
         {
             $db->setQuery("ALTER TABLE #__rsform_forms ADD `DeletionEmailFromName` varchar(255) NOT NULL default '' AFTER `DeletionEmailReplyTo`");
@@ -243,29 +288,80 @@ class com_rsformInstallerScript
         }
         if (!isset($columns['DeletionEmailMode']))
         {
-            $db->setQuery("ALTER TABLE #__rsform_forms ADD `DeletionEmailMode` tinyint(4) NOT NULL default '1' AFTER `DeletionEmailSubject`");
+            $db->setQuery("ALTER TABLE #__rsform_forms ADD `DeletionEmailMode` tinyint(1) NOT NULL default '1' AFTER `DeletionEmailSubject`");
             $db->execute();
         }
         if (!isset($columns['ScriptBeforeDisplay'])) {
-            $db->setQuery("ALTER TABLE #__rsform_forms ADD `ScriptBeforeDisplay` TEXT NOT NULL AFTER `ScriptProcess2`");
+            $db->setQuery("ALTER TABLE #__rsform_forms ADD `ScriptBeforeDisplay` mediumtext NOT NULL AFTER `ScriptProcess2`");
             $db->execute();
         }
         if (!isset($columns['ScriptBeforeValidation'])) {
-            $db->setQuery("ALTER TABLE #__rsform_forms ADD `ScriptBeforeValidation` TEXT NOT NULL AFTER `ScriptBeforeDisplay`");
+            $db->setQuery("ALTER TABLE #__rsform_forms ADD `ScriptBeforeValidation` mediumtext NOT NULL AFTER `ScriptBeforeDisplay`");
             $db->execute();
         }
 		if ($columns['FormLayout'] == 'text') {
 			$db->setQuery("ALTER TABLE `#__rsform_forms` CHANGE `FormLayout` `FormLayout` LONGTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL");
 			$db->execute();
 		}
+		if (!isset($columns['UserEmailGenerate']))
+		{
+			$db->setQuery("ALTER TABLE #__rsform_forms ADD `UserEmailGenerate` TINYINT(1) NOT NULL DEFAULT '0' AFTER `UserEmailAttachFile`");
+			$db->execute();
+		}
+		if (!isset($columns['AdminEmailGenerate']))
+		{
+			$db->setQuery("ALTER TABLE #__rsform_forms ADD `AdminEmailGenerate` TINYINT(1) NOT NULL DEFAULT '0' AFTER `AdminEmailMode`");
+			$db->execute();
+		}
 		
 		// #__rsform_emails updates
-		$columns = $db->getTableColumns('#__rsform_emails', false);
+		$columns = $db->getTableColumns('#__rsform_emails');
 		if (!isset($columns['type'])) {
 			$db->setQuery("ALTER TABLE `#__rsform_emails` ADD `type` VARCHAR( 255 ) NOT NULL AFTER `formId`");
 			$db->execute();
 			$db->setQuery("UPDATE `#__rsform_emails` SET `type` = 'additional'");
 			$db->execute();
+		}
+		if (!isset($columns['replytoname'])) {
+			$db->setQuery("ALTER TABLE `#__rsform_emails` ADD `replytoname` VARCHAR( 255 ) NOT NULL AFTER `replyto`");
+			$db->execute();
+		}
+		if ($columns['message'] == 'text')
+		{
+			$db->setQuery("ALTER TABLE #__rsform_emails CHANGE " . $db->qn('message') . " " . $db->qn('message') . ' mediumtext');
+			$db->execute();
+		}
+
+		// Let's make some columns mediumtext
+		$columns = $db->getTableColumns('#__rsform_forms');
+		$changed = array('CSS', 'JS', 'ScriptProcess', 'ScriptProcess2', 'ScriptBeforeDisplay', 'ScriptBeforeValidation', 'ScriptDisplay', 'UserEmailScript', 'AdminEmailScript', 'AdditionalEmailsScript', 'Thankyou', 'UserEmailText', 'AdminEmailText', 'DeletionEmailText');
+		foreach ($changed as $column)
+		{
+			if (isset($columns[$column]) && $columns[$column] == 'text')
+			{
+				$db->setQuery("ALTER TABLE #__rsform_forms CHANGE " . $db->qn($column) . " " . $db->qn($column) . ' mediumtext');
+				$db->execute();
+			}
+		}
+		$columns = $db->getTableColumns('#__rsform_submission_values');
+		$changed = array('FieldValue');
+		foreach ($changed as $column)
+		{
+			if (isset($columns[$column]) && $columns[$column] == 'text')
+			{
+				$db->setQuery("ALTER TABLE #__rsform_submission_values CHANGE " . $db->qn($column) . " " . $db->qn($column) . ' mediumtext');
+				$db->execute();
+			}
+		}
+		$columns = $db->getTableColumns('#__rsform_properties');
+		$changed = array('PropertyValue');
+		foreach ($changed as $column)
+		{
+			if (isset($columns[$column]) && $columns[$column] == 'text')
+			{
+				$db->setQuery("ALTER TABLE #__rsform_properties CHANGE " . $db->qn($column) . " " . $db->qn($column) . ' mediumtext');
+				$db->execute();
+			}
 		}
 		
 		// #__rsform_config updates
@@ -335,6 +431,12 @@ class com_rsformInstallerScript
 			$db->setQuery("ALTER TABLE `#__rsform_submissions` CHANGE `UserIp` `UserIp` VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL");
 			$db->execute();
 		}
+		if ($columns['UserId']->Type == 'text') {
+			$db->setQuery("UPDATE `#__rsform_submissions` SET `UserId` = '0' WHERE `UserId` = ''");
+			$db->execute();
+			$db->setQuery("ALTER TABLE `#__rsform_submissions` CHANGE `UserId` `UserId` INT( 11 ) NOT NULL DEFAULT '0'");
+			$db->execute();
+		}
 		// #__rsform_component_type_fields updates
 		$query = $db->getQuery(true);
 		$query->update('#__rsform_component_type_fields')
@@ -352,6 +454,54 @@ class com_rsformInstallerScript
 		if ($columns['ComponentTypeId']->Key != 'MUL') {
 			$db->setQuery("ALTER TABLE #__rsform_component_type_fields ADD INDEX (`ComponentTypeId`)");
 			$db->execute();
+		}
+
+		// #__rsform_translations updates
+		$columns = $db->getTableColumns('#__rsform_translations', false);
+		if ($columns['lang_code']->Key != 'MUL')
+		{
+			try
+			{
+				$db->setQuery("ALTER TABLE #__rsform_translations ADD KEY `lang_code` (`lang_code`)")->execute();
+				$db->setQuery("ALTER TABLE #__rsform_translations ADD KEY `reference` (`reference`)")->execute();
+				$db->setQuery("ALTER TABLE #__rsform_translations ADD KEY `lang_search` (`form_id`,`lang_code`,`reference`)")->execute();
+			}
+			catch (Exception $e)
+			{
+				// Do nothing
+			}
+		}
+		$columns = $db->getTableColumns('#__rsform_translations');
+		$changed = array('value');
+		foreach ($changed as $column)
+		{
+			if (isset($columns[$column]) && $columns[$column] == 'text')
+			{
+				$db->setQuery("ALTER TABLE #__rsform_translations CHANGE " . $db->qn($column) . " " . $db->qn($column) . ' mediumtext');
+				$db->execute();
+			}
+		}
+
+		$columns = $db->getTableColumns('#__rsform_conditions', false);
+		if ($columns['component_id']->Type != 'text')
+		{
+			try
+			{
+				$db->setQuery("ALTER TABLE `#__rsform_conditions` DROP INDEX `component_id`")->execute();
+			}
+			catch (Exception $e)
+			{
+
+			}
+
+			try
+			{
+				$db->setQuery("ALTER TABLE `#__rsform_conditions` CHANGE `component_id` `component_id` TEXT NOT NULL")->execute();
+			}
+			catch (Exception $e)
+			{
+
+			}
 		}
 
 		// add the VALIDATIONMULTIPLE to the textBox field
@@ -585,10 +735,24 @@ class com_rsformInstallerScript
 			$db->setQuery($query)->execute();
 		}
 
+		$changed = array('data', 'wheredata', 'extra');
+		foreach ($changed as $column)
+		{
+			if (isset($columns[$column]) && $columns[$column] == 'text')
+			{
+				$db->setQuery("ALTER TABLE #__rsform_mappings CHANGE " . $db->qn($column) . " " . $db->qn($column) . ' mediumtext');
+				$db->execute();
+			}
+		}
+
 		// Add filename field to #__rsform_directory table
 		$columns = $db->getTableColumns('#__rsform_directory');
 		if (!isset($columns['filename'])) {
 			$db->setQuery("ALTER TABLE `#__rsform_directory` ADD `filename` VARCHAR(255) NOT NULL DEFAULT 'export.pdf' AFTER `formId`");
+			$db->execute();
+		}
+		if (!isset($columns['csvfilename'])) {
+			$db->setQuery("ALTER TABLE `#__rsform_directory` ADD `csvfilename` VARCHAR(255) NOT NULL DEFAULT '{alias}.csv' AFTER `filename`");
 			$db->execute();
 		}
 		if (!isset($columns['EmailsCreatedScript'])) {
@@ -599,11 +763,32 @@ class com_rsformInstallerScript
             $db->setQuery("ALTER TABLE `#__rsform_directory` ADD `DeletionGroups` TEXT NOT NULL AFTER `groups`");
             $db->execute();
         }
+		if (!isset($columns['HideEmptyValues'])) {
+			$db->setQuery("ALTER TABLE `#__rsform_directory` ADD `HideEmptyValues` tinyint(1) NOT NULL AFTER `enablecsv`");
+			$db->execute();
+		}
+		if (!isset($columns['ShowGoogleMap'])) {
+			$db->setQuery("ALTER TABLE `#__rsform_directory` ADD `ShowGoogleMap` tinyint(1) NOT NULL AFTER `HideEmptyValues`");
+			$db->execute();
+		}
+		$changed = array('CSS', 'JS', 'ListScript', 'DetailsScript', 'EmailsScript', 'EmailsCreatedScript');
+		foreach ($changed as $column)
+		{
+			if (isset($columns[$column]) && $columns[$column] == 'text')
+			{
+				$db->setQuery("ALTER TABLE #__rsform_directory CHANGE " . $db->qn($column) . " " . $db->qn($column) . ' mediumtext');
+				$db->execute();
+			}
+		}
 
 		// #__rsform_posts updates
 		$columns = $db->getTableColumns('#__rsform_posts');
 		if (!isset($columns['fields'])) {
 			$db->setQuery("ALTER TABLE `#__rsform_posts` ADD `fields` MEDIUMTEXT NOT NULL AFTER `method`");
+			$db->execute();
+		}
+		if (!isset($columns['headers'])) {
+			$db->setQuery("ALTER TABLE `#__rsform_posts` ADD `headers` MEDIUMTEXT NOT NULL AFTER `fields`");
 			$db->execute();
 		}
 		
@@ -626,6 +811,12 @@ class com_rsformInstallerScript
 		$db->setQuery($query);
 		$db->execute();
 
+		$columns = $db->getTableColumns('#__rsform_calculations', false);
+		if (!$columns['formId']->Key)
+		{
+			$db->setQuery('ALTER TABLE `#__rsform_calculations` ADD INDEX(`formId`), ADD INDEX (`ordering`), ADD INDEX (`formId`, `ordering`)')->execute();
+		}
+
 		if (!empty($this->migrateResponsiveLayoutFramework)) {
 			$query = $db->getQuery(true);
 			$query->update($db->qn('#__rsform_forms'))
@@ -634,6 +825,20 @@ class com_rsformInstallerScript
 
 			$db->setQuery($query)
 				->execute();
+		}
+
+		// Let's see if we have legacy layouts
+		$query = $db->getQuery(true)
+			->select('FormId')
+			->from($db->qn('#__rsform_forms'))
+			->where($db->qn('FormLayoutName') . ' IN (' . implode(',', $db->q(self::$legacy)) . ')');
+		if ($forms = $db->setQuery($query)->loadColumn())
+		{
+			$query = $db->getQuery(true)
+				->update($db->qn('#__rsform_forms'))
+				->set($db->qn('GridLayout') . ' = ' . $db->q(''))
+				->where($db->qn('FormId') . ' IN (' . implode(',', $db->q($forms)) . ')');
+			$db->setQuery($query)->execute();
 		}
 	}
 	
@@ -677,17 +882,10 @@ class com_rsformInstallerScript
 		$app 		= JFactory::getApplication();
 		$jversion 	= new JVersion();
 		
-		// Running Joomla! 2.5
-		if (!$jversion->isCompatible('3.0.0'))
-		{
-			$app->enqueueMessage('Your version of Joomla! has reached end of life. RSForm! Pro can no longer be installed on older Joomla! versions. Please consider updating to the latest version of Joomla! if you\'d like to still use RSForm! Pro.', 'error');
-			return false;
-		}
-		
 		// Running 3.x
-		if (!$jversion->isCompatible('3.7.0'))
+		if (!$jversion->isCompatible('3.9.0'))
 		{
-			$app->enqueueMessage('Please upgrade to at least Joomla! 3.7.0 before continuing!', 'error');
+			$app->enqueueMessage('Please upgrade to at least Joomla! 3.9.0 before continuing!', 'error');
 			return false;
 		}
 
@@ -695,6 +893,12 @@ class com_rsformInstallerScript
 		if ($type == 'update' && !file_exists(JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/formlayouts/responsive.php'))
 		{
 			$this->migrateResponsiveLayoutFramework = true;
+		}
+
+		// This has been added in 3.0.0, so it's an update from an older version
+		if ($type == 'update' && !is_dir(JPATH_ADMINISTRATOR . '/components/com_rsform/views/calculation'))
+		{
+			$this->warnPlugins = true;
 		}
 		
 		return true;
@@ -710,21 +914,12 @@ class com_rsformInstallerScript
 		$db = JFactory::getDbo();
 		
 		$messages = array(
-			'lib_tcpdf' 					=> false,
 			'plg_installer' 				=> false,
 			'plg_rsformdeletesubmissions' 	=> false,
 			'plugins' 						=> array(),
 			'modules' 						=> array()
 		);
 		// update plugins, modules as necessary
-		
-		// Check if we don't have TCPDF installed.
-        $installer = new JInstaller();
-		if (is_dir(JPATH_SITE.'/libraries/tcpdf')) {
-			$messages['lib_tcpdf'] = 'skip';
-		} elseif ($installer->install($this->source.'/other/lib_tcpdf')) {
-			$messages['lib_tcpdf'] = true;
-		}
 		
 		// Get a new installer
 		$installer = new JInstaller();
@@ -755,6 +950,28 @@ class com_rsformInstallerScript
 			
 			$messages['plg_rsformdeletesubmissions'] = true;
 		}
+
+		$messages['legacy'] = false;
+		// Let's see if we have legacy layouts
+		$query = $db->getQuery(true)
+			->select('FormId')
+			->from($db->qn('#__rsform_forms'))
+			->where($db->qn('FormLayoutName') . ' IN (' . implode(',', $db->q(self::$legacy)) . ')');
+		if ($db->setQuery($query)->loadResult() && !file_exists(JPATH_PLUGINS . '/system/rsfplegacylayouts/rsfplegacylayouts.xml'))
+		{
+			$messages['legacy'] = true;
+		}
+
+		$messages['oldplugins'] = false;
+		$version = new JVersion;
+		$query = $db->getQuery(true);
+		$query->select('extension_id')
+			->from('#__extensions')
+			->where($db->qn('element') . ' LIKE ' . $db->q('rsfp%'));
+		if ($type === 'update' && !$version->isCompatible('4.0') && $db->setQuery($query)->loadResult())
+		{
+			$messages['oldplugins'] = $this->warnPlugins;
+		}
 		
 		$this->showInstallMessage($messages);
 	}
@@ -776,7 +993,7 @@ class com_rsformInstallerScript
 				$queries = $db->splitSql($buffer);
 				foreach ($queries as $query) {
 					$query = trim($query);
-					if ($query != '' && $query{0} != '#') {
+					if ($query != '') {
 						$db->setQuery($query);
 						try
                         {
@@ -868,21 +1085,35 @@ class com_rsformInstallerScript
 .red {
 	color: red;
 }
+
+	.rsform-row {
+		width: 100%;
+		display: block;
+		margin-bottom: 2%;
+	}
+
+	.rsform-row:after {
+		clear: both;
+		display: block;
+		content: "";
+	}
+
+	.rsform-column-2 {
+		width: 19%;
+		margin-right: 1%;
+		float: left;
+	}
+
+	.rsform-column-10 {
+		width: 80%;
+		float: left;
+	}
 </style>
-	<div class="row-fluid">
-	<div class="span2">
-		<img src="components/com_rsform/assets/images/box.png" alt="RSForm! Pro Box" />
+	<div class="rsform-row">
+	<div class="rsform-column-2">
+		<img src="<?php echo JUri::root(true); ?>/media/com_rsform/images/admin/box.png" alt="RSForm! Pro Box" />
 	</div>
-	<div class="span10">
-		<p>TCP Library ...
-			<?php if ($messages['lib_tcpdf'] === true) { ?>
-			<b class="install-ok">Installed</b>
-			<?php } elseif ($messages['lib_tcpdf'] === false) { ?>
-			<b class="install-not-ok">Error installing! Please make sure /libraries/ and/or /libraries/tcpdf/ is writable!</b>
-			<?php } else { ?>
-			<b class="install-warning">Skipped installing TCPDF - it appears there's already a TCPDF library in place.</b>
-			<?php } ?>
-		</p>
+	<div class="rsform-column-10">
 		<p>Installer Plugin ...
 			<?php if ($messages['plg_installer']) { ?>
 			<b class="install-ok">Installed</b>
@@ -897,13 +1128,34 @@ class com_rsformInstallerScript
 			<b class="install-not-ok">Error installing!</b>
 			<?php } ?>
 		</p>
-		<h2>Changelog v2.1.4</h2>
+		<?php if ($messages['legacy']) { ?>
+			<div class="alert alert-error">
+				<h4>Legacy Layouts</h4>
+				<p>It seems you are still using legacy layouts - they have been removed from RSForm! Pro since they are no longer usable today as they do not provide responsive features.<br>If you still want to keep using them, please install the <a href="https://www.rsjoomla.com/support/documentation/rsform-pro/plugins-and-modules/plugin-legacy-layouts.html" target="_blank">Legacy Layouts Plugin</a>.</p>
+			</div>
+		<?php } ?>
+		<?php if ($messages['oldplugins']) { ?>
+			<div class="alert alert-error">
+				<h4>Old plugins</h4>
+				<p>This is an upgrade - please make sure you update all of your RSForm! Pro Plugins as well, since they have changed to support Joomla! 4 and this version of RSForm! Pro.</p>
+			</div>
+		<?php } ?>
+		<h2>Changelog v3.1.0</h2>
 		<ul class="version-history">
-            <li><span class="version-fixed">Fix</span> When setting 'Allow Only Images' to 'Yes' the generated placeholders pointed to a non-existent file.</li>
+			<li><span class="version-new">New</span> Triggers: onRsformBackendBeforeGrid, onRsformBackendAfterCreateFieldGroups, onRsformBeforeSilentPost, onRsformBeforeMappings.</li>
+			<li><span class="version-new">New</span> 'Allow HTML' for 'Submit Button', 'Button' and 'Pagebreak' fields - this will allow to write HTML in the 'Label' so you can, for example, place icons inside your buttons.</li>
+			<li><span class="version-upgraded">Upg</span> Changed minimum requirements to use Joomla! 3.9.0 or newer.</li>
+			<li><span class="version-upgraded">Upg</span> PHP 8.1 compatibility improvements.</li>
+			<li><span class="version-upgraded">Upg</span> Form Fields are now grouped accordingly. The 'CAPTCHA Antispam' field has been moved to 'Spam Protection' as we now have several fields for this.</li>
+			<li><span class="version-fixed">Fix</span> Some AJAX requests in the backend are now using POST to prevent incorrect caching on some servers.</li>
+			<li><span class="version-fixed">Fix</span> Some jQuery calls in the backend have been changed to vanilla JS.</li>
+			<li><span class="version-fixed">Fix</span> 'Toggle Quick Add' was generating too many &lt;pre&gt; tags.</li>
+			<li><span class="version-fixed">Fix</span> After deleting certain fields the exact field types could not be re-added until the page was refreshed.</li>
+			<li><span class="version-fixed">Fix</span> A new 'Submissions Directory' menu item will now require to explicitly choose a value for the 'Enable Directory' option before it can actually be saved.</li>
 		</ul>
-		<a class="btn btn-large btn-primary" href="index.php?option=com_rsform">Start using RSForm! Pro</a>
-		<a class="btn" href="https://www.rsjoomla.com/support/documentation/rsform-pro.html" target="_blank">Read the RSForm! Pro User Guide</a>
-		<a class="btn" href="https://www.rsjoomla.com/support.html" target="_blank">Get Support!</a>
+		<a class="btn btn-large btn-lg btn-primary" href="index.php?option=com_rsform">Start using RSForm! Pro</a>
+		<a class="btn btn-secondary" href="https://www.rsjoomla.com/support/documentation/rsform-pro.html" target="_blank">Read the RSForm! Pro User Guide</a>
+		<a class="btn btn-secondary" href="https://www.rsjoomla.com/support.html" target="_blank">Get Support!</a>
 	</div>
 	</div>
 		<?php

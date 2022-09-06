@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -162,7 +162,7 @@ class RsformControllerBackup extends RsformController
 			$backup  = new RSFormProBackup($options);
 			$backup->download();
 		} catch (Exception $e) {
-		    $this->setRedirect('index.php?option=com_rsform&view=backuprestore', $e->getMessage(), 'error');
+		    $this->setRedirect('index.php?option=com_rsform&view=backupscreen', $e->getMessage(), 'error');
 		}
 	}
 	

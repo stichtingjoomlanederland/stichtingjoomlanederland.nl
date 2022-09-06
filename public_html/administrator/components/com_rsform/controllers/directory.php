@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -9,8 +9,9 @@ defined('_JEXEC') or die('Restricted access');
 
 class RsformControllerDirectory extends RsformController
 {
-	public function __construct() {
-		parent::__construct();
+	public function __construct($config = array())
+	{
+		parent::__construct($config);
 		
 		$this->registerTask('apply', 'save');
 	}
@@ -33,70 +34,60 @@ class RsformControllerDirectory extends RsformController
 		parent::display();
 	}
 	
-	public function saveOrdering() {
-		$db		= JFactory::getDbo();
+	public function saveOrdering()
+	{
 		$cids	= JFactory::getApplication()->input->get('cid',array(),'array');
 		$formId	= JFactory::getApplication()->input->getInt('formId',0);
 		
 		foreach ($cids as $key => $order)
 		{
-		    $object = (object) array(
-		        'componentId' => $key,
-                'formId'      => $formId,
-                'ordering'    => $order
-            );
+			$table = JTable::getInstance('RSForm_Directory_Fields', 'Table');
 
-		    $query = $db->getQuery(true)
-                ->select($db->qn('componentId'))
-                ->from($db->qn('#__rsform_directory_fields'))
-                ->where($db->qn('componentId') . ' = ' . $db->q($key))
-                ->where($db->qn('formId') . ' = ' . $db->q($formId));
-		    if ($db->setQuery($query)->loadResult())
-            {
-                $db->updateObject('#__rsform_directory_fields', $object, array('componentId', 'formId'));
-            }
-            else
-            {
-                $db->insertObject('#__rsform_directory_fields', $object);
-            }
+			if ($table->load(array('componentId' => $key, 'formId' => $formId), false))
+			{
+				$table->save(array(
+					'ordering'    => $order
+				));
+			}
+			else
+			{
+				$table->save(array(
+					'componentId' => $key,
+					'formId'      => $formId,
+					'ordering'    => $order
+				));
+			}
 		}
 		
 		echo 'Ok';
 		exit();
 	}
 	
-	public function saveDetails() {
-		$db		= JFactory::getDbo();
-		$cids	= JFactory::getApplication()->input->get('cid',array(),'array');
+	public function saveDetails()
+	{
+		$cids	= JFactory::getApplication()->input->get('cid', array(), 'array');
+		$orders	= JFactory::getApplication()->input->get('order', array(), 'array');
 		$formId	= JFactory::getApplication()->input->getInt('formId',0);
 		
 		foreach ($cids as $key => $val)
 		{
-            $object = (object) array(
-                'componentId'   => $key,
-                'formId'        => $formId,
-                'indetails'     => $val
-            );
+			$table = JTable::getInstance('RSForm_Directory_Fields', 'Table');
 
-            $query = $db->getQuery(true)
-                ->select($db->qn('componentId'))
-                ->from($db->qn('#__rsform_directory_fields'))
-                ->where($db->qn('componentId') . ' = ' . $db->q($key))
-                ->where($db->qn('formId') . ' = ' . $db->q($formId));
-            if ($db->setQuery($query)->loadResult())
-            {
-                $db->updateObject('#__rsform_directory_fields', $object, array('componentId', 'formId'));
-            }
-            else
-            {
-                $query->clear()
-                    ->select('MAX( '  . $db->qn('ordering') . ')')
-                    ->from($db->qn('#__rsform_directory_fields'))
-                    ->where($db->qn('formId') . ' = ' . $db->q($formId));
-                $object->ordering = (int) $db->setQuery($query)->loadResult() + 1;
-
-                $db->insertObject('#__rsform_directory_fields', $object);
-            }
+			if ($table->load(array('componentId' => $key, 'formId' => $formId), false))
+			{
+				$table->save(array(
+					'indetails'   => $val
+				));
+			}
+			else
+			{
+				$table->save(array(
+					'componentId' => $key,
+					'formId'      => $formId,
+					'indetails'   => $val,
+					'ordering'    => $orders[$key]
+				));
+			}
 		}
 		
 		echo 'Ok';
@@ -142,92 +133,85 @@ class RsformControllerDirectory extends RsformController
 	
 	public function changeAutoGenerateLayout() {
         $app            = JFactory::getApplication();
-        $db 			= JFactory::getDbo();
 		$formId 		= $app->input->getInt('formId');
 		$name           = $app->input->get('ViewLayoutName');
 		$status         = $app->input->getInt('status');
 
-		$query = $db->getQuery(true)
-            ->select($db->qn('formId'))
-            ->from($db->qn('#__rsform_directory'))
-            ->where($db->qn('formId') . ' = ' . $db->q($formId));
-
-		$object = (object) array(
+		$data = array(
 		    'formId'                 => $formId,
             'ViewLayoutAutogenerate' => $status,
             'ViewLayoutName'         => $name
         );
-		
-		$db->setQuery($query);
-		if (!$db->loadResult())
-		{
-		    $db->insertObject('#__rsform_directory', $object);
-		}
-		else
-        {
-            $db->updateObject('#__rsform_directory', $object, array('formId'));
-        }
-		
-		jexit();
+
+		$table = JTable::getInstance('RSForm_Directory', 'Table');
+		$table->save($data);
+
+		$app->close();
 	}
 	
 	public function saveName() {
         $app    = JFactory::getApplication();
-        $db     = JFactory::getDbo();
 		$formId = $app->input->getInt('formId');
 		$name   = $app->input->get('ViewLayoutName');
 
-        $query = $db->getQuery(true)
-            ->select($db->qn('formId'))
-            ->from($db->qn('#__rsform_directory'))
-            ->where($db->qn('formId') . ' = ' . $db->q($formId));
-
-        $object = (object) array(
+        $data = array(
             'formId'         => $formId,
             'ViewLayoutName' => $name
         );
 
-        $db->setQuery($query);
-        if (!$db->loadResult())
-        {
-            $db->insertObject('#__rsform_directory', $object);
-        }
-        else
-        {
-            $db->updateObject('#__rsform_directory', $object, array('formId'));
-        }
-		
-		jexit();
+		$table = JTable::getInstance('RSForm_Directory', 'Table');
+		$table->save($data);
+
+		$app->close();
+	}
+
+	public function saveSetting()
+	{
+		$app    = JFactory::getApplication();
+		$formId = $app->input->getInt('formId');
+		$name   = $app->input->get('settingName');
+		$value  = $app->input->getString('settingValue');
+
+		$data = array(
+			'formId'    => $formId,
+			$name 		=> $value
+		);
+
+		$table = JTable::getInstance('RSForm_Directory', 'Table');
+		$table->save($data);
+
+		$app->close();
 	}
 	
-	public function generate() {
-		$db 	= JFactory::getDbo();
+	public function generate()
+	{
 		$app    = JFactory::getApplication();
 		$formId = $app->input->getInt('formId');
 		$layout = $app->input->getCmd('layoutName');
+		$hideEmptyValues = $app->input->getInt('hideEmptyValues');
+		$showGoogleMap = $app->input->getInt('showGoogleMap');
 
-        $query = $db->getQuery(true)
-            ->select($db->qn('formId'))
-            ->from($db->qn('#__rsform_directory'))
-            ->where($db->qn('formId') . ' = ' . $db->q($formId));
-
-        $object = (object) array(
+        $data = array(
             'formId' => $formId,
+	        'ViewLayoutName' => $layout,
+	        'HideEmptyValues' => $hideEmptyValues,
+	        'ShowGoogleMap' => $showGoogleMap
         );
 
-        $db->setQuery($query);
-        if (!$db->loadResult())
-        {
-            $db->insertObject('#__rsform_directory', $object);
-        }
+		$table = JTable::getInstance('RSForm_Directory', 'Table');
+		$table->save($data);
 		
 		$model = $this->getModel('directory');
 		$model->getDirectory();
+		$model->_directory->formId = $formId;
 		$model->_directory->ViewLayoutName = $layout;
+		$model->_directory->HideEmptyValues = $hideEmptyValues;
+		$model->_directory->ShowGoogleMap = $showGoogleMap;
 		$model->autoGenerateLayout();
 		
 		echo $model->_directory->ViewLayout;
-		jexit();
+
+		$app->close();
 	}
 	
 	public function remove() {
