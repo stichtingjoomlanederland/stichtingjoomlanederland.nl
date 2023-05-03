@@ -12,6 +12,10 @@
             <option value="1">JYES</option>
         </field>
         <field name="csvfilename" default="{alias}.csv" type="text" label="RSFP_SUBM_DIR_CSV_FILENAME" description="RSFP_SUBM_DIR_CSV_FILENAME_DESC" size="70" showon="enablecsv:1" />
+        <field name="AllowCSVFullDownload" type="radio" class="btn-group btn-group-yesno" label="COM_RSFORM_DIRECTORY_ALLOW_FULL_CSV_DOWNLOAD" description="COM_RSFORM_DIRECTORY_ALLOW_FULL_CSV_DOWNLOAD_DESC" default="0" showon="enablecsv:1">
+            <option value="0">JNO</option>
+            <option value="1">JYES</option>
+        </field>
         <field name="HideEmptyValues" type="radio" class="btn-group btn-group-yesno" label="COM_RSFORM_DIRECTORY_HIDE_EMPTY_VALUES" default="0">
             <option value="0" onchange="saveDirectorySetting('HideEmptyValues', 0);">JNO</option>
             <option value="1" onchange="saveDirectorySetting('HideEmptyValues', 1);">JYES</option>
@@ -42,6 +46,8 @@
 	<fieldset name="scripts">
 		<field name="ListScript" type="syntaxhighlight" rows="20" cols="75" label="RSFP_SUBM_DIR_SCRIPTS_LIST" description="RSFP_SUBM_DIR_SCRIPTS_LIST_DESC" class="rs_90" syntax="php" />
 		<field name="DetailsScript" type="syntaxhighlight" rows="20" cols="75" label="RSFP_SUBM_DIR_SCRIPTS_DETAILS" description="RSFP_SUBM_DIR_SCRIPTS_DETAILS_DESC" class="rs_90" syntax="php" />
+		<field name="EditScript" type="syntaxhighlight" rows="20" cols="75" label="RSFP_SUBM_DIR_SCRIPTS_EDIT" description="RSFP_SUBM_DIR_SCRIPTS_EDIT_DESC" class="rs_90" syntax="php" />
+		<field name="SaveScript" type="syntaxhighlight" rows="20" cols="75" label="RSFP_SUBM_DIR_SCRIPTS_SAVE" description="RSFP_SUBM_DIR_SCRIPTS_SAVE_DESC" class="rs_90" syntax="php" />
 	</fieldset>
 	<fieldset name="emailscripts">
 		<field name="EmailsCreatedScript" type="syntaxhighlight" rows="20" cols="75" label="RSFP_SUBM_DIR_SCRIPTS_EMAIL_CREATED" description="RSFP_SUBM_DIR_SCRIPTS_EMAIL_CREATED_DESC" class="rs_90" syntax="php" />

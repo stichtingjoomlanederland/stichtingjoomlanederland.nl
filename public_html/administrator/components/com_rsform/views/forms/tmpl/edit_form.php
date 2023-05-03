@@ -26,6 +26,10 @@ defined('_JEXEC') or die('Restricted access');
 			<?php
 				echo $this->jform->renderFieldset('form_info_submission');
 			?>
+            <legend class="rsfp-legend"><?php echo JText::_('RSFP_FORM_INFO_CONFIRMATION'); ?></legend>
+			<?php
+			echo $this->jform->renderFieldset('form_info_confirmation');
+			?>
 			<legend class="rsfp-legend"><?php echo JText::_('RSFP_FORM_INFO_MISC'); ?></legend>
 			<?php
 				echo $this->jform->renderFieldset('form_info_misc');

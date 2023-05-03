@@ -26,11 +26,13 @@ class ComposerStaticInit5863bc4f536d5f97b48f6bab9cc23500
         ),
         'P' => 
         array (
+            'Psr\\Log\\' => 8,
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Http\\Client\\' => 16,
         ),
         'M' => 
         array (
+            'Monolog\\' => 8,
             'Mollie\\Api\\' => 11,
         ),
         'G' => 
@@ -43,6 +45,10 @@ class ComposerStaticInit5863bc4f536d5f97b48f6bab9cc23500
         'C' => 
         array (
             'Composer\\CaBundle\\' => 18,
+        ),
+        'B' => 
+        array (
+            'Buckaroo\\' => 9,
         ),
     );
 
@@ -63,14 +69,22 @@ class ComposerStaticInit5863bc4f536d5f97b48f6bab9cc23500
         array (
             0 => __DIR__ . '/..' . '/sisow/php-client/src',
         ),
+        'Psr\\Log\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
+        ),
         'Psr\\Http\\Message\\' => 
         array (
-            0 => __DIR__ . '/..' . '/psr/http-message/src',
-            1 => __DIR__ . '/..' . '/psr/http-factory/src',
+            0 => __DIR__ . '/..' . '/psr/http-factory/src',
+            1 => __DIR__ . '/..' . '/psr/http-message/src',
         ),
         'Psr\\Http\\Client\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/http-client/src',
+        ),
+        'Monolog\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
         ),
         'Mollie\\Api\\' => 
         array (
@@ -95,6 +109,10 @@ class ComposerStaticInit5863bc4f536d5f97b48f6bab9cc23500
         'Composer\\CaBundle\\' => 
         array (
             0 => __DIR__ . '/..' . '/composer/ca-bundle/src',
+        ),
+        'Buckaroo\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/buckaroo/sdk/src',
         ),
     );
 

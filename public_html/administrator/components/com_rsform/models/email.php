@@ -186,12 +186,12 @@ class RsformModelEmail extends JModelAdmin
 
 			if (!isset($translations[$reference_id]))
 			{
-				$this->_db->insertObject('#__rsform_translations', $translation);
+				$this->getDbo()->insertObject('#__rsform_translations', $translation);
 			}
 			else
 			{
 				$translation->id = $translations[$reference_id];
-				$this->_db->updateObject('#__rsform_translations', $translation, array('id'));
+				$this->getDbo()->updateObject('#__rsform_translations', $translation, array('id'));
 			}
 			unset($email->{$field});
 		}

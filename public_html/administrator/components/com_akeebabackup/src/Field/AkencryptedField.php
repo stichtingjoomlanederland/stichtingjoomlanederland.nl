@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,7 +9,7 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Field;
 
 defined('_JEXEC') || die();
 
-use Akeeba\Component\AkeebaBackup\Administrator\Dispatcher\Mixin\AkeebaEngineAware;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\AkeebaEngineTrait;
 use Akeeba\Engine\Factory;
 use Exception;
 use Joomla\CMS\Factory as JoomlaFactory;
@@ -17,7 +17,7 @@ use Joomla\CMS\Form\Field\TextField;
 
 class AkencryptedField extends TextField
 {
-	use AkeebaEngineAware;
+	use AkeebaEngineTrait;
 
 	protected $type = "Akencrypted";
 

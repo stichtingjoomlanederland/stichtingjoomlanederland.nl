@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,12 +9,13 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Model;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Model\Mixin\ExclusionFilter;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ModelExclusionFilterTrait;
 use Akeeba\Engine\Factory;
 
+#[\AllowDynamicProperties]
 class RegexdatabasefiltersModel extends \Joomla\CMS\MVC\Model\BaseModel
 {
-	use ExclusionFilter;
+	use ModelExclusionFilterTrait;
 
 	/**
 	 * Which RegEx filters are handled by this model?
@@ -46,7 +47,11 @@ class RegexdatabasefiltersModel extends \Joomla\CMS\MVC\Model\BaseModel
 			$temp_filters = $filter->getFilters($root);
 
 			// Merge this filter type's regular expressions to the list
-			if (count($temp_filters))
+			if (
+				(is_array($temp_filters) || $temp_filters instanceof \Countable)
+					? count($temp_filters)
+					: 0
+			)
 			{
 				foreach ($temp_filters as $new_regex)
 				{

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -69,4 +69,33 @@ class Dispatcher extends BackendDispatcher
 		$document = $this->app->getDocument();
 		$document->setName('akeeba_backup');
 	}
+
+	/**
+	 * Load the language.
+	 *
+	 * Automatically loads en-GB and the site's fallback language (if different), then merges it with the language of
+	 * the current user. First tries loading languages from the site's main folders before falling back to the ones
+	 * shipped with the component itself.
+	 *
+	 * @return  void
+	 *
+	 * @since   9.0.0
+	 */
+	protected function loadLanguage()
+	{
+		$jLang = $this->app->getLanguage();
+
+		$jLang->load($this->option, JPATH_SITE, 'en-GB', true, true) ||
+		$jLang->load($this->option, JPATH_COMPONENT, 'en-GB', true, true);
+
+		$jLang->load($this->option, JPATH_ADMINISTRATOR, 'en-GB', true, true) ||
+		$jLang->load($this->option, JPATH_COMPONENT, 'en-GB', true, true);
+
+		$jLang->load($this->option, JPATH_BASE, null, true) ||
+		$jLang->load($this->option, JPATH_COMPONENT, null, true);
+
+		$jLang->load($this->option, JPATH_ADMINISTRATOR, null, true) ||
+		$jLang->load($this->option, JPATH_COMPONENT, null, true);
+	}
+
 }

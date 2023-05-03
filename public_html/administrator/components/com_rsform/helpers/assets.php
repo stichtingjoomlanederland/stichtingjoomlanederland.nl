@@ -251,7 +251,7 @@ class RSFormProAssets
 			// This allows jQuery to be loaded after content has been rendered in Joomla! 3.x
 			if (version_compare(JVERSION, '4.0', '<') && static::$replace)
 			{
-				$debug = (boolean) JFactory::getConfig()->get('debug');
+				$debug = (boolean) JFactory::getApplication()->get('debug');
 
 				static::addScript(JHtml::_('script', 'jui/jquery.min.js', array('version' => 'auto', 'relative' => true, 'detectDebug' => $debug, 'pathOnly' => true)));
 				static::addScript(JHtml::_('script', 'jui/jquery-noconflict.js', array('version' => 'auto', 'relative' => true, 'pathOnly' => true)));

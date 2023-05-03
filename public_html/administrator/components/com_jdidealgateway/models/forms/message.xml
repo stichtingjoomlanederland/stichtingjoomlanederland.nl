@@ -64,6 +64,7 @@
                label="COM_ROPAYMENTS_MESSAGE_TEXT_ID_LABEL"
                description="COM_ROPAYMENTS_MESSAGE_TEXT_ID_DESC"
                showon="message_type:1"
+               default="0"
         />
 
         <field name="message_text"

@@ -40,7 +40,7 @@ class RsformController extends JControllerLegacy
 	public function submissionsViewFile()
     {
 		$db 	= JFactory::getDbo();
-		$secret = JFactory::getConfig()->get('secret');
+		$secret = JFactory::getApplication()->get('secret');
 		$app	= JFactory::getApplication();
 		$hash 	= $app->input->getCmd('hash');
 		$file   = $app->input->getCmd('file');
@@ -373,6 +373,10 @@ class RsformController extends JControllerLegacy
 				$app->enqueueMessage(JText::_('RSFP_SUBMISSION_CONFIRMED'), 'notice');
 
 				$form = RSFormProHelper::getForm($formId);
+				if ($form->ConfirmSubmission && !empty($form->ConfirmSubmissionDefer) && json_decode($form->ConfirmSubmissionDefer))
+				{
+					RSFormProHelper::sendSubmissionEmails($SubmissionId);
+				}
 				if (!empty($form->ConfirmSubmissionUrl))
 				{
 					list($replace, $with) = RSFormProHelper::getReplacements($SubmissionId);

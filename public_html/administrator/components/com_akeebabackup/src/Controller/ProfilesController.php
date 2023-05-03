@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,8 +9,8 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Controller;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\ControllerEvents;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\CustomACL;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerCustomACLTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerEventsTrait;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\ProfileModel;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\ProfilesModel;
 use Joomla\CMS\Application\CMSApplication;
@@ -25,8 +25,8 @@ use RuntimeException;
 
 class ProfilesController extends AdminController
 {
-	use ControllerEvents;
-	use CustomACL;
+	use ControllerEventsTrait;
+	use ControllerCustomACLTrait;
 
 	protected $text_prefix = 'COM_AKEEBABACKUP_PROFILES';
 

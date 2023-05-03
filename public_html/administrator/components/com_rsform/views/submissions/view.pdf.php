@@ -126,6 +126,6 @@ class RsformViewSubmissions extends JViewLegacy
 
         echo $data;
 
-        $app->close;
+        $app->close();
 	}
 }

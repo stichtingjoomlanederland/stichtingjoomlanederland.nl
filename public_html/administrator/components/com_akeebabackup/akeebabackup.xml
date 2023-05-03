@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--~
   ~ @package   akeebabackup
-  ~ @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+  ~ @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
   ~ @license   GNU General Public License version 3, or later
   -->
 
 <extension type="component" method="upgrade">
     <name>com_akeebabackup</name>
     <author>Akeeba Ltd</author>
-    <creationDate>2022-08-22</creationDate>
+    <creationDate>2023-03-09</creationDate>
     <copyright>(C) 2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd</copyright>
     <license>GNU General Public License version 3 or later; see LICENSE.txt</license>
     <authorEmail>no-reply@akeeba.com</authorEmail>
     <authorUrl>www.akeeba.com</authorUrl>
-    <version>9.3.0</version>
+    <version>9.5.1</version>
     <description>COM_AKEEBABACKUP_XML_DESCRIPTION</description>
     <namespace path="src">Akeeba\Component\AkeebaBackup</namespace>
 
@@ -37,34 +37,25 @@
 
     <administration>
         <menu>COM_AKEEBABACKUP</menu>
+
         <submenu>
             <!--
 				Note that all & must be escaped to &amp; for the file to be valid
 				XML and be parsed by the installer
 			-->
-            <menu
-                    link="option=com_akeebabackup"
-                    view="controlpanel"
-                    alt="AkeebaBackup/ControlPanel"
-            >
+            <menu view="controlpanel">
                 COM_AKEEBABACKUP_CONTROLPANEL
             </menu>
-            <menu
-                    link="option=com_akeebabackup&amp;view=configuration"
-                    alt="AkeebaBackup/Configuration"
-            >
+
+            <menu view="configuration">
                 COM_AKEEBABACKUP_CONFIGURATION
             </menu>
-            <menu
-                    link="option=com_akeebabackup&amp;view=backup"
-                    alt="AkeebaBackup/Backup"
-            >
+
+            <menu view="backup">
                 COM_AKEEBABACKUP_BACKUP
             </menu>
-            <menu
-                    link="option=com_akeebabackup&amp;view=manage"
-                    alt="AkeebaBackup/Manage"
-            >
+
+            <menu view="manage">
                 COM_AKEEBABACKUP_MANAGE
             </menu>
         </submenu>
@@ -82,12 +73,12 @@
             <folder>forms</folder>
             <folder>installers</folder>
             <folder>language</folder>
-            <folder>layouts</folder>
             <folder>platform</folder>
             <folder>services</folder>
             <folder>sql</folder>
             <folder>src</folder>
             <folder>tmpl</folder>
+            <folder>webpush</folder>
         </files>
 
         <languages folder="backend">

@@ -88,6 +88,15 @@ class RSFormProJQueryCalendar
 		for ($i = 0; $i < strlen($dateFormat); $i++)
 		{
 			$current = $dateFormat[$i];
+
+			// get previous char to see if is the dash
+			$previous = isset($dateFormat[($i-1)]) ? $dateFormat[($i-1)] : '';
+
+			if ($current == "\\" || $previous == "\\")
+			{
+				$newFormat .= $current;
+				continue;
+			}
 			
 			if (isset($this->translationTable[$current]))
 			{

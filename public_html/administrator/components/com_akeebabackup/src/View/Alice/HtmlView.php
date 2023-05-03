@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,10 +9,10 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\View\Alice;
 
 defined('_JEXEC') || die;
 
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewLoadAnyTemplateTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewTaskBasedEventsTrait;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\AliceModel;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\LogModel;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\LoadAnyTemplate;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\TaskBasedEvents;
 use Exception;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Factory as JoomlaFactory;
@@ -21,10 +21,11 @@ use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 
+#[\AllowDynamicProperties]
 class HtmlView extends BaseHtmlView
 {
-	use LoadAnyTemplate;
-	use TaskBasedEvents;
+	use ViewLoadAnyTemplateTrait;
+	use ViewTaskBasedEventsTrait;
 
 	/**
 	 * List of log entries to choose from, JHtml compatible

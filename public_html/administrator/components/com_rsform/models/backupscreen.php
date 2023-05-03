@@ -34,14 +34,15 @@ class RsformModelBackupscreen extends JModelAdmin
 	
 	protected function _buildQuery()
 	{
-		$query 	=  $this->_db->getQuery(true);
+		$db     = $this->getDbo();
+		$query 	= $db->getQuery(true);
 		
-		$query->select($this->_db->qn('FormId'))
-			  ->select($this->_db->qn('FormTitle'))
-			  ->select($this->_db->qn('FormName'))
-			  ->select($this->_db->qn('Lang'))
-			  ->from($this->_db->qn('#__rsform_forms'))
-			  ->order($this->_db->qn($this->getSortColumn()).' '.$this->_db->escape($this->getSortOrder()));
+		$query->select($db->qn('FormId'))
+			  ->select($db->qn('FormTitle'))
+			  ->select($db->qn('FormName'))
+			  ->select($db->qn('Lang'))
+			  ->from($db->qn('#__rsform_forms'))
+			  ->order($db->qn($this->getSortColumn()).' '.$db->escape($this->getSortOrder()));
 		
 		return $query;
 	}
@@ -50,15 +51,16 @@ class RsformModelBackupscreen extends JModelAdmin
 	{
 		if (empty($this->_data))
 		{
-			$this->_data = $this->_getList($this->_buildQuery());
+			$db             = $this->getDbo();
+			$this->_data    = $this->_getList($this->_buildQuery());
 
 			// Count submissions
-			$query = $this->_db->getQuery(true)
-				->select('COUNT(' . $this->_db->qn('SubmissionId') . ') AS ' . $this->_db->qn('total'))
-				->select($this->_db->qn('FormId'))
-				->from($this->_db->qn('#__rsform_submissions'))
-				->group($this->_db->qn('FormId'));
-			$allSubmissions = $this->_db->setQuery($query)->loadObjectList('FormId');
+			$query = $db->getQuery(true)
+				->select('COUNT(' . $db->qn('SubmissionId') . ') AS ' . $db->qn('total'))
+				->select($db->qn('FormId'))
+				->from($db->qn('#__rsform_submissions'))
+				->group($db->qn('FormId'));
+			$allSubmissions = $db->setQuery($query)->loadObjectList('FormId');
 			
 			foreach ($this->_data as $i => $row)
 			{
@@ -101,6 +103,6 @@ class RsformModelBackupscreen extends JModelAdmin
 	
 	public function getTempDir()
 	{
-		return JFactory::getConfig()->get('tmp_path');
+		return JFactory::getApplication()->get('tmp_path');
 	}
 }

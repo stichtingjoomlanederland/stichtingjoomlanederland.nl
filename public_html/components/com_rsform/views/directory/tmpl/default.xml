@@ -6,7 +6,7 @@
 		</message>
 	</layout>
 	<config>
-	<fields name="params" addfieldpath="/administrator/components/com_rsform/models/fields">
+	<fields name="params" addfieldpath="/administrator/components/com_rsform/models/fields" addrulepath="/administrator/components/com_rsform/models/rules">
 		<fieldset name="basic">
 			<field name="formId" type="directories" onchange="generateDirectoryLink();" required="true" default="" label="RSFP_SUBM_DIR_FORM" description="RSFP_SUBM_DIR_FORM" />
 			<field name="lang" type="lang" default="" label="RSFP_SUBM_DIR_LANGUAGE" description="RSFP_SUBM_DIR_LANGUAGE_DESC" />
@@ -69,6 +69,7 @@
 				<option value="AND">COM_RSFORM_AND</option>
 			</field>
 			<field name="filter_values" type="submissionvalues" label="COM_RSFORM_FILTER_VALUES" description="COM_RSFORM_FILTER_VALUES_DESC" />
+			<field name="dynamic_filter_values" type="filtervalues" validate="submissionvaluesduplicatecheck" label="COM_RSFORM_DYNAMIC_FILTER_VALUES" description="COM_RSFORM_DYNAMIC_FILTER_VALUES_DESC" filter="raw" />
 		</fieldset>
 	</fields>
 	</config>

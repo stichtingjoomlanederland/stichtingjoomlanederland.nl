@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,10 +9,9 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Model;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Helper\ComponentParams;
 use Akeeba\Component\AkeebaBackup\Administrator\Helper\SecretWord;
-use Akeeba\Component\AkeebaBackup\Administrator\Model\Mixin\Chmod;
-use Akeeba\Component\AkeebaBackup\Administrator\Model\Mixin\FetchDBO;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ModelChmodTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Service\ComponentParameters;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Akeeba\Engine\Util\Complexify;
@@ -27,16 +26,17 @@ use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\User\UserHelper;
+use Joomla\Database\ParameterType;
 use RuntimeException;
 use stdClass;
 
 /**
  * ControlPanel model. Generic maintenance tasks used mainly from the ControlPanel page.
  */
+#[\AllowDynamicProperties]
 class ControlpanelModel extends BaseDatabaseModel
 {
-	use Chmod;
-	use FetchDBO;
+	use ModelChmodTrait;
 
 	protected static $systemFolders = [
 		'administrator',
@@ -87,7 +87,8 @@ class ControlpanelModel extends BaseDatabaseModel
 	 */
 	public function getQuickIconProfiles()
 	{
-		$db = $this->getDB();
+		$db            = $this->getDatabase();
+		$access_levels = JoomlaFactory::getApplication()->getIdentity()->getAuthorisedViewLevels();
 
 		$query = $db->getQuery(true)
 			->select([
@@ -95,6 +96,7 @@ class ControlpanelModel extends BaseDatabaseModel
 				$db->qn('description'),
 			])->from($db->qn('#__akeebabackup_profiles'))
 			->where($db->qn('quickicon') . ' = ' . $db->q(1))
+			->whereIn($db->qn('access'), $access_levels)
 			->order($db->qn('id') . " ASC");
 
 		$db->setQuery($query);
@@ -260,8 +262,12 @@ class ControlpanelModel extends BaseDatabaseModel
 	 * - The stored URL of the site, used for the front-end backup feature (altbackup.php)
 	 * - The detected Joomla! libraries path
 	 * - Marks all existing profiles as configured, if necessary
+	 *
+	 * @param   ComponentParameters  $componentParametersService
+	 *
+	 * @throws Exception
 	 */
-	public function updateMagicParameters()
+	public function updateMagicParameters(ComponentParameters $componentParametersService)
 	{
 		$params = ComponentHelper::getParams('com_akeebabackup');
 
@@ -274,7 +280,7 @@ class ControlpanelModel extends BaseDatabaseModel
 		$params->set('siteurl', str_replace('/administrator', '', Uri::base()));
 		$params->set('jlibrariesdir', Factory::getFilesystemTools()->TranslateWinPath(JPATH_LIBRARIES));
 
-		ComponentParams::save($params);
+		$componentParametersService->save($params);
 	}
 
 	/**
@@ -288,7 +294,7 @@ class ControlpanelModel extends BaseDatabaseModel
 	public function markOldProfilesConfigured()
 	{
 		// Get all profiles
-		$db = $this->getDB();
+		$db = $this->getDatabase();
 
 		$query = $db->getQuery(true)
 			->select([
@@ -762,6 +768,44 @@ class ControlpanelModel extends BaseDatabaseModel
 	}
 
 	/**
+	 * Get the package ID of pkg_akeeba (Akeeba Backup 8), if it's still published.
+	 *
+	 * @return  int|null
+	 *
+	 * @throws  Exception
+	 * @since   9.3.1
+	 * @noinspection PhpUnused
+	 */
+	public function getAkeebaBackup8PackageId(): ?int
+	{
+		/** @var UpgradeModel $upgradeModel */
+		$upgradeModel = $this->getMVCFactory()->createModel('Upgrade', 'Administrator');
+		$upgradeModel->init();
+		$id = $upgradeModel->getExtensionId('pkg_akeeba');
+
+		if (empty($id))
+		{
+			return null;
+		}
+
+		try
+		{
+			$db    = $this->getDatabase();
+			$query = $db->getQuery(true)
+			            ->select($db->quoteName('enabled'))
+			            ->from($db->quoteName('#__extensions'))
+			            ->where($db->quoteName('extension_id') . ' = :eid')
+			            ->bind(':eid', $id, ParameterType::INTEGER);
+
+			return $db->setQuery($query)->loadResult() == 1 ? $id : null;
+		}
+		catch (Exception $e)
+		{
+			return null;
+		}
+	}
+
+	/**
 	 * Return the currently configured site root directory
 	 *
 	 * @return  string
@@ -797,7 +841,7 @@ class ControlpanelModel extends BaseDatabaseModel
 		$key      = Factory::getSecureSettings()->getKey();
 
 		// Get the profiles information
-		$db       = $this->getDB();
+		$db       = $this->getDatabase();
 		$query    = $db->getQuery(true)
 			->select([
 				$db->qn('id'),
@@ -845,7 +889,7 @@ class ControlpanelModel extends BaseDatabaseModel
 		}
 
 		// Get the profiles information
-		$db       = $this->getDB();
+		$db       = $this->getDatabase();
 		$query    = $db->getQuery(true)
 			->select([
 				$db->qn('id'),

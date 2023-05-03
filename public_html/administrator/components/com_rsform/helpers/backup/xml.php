@@ -117,6 +117,11 @@ class RSFormProBackupXML
     {
         $this->buffer = str_replace('<' . $tag . '></' . $tag . '>', '<' . $tag . '>' . $this->escape($value) . '</' . $tag . '>', $this->buffer);
     }
+
+	public function replaceLine($replace, $with)
+	{
+		$this->buffer = str_replace($replace, $with, $this->buffer);
+	}
 	
 	public function __toString() {
 		return $this->buffer;

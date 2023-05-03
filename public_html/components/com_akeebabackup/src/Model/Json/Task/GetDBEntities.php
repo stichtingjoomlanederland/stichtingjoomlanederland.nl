@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -62,7 +62,7 @@ class GetDBEntities extends AbstractTask
 		Platform::getInstance()->load_configuration($profile);
 
 		/** @var DatabasefiltersModel $model */
-		$model = $this->factory->createModel('Databasefilters', 'Administrator');
+		$model = $this->factory->createModel('Databasefilters', 'Administrator', ['ignore_request' => true]);
 
 		return $model->makeListing($root);
 	}

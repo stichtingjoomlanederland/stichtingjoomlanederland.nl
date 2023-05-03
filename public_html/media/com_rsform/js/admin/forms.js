@@ -11,6 +11,10 @@ RSFormPro.editModal = {
 	enableButton: function() {
 		jQuery(this.selector).find('.btn-primary').prop('disabled', false);
 	},
+
+	getFormFields: function() {
+		return jQuery(this.selector).find('input, select, textarea').serializeArray();
+	},
 	
 	open: function() {
 		if (!this.attached)

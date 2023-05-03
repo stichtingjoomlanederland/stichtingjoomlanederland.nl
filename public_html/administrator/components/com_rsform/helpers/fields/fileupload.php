@@ -180,6 +180,12 @@ class RSFormProFieldFileUpload extends RSFormProField
 		if ($this->getProperty('ACCEPTEDFILESIMAGES'))
 		{
 			$acceptedExts = array('jpg', 'jpeg', 'png', 'gif');
+
+			$newWidth = (int) $this->getProperty('THUMBSIZE', 220);
+			if ($newWidth === 0 || ($newWidth > 0 && version_compare(PHP_VERSION, '7.3.0', '>=')))
+			{
+				$acceptedExts[] = 'webp';
+			}
 		}
 		elseif ($exts = $this->getProperty('ACCEPTEDFILES'))
 		{
@@ -203,23 +209,35 @@ class RSFormProFieldFileUpload extends RSFormProField
 			$html .= ' data-rsfp-size="' . ($size * 1024) . '"';
 		}
 
-		$messages = array(
-			'VALIDATIONMESSAGE' => $this->getProperty('VALIDATIONMESSAGE'),
-			'COM_RSFORM_FILE_EXCEEDS_LIMIT' => JText::_('COM_RSFORM_FILE_EXCEEDS_LIMIT'),
-			'COM_RSFORM_FILE_EXTENSION_NOT_ALLOWED' => JText::_('COM_RSFORM_FILE_EXTENSION_NOT_ALLOWED'),
-			'COM_RSFORM_MINFILES_REQUIRED' => JText::_('COM_RSFORM_MINFILES_REQUIRED'),
-			'COM_RSFORM_MAXFILES_REQUIRED' => JText::_('COM_RSFORM_MAXFILES_REQUIRED'),
-		);
-
-		$script = '';
-		foreach ($messages as $key => $message)
-		{
-			$script .= 'RSFormPro.Translations.add(' . $this->formId . ', ' . json_encode($this->name) . ', ' . json_encode($key) . ', ' . json_encode($message) . ');';
-		}
-
-		$this->addScriptDeclaration($script);
+		$this->addScriptDeclaration('RSFormPro.Translations.add(' . $this->formId . ', ' . json_encode($this->name) . ', ' . json_encode('VALIDATIONMESSAGE') . ', ' . json_encode($this->getProperty('VALIDATIONMESSAGE')) . ');');
+		$this->addCommonTranslations();
 
 		return $html;
+	}
+
+	private function addCommonTranslations()
+	{
+		static $done;
+
+		if (!$done)
+		{
+			$done = true;
+
+			$messages = array(
+				'COM_RSFORM_FILE_EXCEEDS_LIMIT' => JText::_('COM_RSFORM_FILE_EXCEEDS_LIMIT'),
+				'COM_RSFORM_FILE_EXTENSION_NOT_ALLOWED' => JText::_('COM_RSFORM_FILE_EXTENSION_NOT_ALLOWED'),
+				'COM_RSFORM_MINFILES_REQUIRED' => JText::_('COM_RSFORM_MINFILES_REQUIRED'),
+				'COM_RSFORM_MAXFILES_REQUIRED' => JText::_('COM_RSFORM_MAXFILES_REQUIRED'),
+			);
+
+			$script = '';
+			foreach ($messages as $key => $message)
+			{
+				$script .= 'RSFormPro.Translations.addCommonTranslation(' . json_encode($key) . ', ' . json_encode($message) . ');';
+			}
+
+			$this->addScriptDeclaration($script);
+		}
 	}
 
 	public function cleanExtension(&$value, $key = null)
@@ -287,50 +305,66 @@ class RSFormProFieldFileUpload extends RSFormProField
 			// Upload File
 			if (JFile::upload($actualFile['tmp_name'], $file, false, (bool) RSFormProHelper::getConfig('allow_unsafe')))
 			{
-				if ($this->getProperty('ACCEPTEDFILESIMAGES', false) && function_exists('imagecreatefromstring'))
+				if ($this->getProperty('ACCEPTEDFILESIMAGES', false))
 				{
-					$newWidth  = (int) $this->getProperty('THUMBSIZE', 220);
-					$quality   = (int) $this->getProperty('THUMBQUALITY', 75);
-					$extension = $this->getProperty('THUMBEXTENSION', 'jpg');
-					$image     = @imagecreatefromstring(file_get_contents($file));
-
-					if ($image !== false && $newWidth > 0)
+					if (function_exists('imagecreatefromstring'))
 					{
-						// Try to rotate it, JPEG only
-						$this->tryToRotate($image, $file);
+						$newWidth = (int) $this->getProperty('THUMBSIZE', 220);
 
-						// If we're downsizing, IMG_BICUBIC produces better results
-						if ($newWidth < imagesx($image))
+						if ($newWidth > 0)
 						{
-							$image = imagescale($image, $newWidth, -1, IMG_BICUBIC);
-						}
-						else
-						{
-							$image = imagescale($image, $newWidth);
-						}
+							$image = @imagecreatefromstring(file_get_contents($file));
 
-						if ($image !== false)
-						{
-							$thumbFile = JFile::stripExt($file) . '.' . $extension;
-
-							// Delete old file, we no longer need it
-							JFile::delete($file);
-
-							if ($extension === 'png')
+							if ($image !== false)
 							{
-								imagealphablending($image, false);
-								imagesavealpha($image, true);
-								imagepng($image, $thumbFile);
-							}
-							else
-							{
-								imagejpeg($image, $thumbFile, $quality);
-							}
+								$quality   = (int) $this->getProperty('THUMBQUALITY', 75);
+								$extension = $this->getProperty('THUMBEXTENSION', 'jpg');
 
-							$file = $thumbFile;
+								// Try to rotate it, JPEG only
+								$this->tryToRotate($image, $file);
 
-							unset($image);
+								// If we're downsizing, IMG_BICUBIC produces better results
+								if ($newWidth < imagesx($image))
+								{
+									$image = imagescale($image, $newWidth, -1, IMG_BICUBIC);
+								}
+								else
+								{
+									$image = imagescale($image, $newWidth);
+								}
+
+								if ($image !== false)
+								{
+									$thumbFile = JFile::stripExt($file) . '.' . $extension;
+
+									// Delete old file, we no longer need it
+									JFile::delete($file);
+
+									if ($extension === 'png')
+									{
+										imagealphablending($image, false);
+										imagesavealpha($image, true);
+										imagepng($image, $thumbFile);
+									}
+									elseif ($extension === 'jpg')
+									{
+										imagejpeg($image, $thumbFile, $quality);
+									}
+									elseif ($extension === 'webp' && function_exists('imagewebp'))
+									{
+										imagewebp($image, $thumbFile, $quality);
+									}
+
+									$file = $thumbFile;
+
+									unset($image);
+								}
+							}
 						}
+					}
+					else
+					{
+						JFactory::getApplication()->enqueueMessage('COM_RSFORM_CREATING_THUMBNAILS_FROM_IMAGES_REQUIRES_GD', 'warning');
 					}
 				}
 
@@ -568,6 +602,7 @@ class RSFormProFieldFileUpload extends RSFormProField
 			$countFiles = 0;
 
 			$allowImages = $this->getProperty('ACCEPTEDFILESIMAGES', false);
+			$newWidth    = (int) $this->getProperty('THUMBSIZE', 220);
 
 			foreach ($actualFiles as $actualFile)
 			{
@@ -585,6 +620,10 @@ class RSFormProFieldFileUpload extends RSFormProField
 					if ($allowImages)
 					{
 						$acceptedExts = array('jpg', 'jpeg', 'png', 'gif');
+						if ($newWidth === 0 || ($newWidth > 0 && version_compare(PHP_VERSION, '7.3.0', '>=')))
+						{
+							$acceptedExts[] = 'webp';
+						}
 					}
 					elseif ($exts = $this->getProperty('ACCEPTEDFILES'))
 					{
@@ -606,14 +645,18 @@ class RSFormProFieldFileUpload extends RSFormProField
 							}
 						}
 
-						if ($allowImages && function_exists('exif_imagetype') && exif_imagetype($actualFile['tmp_name']) === false)
-						{
-							throw new Exception(JText::sprintf('COM_RSFORM_FILE_DOES_NOT_SEEM_TO_BE_AN_IMAGE', basename($name)));
-						}
-
 						if (!$accepted)
 						{
-							throw new Exception(JText::sprintf('COM_RSFORM_FILE_EXTENSION_NOT_ALLOWED', basename($name)));
+							throw new Exception(JText::sprintf('COM_RSFORM_FILE_EXTENSION_NOT_ALLOWED', htmlspecialchars(basename($name), ENT_QUOTES, 'utf-8')));
+						}
+
+						if ($allowImages && function_exists('exif_imagetype'))
+						{
+							$imagetype = exif_imagetype($actualFile['tmp_name']);
+							if ($imagetype === false && ($ext === 'webp' && version_compare(PHP_VERSION, '7.1.0', '>=')  || $ext !== 'webp'))
+							{
+								throw new Exception(JText::sprintf('COM_RSFORM_FILE_DOES_NOT_SEEM_TO_BE_AN_IMAGE', htmlspecialchars(basename($name), ENT_QUOTES, 'utf-8')));
+							}
 						}
 					}
 
@@ -622,7 +665,7 @@ class RSFormProFieldFileUpload extends RSFormProField
 					// Let's check if it's the correct size
 					if ($size > 0 && $filesize > 0 && $size > $filesize * 1024)
 					{
-						throw new Exception(JText::sprintf('COM_RSFORM_FILE_EXCEEDS_LIMIT', basename($name), $filesize));
+						throw new Exception(JText::sprintf('COM_RSFORM_FILE_EXCEEDS_LIMIT', htmlspecialchars(basename($name), ENT_QUOTES, 'utf-8'), $filesize));
 					}
 
 					$countFiles++;

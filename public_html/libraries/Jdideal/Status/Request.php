@@ -3,7 +3,7 @@
  * @package    JDiDEAL
  *
  * @author     Roland Dalmulder <contact@rolandd.com>
- * @copyright  Copyright (C) 2009 - 2022 RolandD Cyber Produksi. All rights reserved.
+ * @copyright  Copyright (C) 2009 - 2023 RolandD Cyber Produksi. All rights reserved.
  * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  * @link       https://rolandd.com
  */
@@ -16,6 +16,7 @@ use Jdideal\Gateway;
 use Jdideal\Psp\PspInterface;
 use JEventDispatcher;
 use Joomla\CMS\Application\SiteApplication;
+use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Filesystem\File;
 use Joomla\CMS\HTML\HTMLHelper;
@@ -30,6 +31,7 @@ use Joomla\CMS\Table\Table;
 use Joomla\CMS\Uri\Uri;
 use Joomla\Registry\Registry;
 use RuntimeException;
+use stdClass;
 use TableLog;
 
 defined('_JEXEC') or die;
@@ -274,21 +276,32 @@ class Request
 			{
 				$jdideal->status('UNKNOWN', $logId);
 
-				$url = 'index.php?option=com_jdidealgateway&view=status&lang='
+				$config   = Factory::getConfig();
+				$redirect = 'index.php?option=com_jdidealgateway&view=status&lang='
 					. $transactionDetails->language;
 
 				$jdideal->log(
-					'Raw URL: ' . $url, $logId
+					'Raw URL: ' . $redirect, $logId
 				);
 
-				$redirect = Route::_($url, false);
+				if ($config->get('sef'))
+				{
+					$redirect = $this->getSefUrl('unknown', $transactionDetails->language);
+
+					if (empty($redirect))
+					{
+						$jdideal->log('No menu item has been found for the RO Payments Status Page. Please create a menu item of the type Status Page and set the Payment Status to Unknown on the Options tab. This page will be shown to the end-user whenever a payment status is unknown.',
+							$logId);
+						$redirect = '/';
+					}
+				}
 
 				$jdideal->log(
-					'Routed URL: ' . $url, $logId
+					'Routed URL: ' . $redirect, $logId
 				);
 
 				// Workaround for Language filter plugin stripping the sef language when the option Remove URL language code is enabled
-				if (PluginHelper::isEnabled('system', 'languagefilter'))
+				if ($redirect !== '/' && PluginHelper::isEnabled('system', 'languagefilter'))
 				{
 					$languageFilter = PluginHelper::getPlugin(
 						'system', 'languagefilter'
@@ -308,25 +321,37 @@ class Request
 						{
 							$redirect = '/'
 								. $languageCodes[$transactionDetails->language]->sef
-								. $redirect;
+								. '/' . $redirect;
 						}
 					}
 				}
 
-				// Clear the URL from the /cli prefix
-				$redirect = str_ireplace('/cli', '', $redirect);
-
-				// Check if there is an Itemid, so yes, no menu item is found and we should not add anything extra
-				if (stristr($redirect, 'Itemid='))
+				if ($redirect !== '/')
 				{
-					$redirect = str_ireplace('/component/jdidealgateway', '', $redirect);
+					if (stristr($redirect, '&'))
+					{
+						$redirect .= '&logid=' . $logId;
+					}
+					else
+					{
+						$redirect .= '?logid=' . $logId;
+					}
 				}
 
+				// Need to add the domain here because J! messes up the URL in the Route:: function by prepending cli
+				$params = ComponentHelper::getParams('com_jdidealgateway');
+				$domain = $params->get('domain');
+
+				if (substr($domain, -1) !== '/')
 				{
-					$jdideal->log(
-						'Redirect to unknown status page: ' . $redirect, $logId
-					);
+					$domain .= '/';
 				}
+
+				$redirect = $domain . $redirect;
+
+				$jdideal->log(
+					'Redirect to unknown status page: ' . $redirect, $logId
+				);
 			}
 		}
 
@@ -1346,5 +1371,91 @@ class Request
 		}
 
 		return $callback;
+	}
+
+	/**
+	 * Find the SEF URL for a given status page.
+	 *
+	 * @param   string  $status    The status to load
+	 * @param   string  $language  The language of the menu item
+	 *
+	 * @return  string  The SEF URL or empty if not found.
+	 *
+	 * @since   8.0.3
+	 */
+	private function getSefUrl(string $status, string $language): string
+	{
+		$db    = Factory::getDbo();
+		$query = $db->getQuery(true)
+			->select($db->quoteName(['id', 'parent_id', 'level', 'alias', 'params']))
+			->from($db->quoteName('#__menu'))
+			->where($db->quoteName('link') . ' = ' . $db->quote('index.php?option=com_jdidealgateway&view=status'))
+			->where($db->quoteName('type') . ' = ' . $db->quote('component'))
+			->where($db->quoteName('published') . ' = 1')
+			->where($db->quoteName('language') . ' IN (' . $db->quote('*') . ', ' . $db->quote($language) . ')');
+		$db->setQuery($query);
+		$menuItems = $db->loadObjectList();
+
+		foreach ($menuItems as $key => $menuItem)
+		{
+			if (strtoupper((new Registry($menuItem->params))->get('message')) !== strtoupper($status))
+			{
+				unset($menuItems[$key]);
+			}
+		}
+
+		if (empty($menuItems))
+		{
+			return '';
+		}
+
+		$menuItem = array_shift($menuItems);
+		$found    = false;
+		$path     = [];
+
+		if (!$menuItem)
+		{
+			return '';
+		}
+
+		while (!$found)
+		{
+			$parent = $this->getParentMenu($menuItem->parent_id);
+
+			if ((int) $parent->level === 1 || $parent->alias === 'root')
+			{
+				$found = true;
+			}
+
+			if ($parent->alias !== 'root')
+			{
+				$path[] = $parent->alias;
+			}
+		}
+
+		$path[] = $menuItem->alias;
+
+		return implode('/', $path);
+	}
+
+	/**
+	 * Get the parent menu item.
+	 *
+	 * @param   int  $parentId  The parent ID to load
+	 *
+	 * @return  stdClass  The menu item.
+	 *
+	 * @since   8.0.3
+	 */
+	private function getParentMenu(int $parentId): stdClass
+	{
+		$db    = Factory::getDbo();
+		$query = $db->getQuery(true)
+			->select($db->quoteName(['parent_id', 'level', 'alias']))
+			->from($db->quoteName('#__menu'))
+			->where($db->quoteName('id') . ' = ' . $parentId);
+		$db->setQuery($query);
+
+		return $db->loadObject();
 	}
 }

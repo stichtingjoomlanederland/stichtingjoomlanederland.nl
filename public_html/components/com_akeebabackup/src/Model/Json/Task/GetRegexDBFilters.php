@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -63,7 +63,7 @@ class GetRegexDBFilters extends AbstractTask
 		Platform::getInstance()->load_configuration($profile);
 
 		/** @var RegexdatabasefiltersModel $model */
-		$model = $this->factory->createModel('Regexdatabasefilters', 'Administrator');
+		$model = $this->factory->createModel('Regexdatabasefilters', 'Administrator', ['ignore_request' => true]);
 
 		return $model->get_regex_filters($root);
 	}

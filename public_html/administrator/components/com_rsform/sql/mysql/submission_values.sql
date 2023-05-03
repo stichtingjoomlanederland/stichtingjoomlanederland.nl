@@ -7,4 +7,4 @@ CREATE TABLE IF NOT EXISTS `#__rsform_submission_values` (
   PRIMARY KEY  (`SubmissionValueId`),
   KEY `FormId` (`FormId`),
   KEY `SubmissionId` (`SubmissionId`)
-) DEFAULT CHARSET=utf8;
+) DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_unicode_ci;

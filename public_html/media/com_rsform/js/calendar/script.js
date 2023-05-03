@@ -298,7 +298,7 @@ RSFormPro.YUICalendar = {
 			for (var i = 0; i < calendarsIds.length; i++){
 				var calId = 'cal'+calendarsIds[i]+'Container';
 				var cal = document.getElementById(calId);
-				if (cal.style.display != 'none' && cal.style.position == 'absolute') {
+				if (cal && cal.style.display != 'none' && cal.style.position == 'absolute') {
 					cal.style.display = 'none';
 				}
 			}

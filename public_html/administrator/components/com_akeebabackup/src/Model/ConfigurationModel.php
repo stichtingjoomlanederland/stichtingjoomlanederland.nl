@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,10 +9,9 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Model;
 
 defined('_JEXEC') or die;
 
-use Akeeba\Engine\Archiver\Directftp;
-use Akeeba\Engine\Archiver\Directsftp;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
+use Akeeba\Engine\Postproc\Base;
 use Akeeba\Engine\Util\Transfer\Ftp;
 use Akeeba\Engine\Util\Transfer\FtpCurl;
 use Akeeba\Engine\Util\Transfer\Sftp;
@@ -26,6 +25,7 @@ use Joomla\CMS\MVC\Model\BaseModel;
 use Joomla\CMS\Uri\Uri;
 use RuntimeException;
 
+#[\AllowDynamicProperties]
 class ConfigurationModel extends BaseModel
 {
 	/**
@@ -248,7 +248,7 @@ class ConfigurationModel extends BaseModel
 		// Get the engine
 		$engineObject = Factory::getPostprocEngine($engine);
 
-		if ($engineObject === false)
+		if (!$engineObject instanceof Base)
 		{
 			return;
 		}
@@ -272,7 +272,7 @@ class ConfigurationModel extends BaseModel
 
 		$engineObject = Factory::getPostprocEngine($engine);
 
-		if ($engineObject === false)
+		if (!$engineObject instanceof Base)
 		{
 			return false;
 		}

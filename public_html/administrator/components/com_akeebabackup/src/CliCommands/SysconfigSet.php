@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -14,7 +14,6 @@ use Akeeba\Component\AkeebaBackup\Administrator\CliCommands\MixIt\ComponentOptio
 use Akeeba\Component\AkeebaBackup\Administrator\CliCommands\MixIt\ConfigureIO;
 use Akeeba\Component\AkeebaBackup\Administrator\CliCommands\MixIt\InitialiseEngine;
 use Akeeba\Component\AkeebaBackup\Administrator\CliCommands\MixIt\PrintFormattedArray;
-use Akeeba\Component\AkeebaBackup\Administrator\Helper\ComponentParams;
 use Akeeba\Component\AkeebaBackup\Administrator\Helper\SecretWord;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Language\Text;
@@ -43,10 +42,27 @@ class SysconfigSet extends AbstractCommand
 	/**
 	 * The default command name
 	 *
-	 * @var    string
 	 * @since  7.5.0
+	 * @var    string
 	 */
 	protected static $defaultName = 'akeeba:sysconfig:set';
+
+	/**
+	 * Configure the command.
+	 *
+	 * @return  void
+	 *
+	 * @since   7.5.0
+	 */
+	protected function configure(): void
+	{
+		$this->addArgument('key', null, InputOption::VALUE_REQUIRED, Text::_('COM_AKEEBABACKUP_CLI_SYSCONFIG_SET_OPT_KEY'));
+		$this->addArgument('value', null, InputOption::VALUE_REQUIRED, Text::_('COM_AKEEBABACKUP_CLI_SYSCONFIG_SET_OPT_VALUE'));
+		$this->addOption('format', null, InputOption::VALUE_OPTIONAL, Text::_('COM_AKEEBABACKUP_CLI_SYSCONFIG_SET_OPT_FORMAT'), 'text');
+
+		$this->setDescription(Text::_('COM_AKEEBABACKUP_CLI_SYSCONFIG_SET_DESC'));
+		$this->setHelp(Text::_('COM_AKEEBABACKUP_CLI_SYSCONFIG_SET_HELP'));
+	}
 
 	/**
 	 * Internal function to execute the command.
@@ -95,7 +111,9 @@ class SysconfigSet extends AbstractCommand
 		$cParams = ComponentHelper::getParams('com_akeebabackup');
 		$cParams->set($key, $value);
 
-		ComponentParams::save($cParams);
+		$this->getComponentObject($this->getApplication())
+		     ->getComponentParametersService()
+		     ->save($cParams);
 
 		// Make sure the front-end backup Secret Word is stored encrypted
 		SecretWord::enforceEncryption($cParams, 'frontend_secret_word');
@@ -103,22 +121,5 @@ class SysconfigSet extends AbstractCommand
 		$this->ioStyle->success(Text::sprintf('COM_AKEEBABACKUP_CLI_SYSCONFIG_SET_LBL_SETTING', $key, $value));
 
 		return 0;
-	}
-
-	/**
-	 * Configure the command.
-	 *
-	 * @return  void
-	 *
-	 * @since   7.5.0
-	 */
-	protected function configure(): void
-	{
-		$this->addArgument('key', null, InputOption::VALUE_REQUIRED, Text::_('COM_AKEEBABACKUP_CLI_SYSCONFIG_SET_OPT_KEY'));
-		$this->addArgument('value', null, InputOption::VALUE_REQUIRED, Text::_('COM_AKEEBABACKUP_CLI_SYSCONFIG_SET_OPT_VALUE'));
-		$this->addOption('format', null, InputOption::VALUE_OPTIONAL, Text::_('COM_AKEEBABACKUP_CLI_SYSCONFIG_SET_OPT_FORMAT'), 'text');
-
-		$this->setDescription(Text::_('COM_AKEEBABACKUP_CLI_SYSCONFIG_SET_DESC'));
-		$this->setHelp(Text::_('COM_AKEEBABACKUP_CLI_SYSCONFIG_SET_HELP'));
 	}
 }

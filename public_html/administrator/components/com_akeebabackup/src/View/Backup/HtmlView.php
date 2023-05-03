@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -11,24 +11,24 @@ defined('_JEXEC') || die;
 
 use Akeeba\Component\AkeebaBackup\Administrator\Helper\Status;
 use Akeeba\Component\AkeebaBackup\Administrator\Helper\Utils;
-use Akeeba\Component\AkeebaBackup\Administrator\Model\BackupModel;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewLoadAnyTemplateTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewProfileIdAndNameTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewProfileListTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewTaskBasedEventsTrait;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\ControlpanelModel;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\LoadAnyTemplate;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\ProfileIdAndName;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\ProfileList;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\TaskBasedEvents;
 use Akeeba\Engine\Factory;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 
+#[\AllowDynamicProperties]
 class HtmlView extends BaseHtmlView
 {
-	use ProfileList;
-	use ProfileIdAndName;
-	use LoadAnyTemplate;
-	use TaskBasedEvents;
+	use ViewProfileListTrait;
+	use ViewProfileIdAndNameTrait;
+	use ViewLoadAnyTemplateTrait;
+	use ViewTaskBasedEventsTrait;
 
 	/**
 	 * Do we have errors preventing the backup from starting?

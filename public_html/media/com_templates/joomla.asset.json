@@ -6,18 +6,6 @@
   "license": "GPL-2.0-or-later",
   "assets": [
     {
-      "name": "com_templates.admin-template-compare",
-      "type": "script",
-      "uri": "com_templates/admin-template-compare.min.js",
-      "dependencies": [
-        "com_templates.admin-template-compare.es5"
-      ],
-      "attributes": {
-        "type": "module"
-      },
-      "version": "22f26ac574bea945a0ac83e683f5391e730f7cc5"
-    },
-    {
       "name": "com_templates.admin-template-compare.es5",
       "type": "script",
       "uri": "com_templates/admin-template-compare-es5.min.js",
@@ -30,6 +18,18 @@
         "defer": true
       },
       "version": "9f718aaa18d4693e5c1ca24ebcc1a7ee659cb4ab"
+    },
+    {
+      "name": "com_templates.admin-template-compare",
+      "type": "script",
+      "uri": "com_templates/admin-template-compare.min.js",
+      "dependencies": [
+        "com_templates.admin-template-compare.es5"
+      ],
+      "attributes": {
+        "type": "module"
+      },
+      "version": "22f26ac574bea945a0ac83e683f5391e730f7cc5"
     },
     {
       "name": "com_templates.admin-template-toggle-assignment.es5",
@@ -85,7 +85,7 @@
       "name": "com_templates.admin-templates",
       "type": "style",
       "uri": "com_templates/admin-templates-default.min.css",
-      "version": "1bacad73db8a9b90fffd909e283d16af69cad605"
+      "version": "173f2842912ce5103fa838c36ce9a99db2196a64"
     },
     {
       "name": "com_templates.admin-templates.es5",

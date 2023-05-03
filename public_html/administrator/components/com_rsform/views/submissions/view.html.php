@@ -40,6 +40,7 @@ class RsformViewSubmissions extends JViewLegacy
 			}
 
 			$this->formTitle = $this->get('formTitle');
+			$this->multipleSeparator = $this->get('FormMultipleSeparator');
 			$this->exportSelected = $this->get('exportSelected');
 			$this->exportSelectedCount = count($this->exportSelected);
 			$this->exportFilteredCount = $this->get('Total');

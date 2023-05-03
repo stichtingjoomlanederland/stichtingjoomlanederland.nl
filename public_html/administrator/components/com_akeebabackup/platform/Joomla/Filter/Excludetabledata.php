@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,8 +9,6 @@ namespace Akeeba\Engine\Filter;
 
 // Protection against direct access
 defined('_JEXEC') || die();
-
-use Akeeba\Engine\Factory;
 
 /**
  * Subdirectories exclusion filter. Excludes temporary, cache and backup output

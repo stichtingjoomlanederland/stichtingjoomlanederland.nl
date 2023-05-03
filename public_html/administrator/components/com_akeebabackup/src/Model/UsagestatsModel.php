@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,17 +9,15 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Model;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Model\Mixin\FetchDBO;
 use AkeebaUsagestats;
 use Exception;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 use Joomla\CMS\Uri\Uri;
 
+#[\AllowDynamicProperties]
 class UsagestatsModel extends BaseDatabaseModel
 {
-	use FetchDBO;
-
 	/**
 	 * Get an existing unique site ID or create a new one
 	 *
@@ -107,7 +105,7 @@ class UsagestatsModel extends BaseDatabaseModel
 			define('AKEEBA_DATE', date('Y-m-d'));
 		}
 
-		$db = $this->getDB();
+		$db = $this->getDatabase();
 
 		try
 		{
@@ -181,7 +179,7 @@ class UsagestatsModel extends BaseDatabaseModel
 	 */
 	public function getCommonVariable($key, $default = null)
 	{
-		$db    = $this->getDB();
+		$db    = $this->getDatabase();
 		$query = $db->getQuery(true)
 			->select($db->qn('value'))
 			->from($db->qn('#__akeeba_common'))
@@ -211,7 +209,7 @@ class UsagestatsModel extends BaseDatabaseModel
 	 */
 	public function setCommonVariable($key, $value)
 	{
-		$db    = $this->getDB();
+		$db    = $this->getDatabase();
 		$query = $db->getQuery(true)
 			->select('COUNT(*)')
 			->from($db->qn('#__akeeba_common'))

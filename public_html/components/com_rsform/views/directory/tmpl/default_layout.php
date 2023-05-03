@@ -13,6 +13,7 @@ $listDirn	= $this->escape($this->filter_order_Dir);
 JText::script('RSFP_SUBM_DIR_DELETE_SURE');
 JHtml::_('stylesheet', 'com_rsform/rsicons.css', array('relative' => true, 'version' => 'auto'));
 ?>
+<div class="table-responsive">
 <table class="table table-condensed table-striped table-responsive directoryTable">
 	<thead>
 		<tr>
@@ -62,3 +63,4 @@ JHtml::_('stylesheet', 'com_rsform/rsicons.css', array('relative' => true, 'vers
 		<?php } ?>
 	</tbody>
 </table>
+</div>

@@ -3,7 +3,7 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -12,13 +12,14 @@ namespace Akeeba\Engine\Core\Domain;
 defined('AKEEBAENGINE') || die();
 
 use Akeeba\Engine\Archiver\Base as BaseArchiverClass;
+use Akeeba\Engine\Base\Exceptions\ErrorException;
 use Akeeba\Engine\Base\Exceptions\WarningException;
 use Akeeba\Engine\Base\Part;
 use Akeeba\Engine\Configuration;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Exception;
-use Psr\Log\LogLevel;
+use Akeeba\Engine\Psr\Log\LogLevel;
 use RuntimeException;
 
 /* Windows system detection */
@@ -38,7 +39,7 @@ if (!defined('_AKEEBA_IS_WINDOWS'))
  * Packing engine. Takes care of putting gathered files (the file list) into
  * an archive.
  */
-class Pack extends Part
+final class Pack extends Part
 {
 	/** @var array Directories left to be scanned */
 	private $directory_list;
@@ -151,6 +152,7 @@ class Pack extends Part
 		$allowImmediatePostProcessing = $configuration->get('engine.postproc.common.after_part', 0);
 		$filename                     = $configuration->get('volatile.postproc.filename', null);
 		$shouldDeleteProcessedPart    = $configuration->get('engine.postproc.common.delete_after', false);
+		$shouldAbortOnFailed          = $configuration->get('engine.postproc.common.abort_on_fail', false);
 		$engineCanDeleteFiles         = $postprocEngine->isFileDeletionAfterProcessingAdvisable();
 
 		// Is the immediate post-processing disabled? Return false.
@@ -249,9 +251,9 @@ class Pack extends Part
 				$configuration->set('volatile.breakflag', true);
 			}
 		}
-			/**
-			 * POST-PROCESSING FAILED
-			 */
+		/**
+		 * POST-PROCESSING FAILED
+		 */
 		catch (Exception $e)
 		{
 			// Indicate no further processing is possible on this file.
@@ -260,7 +262,13 @@ class Pack extends Part
 			Factory::getLog()->warning('Failed to process file ' . basename($filename));
 			Factory::getLog()->warning('Error received from the post-processing engine:');
 
-			self::logErrorsFromException($e, LogLevel::WARNING);
+			self::logErrorsFromException($e, $shouldAbortOnFailed ? LogLevel::ERROR : LogLevel::WARNING);
+
+			// Fail the backup if we're configured to do so
+			if ($shouldAbortOnFailed)
+			{
+				throw new ErrorException(sprintf('Failed to process backup archive file %s', basename($filename)));
+			}
 
 			return false;
 		}

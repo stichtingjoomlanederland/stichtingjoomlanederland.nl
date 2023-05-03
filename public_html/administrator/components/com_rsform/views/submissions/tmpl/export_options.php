@@ -9,44 +9,54 @@ defined('_JEXEC') or die('Restricted access');
 ?>
 <table class="admintable" width="100%">
 	<tr>
-		<td width="200" style="width: 200px;" align="right" class="key">
+		<td style="width: 235px;" align="right" class="key">
 			<span class="<?php echo $this->tooltipClass; ?>" title="<?php echo RSFormProHelper::getTooltipText(JText::_('RSFP_EXPORT_HEADERS'), JText::_('RSFP_EXPORT_HEADERS_DESC')); ?>">
-				<?php echo JText::_('RSFP_EXPORT_HEADERS');?>
+                <label for="ExportHeaders"><?php echo JText::_('RSFP_EXPORT_HEADERS');?></label>
 			</span>
 		</td>
 		<td>
-			<input type="checkbox" onchange="updateCSVPreview();" name="ExportHeaders" value="1" checked="checked" />
+			<input type="checkbox" onchange="updateCSVPreview();" name="ExportHeaders" id="ExportHeaders" value="1" checked="checked" />
 		</td>
 	</tr>
+    <tr>
+        <td style="width: 235px;" align="right" class="key">
+			<span class="<?php echo $this->tooltipClass; ?>" title="<?php echo RSFormProHelper::getTooltipText(JText::_('RSFP_EXPORT_MULTIPLE_SEPARATOR'), JText::_('RSFP_EXPORT_MULTIPLE_SEPARATOR_DESC')); ?>">
+                <label for="ExportMultipleSeparator"><?php echo JText::_('RSFP_EXPORT_MULTIPLE_SEPARATOR');?></label>
+			</span>
+        </td>
+        <td>
+            <input type="text" class="rs_inp rs_5" style="text-align: center" name="ExportMultipleSeparator" id="ExportMultipleSeparator" value="<?php echo $this->escape($this->multipleSeparator); ?>" size="5" />
+        </td>
+    </tr>
 	<?php if ($this->exportType == 'csv') { ?>
 	<tr>
-		<td width="200" style="width: 200px;" align="right" class="key">
+		<td style="width: 235px;" align="right" class="key">
 		<span class="<?php echo $this->tooltipClass; ?>" title="<?php echo RSFormProHelper::getTooltipText(JText::_('RSFP_EXPORT_STRIP_LINES'), JText::_('RSFP_EXPORT_STRIP_LINES_DESC')); ?>">
-			<?php echo JText::_('RSFP_EXPORT_STRIP_LINES');?>
+            <label for="StripLines"><?php echo JText::_('RSFP_EXPORT_STRIP_LINES');?></label>
 		</span>
 		</td>
 		<td>
-			<input type="checkbox" name="StripLines" value="1" />
+			<input type="checkbox" id="StripLines" name="StripLines" value="1" />
 		</td>
 	</tr>
 	<tr>
-		<td width="200" style="width: 200px;" align="right" class="key">
+		<td style="width: 235px;" align="right" class="key">
 			<span class="<?php echo $this->tooltipClass; ?>" title="<?php echo RSFormProHelper::getTooltipText(JText::_('RSFP_EXPORT_DELIMITER'), JText::_('RSFP_EXPORT_DELIMITER_DESC')); ?>">
-				<?php echo JText::_('RSFP_EXPORT_DELIMITER');?>
+                <label for="ExportDelimiter"><?php echo JText::_('RSFP_EXPORT_DELIMITER');?></label>
 			</span>
 		</td>
 		<td>
-			<input type="text" class="rs_inp rs_5" style="text-align: center" onkeyup="updateCSVPreview();" name="ExportDelimiter" value="," size="5" />
+			<input type="text" class="rs_inp rs_5" style="text-align: center" onkeyup="updateCSVPreview();" name="ExportDelimiter" id="ExportDelimiter" value="," size="5" />
 		</td>
 	</tr>
 	<tr>
-		<td width="200" style="width: 200px;" align="right" class="key">
+		<td style="width: 235px;" align="right" class="key">
 			<span class="<?php echo $this->tooltipClass; ?>" title="<?php echo RSFormProHelper::getTooltipText(JText::_('RSFP_EXPORT_ENCLOSURE'), JText::_('RSFP_EXPORT_ENCLOSURE_DESC')); ?>">
-				<?php echo JText::_('RSFP_EXPORT_ENCLOSURE');?>
+                <label for="ExportFieldEnclosure"><?php echo JText::_('RSFP_EXPORT_ENCLOSURE');?></label>
 			</span>
 		</td>
 		<td>
-			<input type="text" class="rs_inp rs_5" style="text-align: center" onkeyup="updateCSVPreview();" name="ExportFieldEnclosure" value="&quot;" size="5" />
+			<input type="text" class="rs_inp rs_5" style="text-align: center" onkeyup="updateCSVPreview();" name="ExportFieldEnclosure" id="ExportFieldEnclosure" value="&quot;" size="5" />
 		</td>
 	</tr>
 	<?php } ?>

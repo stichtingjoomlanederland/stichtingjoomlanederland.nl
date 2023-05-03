@@ -479,7 +479,8 @@
 	box-shadow: 0 0 6px #d59392;
 }
 
-.formResponsive input.rsform-calendar-button {
+.formResponsive input.rsform-calendar-button,
+.formResponsive button.rsform-calendar-button {
 	margin-bottom: 3px;
 }
 

@@ -1,6 +1,6 @@
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS `#__akeebabackup_profiles` (
     `configuration` longtext COLLATE utf8mb4_unicode_ci,
     `filters` longtext COLLATE utf8mb4_unicode_ci,
     `quickicon` tinyint(3) NOT NULL DEFAULT '1',
+    `access` int(11) NULL DEFAULT '1',
     PRIMARY KEY (`id`)
 ) ENGINE InnoDB DEFAULT COLLATE utf8mb4_unicode_ci;
 

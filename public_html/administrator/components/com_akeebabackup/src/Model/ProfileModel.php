@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -12,6 +12,7 @@ defined('_JEXEC') || die();
 use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\Model\AdminModel;
 
+#[\AllowDynamicProperties]
 class ProfileModel extends AdminModel
 {
 	/**
@@ -98,6 +99,31 @@ class ProfileModel extends AdminModel
 		return $data;
 	}
 
+	public function save($data)
+	{
+		// If we're working with the default profile, force a public access level
+		if (($data['id'] ?? 0) == 1)
+		{
+			$data['access'] = 1;
+		}
+
+		$app = Factory::getApplication();
+
+		// Perform the check on permissions only if we're not in CLI (better be safe than sorry)
+		if (!$app->isClient('cli'))
+		{
+			$user = $app->getIdentity();
+
+			// Wait, the user has no permissions
+			if (!$user->authorise('core.manage', 'com_akeebabackup'))
+			{
+				unset($data['access']);
+			}
+		}
+
+		return parent::save($data);
+	}
+
 	/**
 	 * Method to test whether a record can be deleted.
 	 *
@@ -117,6 +143,14 @@ class ProfileModel extends AdminModel
 		if ($record->id == 1)
 		{
 			return false;
+		}
+
+		// Allow the check to be overridden by the API task
+		$override = $this->getState('workaround.override_canDelete');
+
+		if ($override !== null && is_bool($override))
+		{
+			return $override;
 		}
 
 		return parent::canDelete($record);

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -10,6 +10,7 @@ defined('_JEXEC') or die;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Extension\PluginInterface;
 use Joomla\CMS\Extension\Service\Provider\MVCFactory;
+use Joomla\CMS\Factory;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
@@ -38,13 +39,18 @@ return new class implements ServiceProviderInterface {
 		$container->set(
 			PluginInterface::class,
 			function (Container $container) {
-				$plugin     = PluginHelper::getPlugin('task', 'akeebabackup');
+				$config     = (array) PluginHelper::getPlugin('task', 'akeebabackup');
 				$dispatcher = $container->get(DispatcherInterface::class);
 
-				return new AkeebaBackup(
+				$plugin = new AkeebaBackup(
 					$dispatcher,
-					(array) $plugin
+					$config
 				);
+
+				$plugin->setApplication(Factory::getApplication());
+				$plugin->setDatabase($container->get('DatabaseDriver'));
+
+				return $plugin;
 			}
 		);
 	}

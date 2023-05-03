@@ -1,26 +1,33 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <extension type="package" version="3.5" method="upgrade">
-    <name>RO Payments</name>
+    <name>PKG_ROPAYMENTS</name>
     <packagename>jdidealgateway</packagename>
-    <creationDate>12 July 2022</creationDate>
+    <creationDate>25 February 2023</creationDate>
     <author>RolandD Cyber Produksi</author>
     <authorEmail>contact@rolandd.com</authorEmail>
     <authorUrl>https://rolandd.com/</authorUrl>
     <copyright>Copyright (C) 2009 - @year@ RolandD Cyber Produksi. All rights reserved.</copyright>
     <license>GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html</license>
-    <version>8.0.2</version>
-    <description>RO Payments Package</description>
+    <version>8.2.0</version>
+    <description>PKG_ROPAYMENTS_DESCRIPTION</description>
 
     <blockChildUninstall>true</blockChildUninstall>
 
+    <scriptfile>script.php</scriptfile>
+
     <files folder="packages">
-        <file type="component" id="com_jdidealgateway">com_ropayments_8.0.2.zip</file>
-        <file type="plugin" group="editors-xtd" id="jdidealpaymentbutton">plg_editors-xtd_jdidealpaymentbutton_8.0.2.zip</file>
-        <file type="plugin" group="system" id="jdidealpaymentlink">plg_system_jdidealpaymentlink_8.0.2.zip</file>
-        <file type="plugin" group="system" id="jdidealgateway">plg_system_jdidealgateway_8.0.2.zip</file>
-        <file type="plugin" group="authentication" id="ropayments">plg_authentication_ropayments_8.0.2.zip</file>
-        <file type="plugin" group="jdideal" id="ropayments">plg_jdideal_ropayments_8.0.2.zip</file>
+        <file type="component" id="com_jdidealgateway">com_ropayments_8.2.0.zip</file>
+        <file type="plugin" group="editors-xtd" id="jdidealpaymentbutton">plg_editors-xtd_jdidealpaymentbutton_8.2.0.zip</file>
+        <file type="plugin" group="system" id="jdidealpaymentlink">plg_system_jdidealpaymentlink_8.2.0.zip</file>
+        <file type="plugin" group="system" id="jdidealgateway">plg_system_jdidealgateway_8.2.0.zip</file>
+        <file type="plugin" group="authentication" id="ropayments">plg_authentication_ropayments_8.2.0.zip</file>
+        <file type="plugin" group="jdideal" id="ropayments">plg_jdideal_ropayments_8.2.0.zip</file>
     </files>
+
+    <languages>
+        <language tag="en-GB">language/en-GB/en-GB.pkg_jdidealgateway.ini</language>
+        <language tag="en-GB">language/en-GB/en-GB.pkg_jdidealgateway.sys.ini</language>
+    </languages>
 
     <updateservers>
         <server type="extension" priority="1" name="RO Payments">https://rolandd.com/updates/ropayments</server>

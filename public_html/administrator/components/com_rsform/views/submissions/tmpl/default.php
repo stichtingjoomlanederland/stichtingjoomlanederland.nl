@@ -43,6 +43,7 @@ JHtml::_('formbehavior.chosen', '.advancedSelect', null, array('disable_search_t
 			'footer' => $this->loadTemplate('modal_columns_footer')
 		), $this->loadTemplate('modal_columns'));
 	?>
+    <div class="table-responsive">
 	<table class="table table-striped table-responsive">
 		<caption id="captionTable" class="sr-only">
 			<?php echo JText::_('COM_RSFORM_SUBMISSIONS_TABLE_CAPTION'); ?>,
@@ -124,6 +125,7 @@ JHtml::_('formbehavior.chosen', '.advancedSelect', null, array('disable_search_t
 		}
 		?>
 	</table>
+    </div>
 		<?php echo $this->pagination->getListFooter(); ?>
 
 	<input type="hidden" name="task" value="" />

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -11,7 +11,6 @@ defined('_JEXEC') || die;
 
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
-use Joomla\CMS\Date\Date;
 use Joomla\CMS\Factory as JoomlaFactory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\User\User;
@@ -198,7 +197,7 @@ class Status
 			$type = Platform::getInstance()->translate($backup_types['scripts'][$record['type']]['text']);
 		}
 
-		$startTime = new Date($record['backupstart'], 'UTC');
+		$startTime = clone JoomlaFactory::getDate($record['backupstart'], 'UTC');
 		$app       = JoomlaFactory::getApplication();
 		$user      = $app->getIdentity() ?? (new User());
 		$tz        = new \DateTimeZone($user->getParam('timezone', $app->get('offset', 'UTC')));

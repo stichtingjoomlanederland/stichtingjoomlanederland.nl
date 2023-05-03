@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -16,16 +16,60 @@ use Joomla\Database\DatabaseDriver;
 use RuntimeException;
 
 /**
- * Backup profile model
+ * Backup profile table
  *
- * @property  int    id             Profile ID
- * @property  string description    Description
- * @property  string configuration  Engine configuration data
- * @property  string filters        Engine filters
- * @property  int    quickicon      Should I include this profile in the One Click Backup profiles (1) or not (0)?
+ * @since 9.0.0
  */
+#[\AllowDynamicProperties]
 class ProfileTable extends Table
 {
+	/**
+	 * Engine configuration data
+	 *
+	 * @since 9.0.0
+	 * @var   string|null
+	 */
+	public $configuration = null;
+
+	/**
+	 * Description
+	 *
+	 * @since 9.0.0
+	 * @var   string|null
+	 */
+	public $description = null;
+
+	/**
+	 * Engine filters
+	 *
+	 * @since 9.0.0
+	 * @var   string|null
+	 */
+	public $filters = null;
+
+	/**
+	 * Profile ID
+	 *
+	 * @since 9.0.0
+	 * @var   int|null
+	 */
+	public $id = null;
+
+	/**
+	 * Should I include this profile in the One Click Backup profiles (1) or not (0)?
+	 *
+	 * @since 9.0.0
+	 * @var   int|null
+	 */
+	public $quickicon = 1;
+
+	/**
+	 * Object constructor to set table and key fields.
+	 *
+	 * @param   DatabaseDriver  $db  DatabaseDriver object.
+	 *
+	 * @since   9.0.0
+	 */
 	public function __construct(DatabaseDriver $db)
 	{
 		parent::__construct('#__akeebabackup_profiles', 'id', $db);
@@ -37,6 +81,7 @@ class ProfileTable extends Table
 	 * Tries to copy the currently loaded to a new record
 	 *
 	 * @return  self  The new record
+	 * @since   9.0.0
 	 */
 	public function copy($data = null)
 	{
@@ -62,6 +107,16 @@ class ProfileTable extends Table
 		return $newRecord;
 	}
 
+	/**
+	 * Method to delete a row from the database table by primary key value.
+	 *
+	 * @param   mixed  $pk  An optional primary key value to delete.  If not set the instance property value is used.
+	 *
+	 * @return  boolean  True on success.
+	 *
+	 * @since   9.0.0
+	 * @throws  \UnexpectedValueException
+	 */
 	public function delete($pk = null)
 	{
 		// Which record am I deleting?
@@ -102,9 +157,10 @@ class ProfileTable extends Table
 	 *
 	 * @param   array  $data  See above
 	 *
-	 * @returns  void
+	 * @return  void
 	 *
 	 * @throws   RuntimeException  When an iport error occurs
+	 * @since    9.0.0
 	 */
 	public function import(array $data)
 	{

@@ -17,13 +17,13 @@ class RsformViewRsform extends JViewLegacy
 		
 		$title = $this->params->get('page_title', '');
 		if (empty($title)) {
-			$title = JFactory::getConfig()->get('sitename');
+			$title = JFactory::getApplication()->get('sitename');
 		}
-		elseif (JFactory::getConfig()->get('sitename_pagetitles', 0) == 1) {
-			$title = JText::sprintf('JPAGETITLE', JFactory::getConfig()->get('sitename'), $title);
+		elseif (JFactory::getApplication()->get('sitename_pagetitles', 0) == 1) {
+			$title = JText::sprintf('JPAGETITLE', JFactory::getApplication()->get('sitename'), $title);
 		}
-		elseif (JFactory::getConfig()->get('sitename_pagetitles', 0) == 2) {
-			$title = JText::sprintf('JPAGETITLE', $title, JFactory::getConfig()->get('sitename'));
+		elseif (JFactory::getApplication()->get('sitename_pagetitles', 0) == 2) {
+			$title = JText::sprintf('JPAGETITLE', $title, JFactory::getApplication()->get('sitename'));
 		}
 		
 		$this->document->setTitle($title);

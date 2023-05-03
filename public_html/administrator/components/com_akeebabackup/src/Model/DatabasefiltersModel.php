@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,15 +9,16 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Model;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Model\Mixin\ExclusionFilter;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ModelExclusionFilterTrait;
 use Akeeba\Engine\Factory;
 use Exception;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Model\BaseModel;
 
+#[\AllowDynamicProperties]
 class DatabasefiltersModel extends BaseModel
 {
-	use ExclusionFilter;
+	use ModelExclusionFilterTrait;
 
 	public function __construct($config = [])
 	{

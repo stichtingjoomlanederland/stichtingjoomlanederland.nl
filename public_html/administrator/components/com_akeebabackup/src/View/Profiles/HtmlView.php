@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -21,6 +21,7 @@ use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 use Joomla\Registry\Registry;
 
+#[\AllowDynamicProperties]
 class HtmlView extends BaseHtmlView
 {
 	/**
@@ -84,7 +85,13 @@ class HtmlView extends BaseHtmlView
 		$this->activeFilters = $model->getActiveFilters();
 
 		// Check for errors.
-		if (count($errors = $this->get('Errors')))
+		$errors = $this->get('Errors');
+
+		if (
+			(is_array($errors) || $errors instanceof \Countable)
+				? count($errors)
+				: 0
+		)
 		{
 			throw new GenericDataException(implode("\n", $errors), 500);
 		}

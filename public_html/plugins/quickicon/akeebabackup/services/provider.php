@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -36,17 +36,19 @@ return new class implements ServiceProviderInterface
 			PluginInterface::class,
 			function (Container $container)
 			{
-				$plugin = PluginHelper::getPlugin('quickicon', 'akeebabackup');
+				$config = (array) PluginHelper::getPlugin('quickicon', 'akeebabackup');
 
-				$pluginExtension = new AkeebaBackup(
+				$plugin = new AkeebaBackup(
 					$container->get(DispatcherInterface::class),
 					Factory::getApplication()->getDocument(),
-					(array) $plugin
+					$config
 				);
 
-				$pluginExtension->setMVCFactory($container->get(MVCFactoryInterface::class));
+				$plugin->setMVCFactory($container->get(MVCFactoryInterface::class));
+				$plugin->setApplication(Factory::getApplication());
+				$plugin->setDatabase($container->get('DatabaseDriver'));
 
-				return $pluginExtension;
+				return $plugin;
 			}
 		);
 	}

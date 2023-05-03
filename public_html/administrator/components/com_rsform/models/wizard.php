@@ -75,6 +75,7 @@ class RsformModelWizard extends JModelAdmin
 						'ROWS'              => '5',
 						'VALIDATIONRULE'    => 'none',
 						'VALIDATIONMESSAGE' => 'Please let us know your message.',
+						'WYSIWYG'           => 'NO',
 						'COMPONENTTYPE'     => RSFORM_FIELD_TEXTAREA
 					),
 					array(

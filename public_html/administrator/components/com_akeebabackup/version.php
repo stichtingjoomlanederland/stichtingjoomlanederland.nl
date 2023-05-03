@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -12,5 +12,5 @@ defined('_JEXEC') or die();
 // defined('AKEEBADEBUG') || define('AKEEBADEBUG', 1);
 
 defined('AKEEBABACKUP_PRO') || define('AKEEBABACKUP_PRO', '1');
-defined('AKEEBABACKUP_VERSION') || define('AKEEBABACKUP_VERSION', '9.3.0');
-defined('AKEEBABACKUP_DATE') || define('AKEEBABACKUP_DATE', '2022-08-22');
+defined('AKEEBABACKUP_VERSION') || define('AKEEBABACKUP_VERSION', '9.5.1');
+defined('AKEEBABACKUP_DATE') || define('AKEEBABACKUP_DATE', '2023-03-09');

@@ -1,3 +1,92 @@
+Akeeba Backup 9.5.1
+================================================================================
++ Restoration: handle Joomla 4.2+ MFA options
+# [MEDIUM] Plugins not enabled on clean installation
+# [MEDIUM] JSON API cannot delete backup records and profiles
+
+Akeeba Backup 9.5.0
+================================================================================
++ Option to treat failed uploads as a backup error
+
+Akeeba Backup 9.4.8
+================================================================================
+! A packaging issue broke the restoration script in backup archives
+
+Akeeba Backup 9.4.7
+================================================================================
+# [MEDIUM] Fixed drive selection for Google Drive post processing engine
+
+Akeeba Backup 9.4.6
+================================================================================
+# [HIGH] Some password managers prevent successful submission of the Site Setup page (you get an error about a missing email address)
+# [LOW] Wrong grammatical case (nominative instead of genitive) in months in some languages e.g. Greek
+# [LOW] Push messages may be untranslated strings when a backup is taken over the API or the frontend backup URL
+
+Akeeba Backup 9.4.5
+================================================================================
+# [HIGH] Unexpected behaviour in the backend when Joomla cache is enabled
+# [HIGH] BackBlaze B2 single file uploads were broken
+
+Akeeba Backup 9.4.4
+================================================================================
++ ALICE button in the log view
+# [HIGH] Migration from Akeeba Backup 8 fails since 9.4.0 added an access setting in backup profiles
+
+Akeeba Backup 9.4.3
+================================================================================
+# [HIGH] Migration from Akeeba Backup 8 always shows an erroneous message that no compatible version has been detected.
+# [MEDIUM] Restoration. Administrator email appears as "undefined" in the Site Setup page
+# [LOW] Restoration: Wrong message about the emial address when the administrator passwords don't match
+
+Akeeba Backup 9.4.2
+================================================================================
+! No access control applied in Include and Exclude Information features
+# [HIGH] Class not found errors when trying to access some pages in Akeeba Backup
+
+Akeeba Backup 9.4.1
+================================================================================
+! Immediate error on PHP 7.4 due to a missing method in the released version
+
+Akeeba Backup 9.4.0
+================================================================================
+~ Requires Joomla 4.2 or later
+~ Requires PHP 7.4.0 or later
+~ Much simpler message if you try to run Akeeba Backup on an unsupported (too low) version of PHP.
+~ Changed all warnings to much more compact DETAILS elements
++ Access levels in backup profiles
++ Option about including the latest backup in remote quotas
+- Removed the PHP version warning. Joomla already warns you about EOL versions of PHP.
+# [HIGH] Site Transfer Wizard will fail on a target site using PHP 8.1 or later by default
+# [LOW] ZIP Archiver, invalid CRC32 calculated for some small files in the installation folder
+
+Akeeba Backup 9.3.4
+================================================================================
+# [LOW] ZIP Archiver, invalid CRC32 calculated for some small files in the installation folder
+
+Akeeba Backup 9.3.3
+================================================================================
+~ Better warnings about CRC32 for ZIP files on 32-bit versions of PHP
+# [HIGH] Quota settings and emails are not processed at the end of the backup process
+# [HIGH] Joomla Scheduled Tasks for Akeeba Backup may fail with a PHP error
+
+Akeeba Backup 9.3.2
+================================================================================
+~ PHP notices are now only logged when Debug Site is enabled
+~ Notify the user when the server does not support Web Push instead of just failing to subscribe to push notifications
+# [MEDIUM] WebPush code tries to run when not selected resulting in an annoying, but harmless, warning
+# [MEDIUM] Possible PHP fatal error if the server does not meet the Web Push minimum requirements
+# [LOW] PHP 8 deprecated notices from the WebPush library
+
+Akeeba Backup 9.3.1
+================================================================================
++ Push notifications through the browser's Push API
++ ANGIE for Joomla: reset session and cache options in Site Setup
++ Support for ShowOn to conditionally show options in the Configuration page
+~ Save and Save & Close buttons are now separate, as per Joomla 4.2 UI guidelines
+# [HIGH] Single part uploads to Azure stopped working
+# [LOW] “Field 'extra_query' doesn't have a default value” error on some broken installations
+# [LOW] PHP warning about undefined $id in the Manage Backups page on some versions of PHP
+
 Akeeba Backup 9.3.0
 ================================================================================
 + Upload to Swift: Support for Keystone v3

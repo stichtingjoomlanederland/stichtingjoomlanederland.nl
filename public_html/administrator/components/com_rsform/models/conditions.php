@@ -20,19 +20,20 @@ class RsformModelConditions extends JModelLegacy
 
 	    if ($cache === null)
 	    {
+	    	$db = $this->getDbo();
             $formId = $this->getFormId();
 
-            $query = $this->_db->getQuery(true)
-                ->select($this->_db->qn('p.PropertyValue'))
-                ->select($this->_db->qn('p.ComponentId'))
-                ->select($this->_db->qn('c.ComponentTypeId'))
-                ->from($this->_db->qn('#__rsform_components', 'c'))
-                ->join('LEFT', $this->_db->qn('#__rsform_properties', 'p') . ' ON (' . $this->_db->qn('c.ComponentId') . '=' . $this->_db->qn('p.ComponentId') . ')')
-                ->where($this->_db->qn('c.FormId') . '=' . $this->_db->q($formId))
-                ->where($this->_db->qn('p.PropertyName') . '=' . $this->_db->q('NAME'))
-                ->order($this->_db->qn('c.Order') . ' ' . $this->_db->escape('ASC'));
+            $query = $db->getQuery(true)
+                ->select($db->qn('p.PropertyValue'))
+                ->select($db->qn('p.ComponentId'))
+                ->select($db->qn('c.ComponentTypeId'))
+                ->from($db->qn('#__rsform_components', 'c'))
+                ->join('LEFT', $db->qn('#__rsform_properties', 'p') . ' ON (' . $db->qn('c.ComponentId') . '=' . $db->qn('p.ComponentId') . ')')
+                ->where($db->qn('c.FormId') . '=' . $db->q($formId))
+                ->where($db->qn('p.PropertyName') . '=' . $db->q('NAME'))
+                ->order($db->qn('c.Order') . ' ' . $db->escape('ASC'));
 
-            $cache = $this->_db->setQuery($query)->loadObjectList();
+            $cache = $db->setQuery($query)->loadObjectList();
         }
 
         return $cache;

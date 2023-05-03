@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -20,7 +20,7 @@ defined('_JEXEC') || die();
 class Task
 {
 	/** @var  TaskInterface[]  The task handlers known to us */
-	protected $handlers = array();
+	protected $handlers = [];
 
 	/**
 	 * The MVC Factory of the extension.
@@ -68,7 +68,7 @@ class Task
 	 *
 	 * @throws  RuntimeException  When the method requested is not known to us
 	 */
-	public function execute($method, $parameters = array())
+	public function execute($method, $parameters = [])
 	{
 		if ((!defined('AKEEBABACKUP_PRO') || !AKEEBABACKUP_PRO) && (time() >= 1583020800))
 		{
@@ -93,7 +93,7 @@ class Task
 	protected function initialiseHandlers()
 	{
 		// Reset the array
-		$this->handlers = array();
+		$this->handlers = [];
 
 		// Look all files in the Task handlers' directory
 		$dh = new DirectoryIterator(__DIR__ . '/Task');

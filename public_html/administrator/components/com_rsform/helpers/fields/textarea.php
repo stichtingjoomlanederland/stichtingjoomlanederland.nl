@@ -33,8 +33,7 @@ class RSFormProFieldTextarea extends RSFormProField
 		static $editor = null;
 		
 		if (is_null($editor)) {
-			$conf 	= JFactory::getConfig();
-			$editor = $conf->get('editor');
+			$editor = JFactory::getApplication()->get('editor');
 		}
 		
 		return JEditor::getInstance($editor);

@@ -5,4 +5,4 @@ CREATE TABLE IF NOT EXISTS `#__rsform_properties` (
   `PropertyValue` mediumtext NOT NULL,
   UNIQUE KEY `PropertyId` (`PropertyId`),
   KEY `ComponentId` (`ComponentId`)
-) DEFAULT CHARSET=utf8;
+) DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_unicode_ci;

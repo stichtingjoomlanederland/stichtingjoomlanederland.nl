@@ -43,7 +43,8 @@ class RsformModelForms extends JModelList
 	{
 		$filter_search = $this->getState('filter.search', '');
 		$lang		   = JFactory::getLanguage();
-		$query		   = $this->_db->getQuery(true);
+		$db            = $this->getDbo();
+		$query		   = $db->getQuery(true);
 		$or 	= array();
 		$ids 	= array();
 
@@ -64,41 +65,41 @@ class RsformModelForms extends JModelList
 					{
 						$id 	= (int) substr($form, strlen('formId'));
 						$ids[] 	= $id;
-						$or[] 	= '(' . $this->_db->qn('t.lang_code') . ' = ' . $this->_db->q($data->lang) . ' AND ' . $this->_db->qn('t.form_id') . ' = ' . $this->_db->q($id) . ')';
+						$or[] 	= '(' . $db->qn('t.lang_code') . ' = ' . $db->q($data->lang) . ' AND ' . $db->qn('t.form_id') . ' = ' . $db->q($id) . ')';
 					}
 				}
 
 				// Now that we've joined the session forms, we must remove them so they do not show up as duplicates.
 				if ($ids)
 				{
-					$or[] = '(' . $this->_db->qn('t.lang_code') . ' = ' . $this->_db->q($lang->getTag()) . ' AND ' . $this->_db->qn('t.form_id') . ' NOT IN (' . implode(',', $this->_db->q($ids)) . '))';
+					$or[] = '(' . $db->qn('t.lang_code') . ' = ' . $db->q($lang->getTag()) . ' AND ' . $db->qn('t.form_id') . ' NOT IN (' . implode(',', $db->q($ids)) . '))';
 				}
 			}
 
 			$needs_translation = $lang->getTag() != $lang->getDefault() || $ids || (RSFormProHelper::getConfig('global.disable_multilanguage') && RSFormProHelper::getConfig('global.default_language') != 'en-GB');
 		}
 
-		$query->select($this->_db->qn('f.FormId'))
-			->select($this->_db->qn('f.FormName'))
-			->select($this->_db->qn('f.Backendmenu'))
-			->select($this->_db->qn('f.Published'))
-			->from($this->_db->qn('#__rsform_forms', 'f'));
+		$query->select($db->qn('f.FormId'))
+			->select($db->qn('f.FormName'))
+			->select($db->qn('f.Backendmenu'))
+			->select($db->qn('f.Published'))
+			->from($db->qn('#__rsform_forms', 'f'));
 
 		if ($needs_translation)
 		{
-			$query->select('IFNULL(' . $this->_db->qn('t.value') . ', ' . $this->_db->qn('f.FormTitle') . ') AS FormTitle');
+			$query->select('IFNULL(' . $db->qn('t.value') . ', ' . $db->qn('f.FormTitle') . ') AS FormTitle');
 		}
 		else
 		{
-			$query->select($this->_db->qn('f.FormTitle'));
+			$query->select($db->qn('f.FormTitle'));
 		}
 
 		if ($needs_translation)
 		{
 			$on = array(
-				$this->_db->qn('f.FormId') . ' = ' . $this->_db->qn('t.form_id'),
-				$this->_db->qn('t.reference') . ' = ' . $this->_db->q('forms'),
-				$this->_db->qn('t.reference_id') . ' = ' . $this->_db->q('FormTitle')
+				$db->qn('f.FormId') . ' = ' . $db->qn('t.form_id'),
+				$db->qn('t.reference') . ' = ' . $db->q('forms'),
+				$db->qn('t.reference_id') . ' = ' . $db->q('FormTitle')
 			);
 
 			if ($or && !RSFormProHelper::getConfig('global.disable_multilanguage'))
@@ -109,36 +110,36 @@ class RsformModelForms extends JModelList
 			{
 				if (RSFormProHelper::getConfig('global.default_language') == 'en-GB')
 				{
-					$on[] = $this->_db->qn('t.lang_code') . ' = ' . $this->_db->q($lang->getTag());
+					$on[] = $db->qn('t.lang_code') . ' = ' . $db->q($lang->getTag());
 				}
 				else
 				{
-					$on[] = $this->_db->qn('t.lang_code') . ' = ' . $this->_db->q(RSFormProHelper::getConfig('global.default_language'));
+					$on[] = $db->qn('t.lang_code') . ' = ' . $db->q(RSFormProHelper::getConfig('global.default_language'));
 				}
 			}
 
-			$query->join('left', $this->_db->qn('#__rsform_translations', 't') . ' ON (' . implode(' AND ', $on) . ')');
+			$query->join('left', $db->qn('#__rsform_translations', 't') . ' ON (' . implode(' AND ', $on) . ')');
 		}
 
 		if (strlen($filter_search))
 		{
 			if (stripos($filter_search, 'id:') === 0)
 			{
-				$query->where($this->_db->qn('f.FormId') . ' = ' . (int) substr($filter_search, 3));
+				$query->where($db->qn('f.FormId') . ' = ' . (int) substr($filter_search, 3));
 			}
 			else
 			{
-				$query->having('(' . $this->_db->qn('FormTitle') . ' LIKE ' . $this->_db->q('%' . $filter_search . '%') . ' OR ' . $this->_db->qn('FormName') . ' LIKE ' . $this->_db->q('%' . $filter_search . '%') . ')');
+				$query->having('(' . $db->qn('FormTitle') . ' LIKE ' . $db->q('%' . $filter_search . '%') . ' OR ' . $db->qn('FormName') . ' LIKE ' . $db->q('%' . $filter_search . '%') . ')');
 			}
 		}
 
 		$state = $this->getState('filter.state');
 		if ($state != '')
 		{
-			$query->where($this->_db->qn('Published') . '=' . $this->_db->q($state));
+			$query->where($db->qn('Published') . '=' . $db->q($state));
 		}
 
-		$query->order($this->_db->qn($this->getSortColumn()) . ' ' . $this->_db->escape($this->getSortOrder()));
+		$query->order($db->qn($this->getSortColumn()) . ' ' . $db->escape($this->getSortOrder()));
 
 		return $query;
 	}
@@ -228,35 +229,37 @@ class RsformModelForms extends JModelList
 	public function getHasSubmitButton()
 	{
 		$formId = JFactory::getApplication()->input->getInt('formId');
+		$db     = $this->getDbo();
 
-		$query = $this->_db->getQuery(true)
-            ->select($this->_db->qn('ComponentId'))
-            ->from($this->_db->qn('#__rsform_components'))
-            ->where($this->_db->qn('FormId') . ' = ' . $this->_db->q($formId))
-            ->where($this->_db->qn('ComponentTypeId') . ' = ' . $this->_db->q(RSFORM_FIELD_SUBMITBUTTON));
+		$query = $db->getQuery(true)
+            ->select($db->qn('ComponentId'))
+            ->from($db->qn('#__rsform_components'))
+            ->where($db->qn('FormId') . ' = ' . $db->q($formId))
+            ->where($db->qn('ComponentTypeId') . ' = ' . $db->q(RSFORM_FIELD_SUBMITBUTTON));
 
-		$this->_db->setQuery($query);
-		return $this->_db->loadResult();
+		$db->setQuery($query);
+		return $db->loadResult();
 	}
 
 	public function getFields()
 	{
 		$formId = JFactory::getApplication()->input->getInt('formId');
+		$db     = $this->getDbo();
 
 		$return = array();
 
-		$query = $this->_db->getQuery(true)
-			->select($this->_db->qn('p.PropertyValue', 'ComponentName'))
+		$query = $db->getQuery(true)
+			->select($db->qn('p.PropertyValue', 'ComponentName'))
 			->select('c.*')
-			->select($this->_db->qn('ct.ComponentTypeName'))
-			->from($this->_db->qn('#__rsform_components', 'c'))
-			->leftJoin($this->_db->qn('#__rsform_properties', 'p') . ' ON (' . $this->_db->qn('c.ComponentId') . ' = ' . $this->_db->qn('p.ComponentId') . ' AND ' . $this->_db->qn('p.PropertyName') . ' = ' . $this->_db->q('NAME') . ')')
-			->leftJoin($this->_db->qn('#__rsform_component_types', 'ct') . ' ON (' . $this->_db->qn('ct.ComponentTypeId') . ' = ' . $this->_db->qn('c.ComponentTypeId') . ')')
-			->where($this->_db->qn('c.FormId') . ' = ' . $this->_db->q($formId))
-			->order($this->_db->qn('c.Order') . ' ' . $this->_db->escape('asc'));
+			->select($db->qn('ct.ComponentTypeName'))
+			->from($db->qn('#__rsform_components', 'c'))
+			->leftJoin($db->qn('#__rsform_properties', 'p') . ' ON (' . $db->qn('c.ComponentId') . ' = ' . $db->qn('p.ComponentId') . ' AND ' . $db->qn('p.PropertyName') . ' = ' . $db->q('NAME') . ')')
+			->leftJoin($db->qn('#__rsform_component_types', 'ct') . ' ON (' . $db->qn('ct.ComponentTypeId') . ' = ' . $db->qn('c.ComponentTypeId') . ')')
+			->where($db->qn('c.FormId') . ' = ' . $db->q($formId))
+			->order($db->qn('c.Order') . ' ' . $db->escape('asc'));
 
-		$this->_db->setQuery($query);
-		$components = $this->_db->loadObjectList();
+		$db->setQuery($query);
+		$components = $db->loadObjectList();
 
 		$properties = RSFormProHelper::getComponentProperties($components);
 
@@ -377,14 +380,14 @@ class RsformModelForms extends JModelList
 	public function getFieldsTotal()
 	{
 		$formId = JFactory::getApplication()->input->getInt('formId');
-		$db 	= &$this->_db;
+		$db 	= $this->getDbo();
 
 		$query = $db->getQuery(true)
 			->select('COUNT(' . $db->qn('ComponentId') . ')')
 			->from($db->qn('#__rsform_components'))
 			->where($db->qn('FormId') . ' = ' . $db->q($formId));
 
-		return $this->_db->setQuery($query)->loadResult();
+		return $db->setQuery($query)->loadResult();
 	}
 
 	public function getFieldsPagination()
@@ -501,6 +504,16 @@ class RsformModelForms extends JModelList
 		$data = clone $this->_form;
 		$data->Language = $this->getLang();
 
+		if (!empty($data->ConfirmSubmissionDefer))
+		{
+			$data->ConfirmSubmissionDefer = json_decode($data->ConfirmSubmissionDefer);
+		}
+
+		if (empty($data->ConfirmSubmissionDefer))
+		{
+			$data->ConfirmSubmissionDefer = array();
+		}
+
 		$form->bind($data->getProperties());
 
 		return $form;
@@ -596,6 +609,7 @@ class RsformModelForms extends JModelList
 	{
 		$return = array();
 		$formId = JFactory::getApplication()->input->getInt('formId');
+		$db     = $this->getDbo();
 		
 		// Workaround to ignore searches
 		$filter_search = $this->getState('filter.search');
@@ -609,8 +623,8 @@ class RsformModelForms extends JModelList
 		$this->setState('filter.search', $filter_search);
 		$this->setState('filter.state', $filter_state);
 
-		$this->_db->setQuery($query);
-		$results = $this->_db->loadObjectList();
+		$db->setQuery($query);
+		$results = $db->loadObjectList();
 		foreach ($results as $result)
 		{
 			$return[] = JHtml::_('select.option', $result->FormId, $result->FormTitle, 'value', 'text', $result->FormId == $formId);
@@ -647,6 +661,18 @@ class RsformModelForms extends JModelList
 		{
 			$post['FormLayoutAutogenerate'] = 0;
 		}
+
+		if (empty($post['Keepdata']))
+		{
+			$post['ConfirmSubmission'] = 0;
+		}
+
+		if (!isset($post['ConfirmSubmissionDefer']))
+		{
+			$post['ConfirmSubmissionDefer'] = array();
+		}
+
+		$post['ConfirmSubmissionDefer'] = json_encode($post['ConfirmSubmissionDefer']);
 
 		try
 		{
@@ -729,12 +755,12 @@ class RsformModelForms extends JModelList
 
 			if (!isset($translations[$field]))
 			{
-			    $this->_db->insertObject('#__rsform_translations', $translation);
+			    $this->getDbo()->insertObject('#__rsform_translations', $translation);
 			}
 			else
 			{
 			    $translation->id = $translations[$field];
-			    $this->_db->updateObject('#__rsform_translations', $translation, array('id'));
+			    $this->getDbo()->updateObject('#__rsform_translations', $translation, array('id'));
 			}
 			unset($form->$field);
 		}
@@ -746,12 +772,13 @@ class RsformModelForms extends JModelList
 	{
 		$fields 	  = RSFormProHelper::getTranslatableProperties();
 		$translations = RSFormProHelper::getTranslations('properties', $formId, $lang, 'id');
+		$db           = $this->getDbo();
 
 		foreach ($fields as $field)
 		{
 			if (!isset($params[$field])) continue;
 
-			$reference_id = $componentId.'.'.$this->_db->escape($field);
+			$reference_id = $componentId.'.'.$db->escape($field);
 
 			$translation = (object) array(
                 'form_id'       => $formId,
@@ -763,12 +790,12 @@ class RsformModelForms extends JModelList
 
 			if (!isset($translations[$reference_id]))
 			{
-			    $this->_db->insertObject('#__rsform_translations', $translation);
+			    $db->insertObject('#__rsform_translations', $translation);
 			}
 			else
 			{
 			    $translation->id = $translations[$reference_id];
-                $this->_db->updateObject('#__rsform_translations', $translation, array('id'));
+                $db->updateObject('#__rsform_translations', $translation, array('id'));
 			}
 
 			if (!$just_added && in_array($field, $properties))
@@ -832,7 +859,7 @@ class RsformModelForms extends JModelList
 			return array();
 		}
 
-		$db 	= &$this->_db;
+		$db 	= $this->getDbo();
 		$query 	= $db->getQuery(true)
 			->select($db->qn(array('id', 'to', 'subject', 'formId')))
 			->from($db->qn('#__rsform_emails'))

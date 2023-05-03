@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,24 +9,25 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Controller;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\ControllerEvents;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\CustomACL;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\RegisterControllerTasks;
 use Akeeba\Component\AkeebaBackup\Administrator\Helper\Utils;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerProfileAccessTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerCustomACLTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerEventsTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerRegisterTasksTrait;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\BackupModel;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Backup\HtmlView;
-use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Joomla\CMS\Application\CMSApplication;
+use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Controller\BaseController;
 use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
 use Joomla\Input\Input;
 
 class BackupController extends BaseController
 {
-	use ControllerEvents;
-	use CustomACL;
-	use RegisterControllerTasks;
+	use ControllerEventsTrait;
+	use ControllerCustomACLTrait;
+	use ControllerRegisterTasksTrait;
+	use ControllerProfileAccessTrait;
 
 	public function __construct($config = [], MVCFactoryInterface $factory = null, ?CMSApplication $app = null, ?Input $input = null)
 	{
@@ -36,16 +37,94 @@ class BackupController extends BaseController
 	}
 
 	/**
+	 * This task handles the AJAX requests
+	 */
+	public function ajax()
+	{
+		$profile_id = $this->input->get('profileid', Platform::getInstance()->get_active_profile(), 'int');
+
+		// Double check that the user is actually allowed to access this profile
+		if (!$this->checkProfileAccess($profile_id))
+		{
+			$ret_array = [
+				'HasRun'   => 0,
+				'Domain'   => 'init',
+				'Step'     => '',
+				'Substep'  => '',
+				'Error'    => Text::_('COM_AKEEBABACKUP_BACKUP_ERROR_PROFILE_NO_ACCESS'),
+				'Warnings' => [],
+				'Progress' => 0,
+			];
+
+			// We use this nasty trick to avoid broken 3PD plugins from barfing all over our output
+			@ob_end_clean();
+			header('Content-type: text/plain');
+			header('Connection: close');
+			echo '###' . json_encode($ret_array) . '###';
+			flush();
+
+			$this->app->close();
+		}
+
+		/** @var BackupModel $model */
+		$model = $this->getModel('Backup', 'Administrator');
+
+		// Push all necessary information to the model's state
+		$model->setState('profile', $profile_id);
+		$model->setState('ajax', $this->input->get('ajax', '', 'cmd'));
+		$model->setState('description', $this->input->get('description', '', 'string'));
+		$model->setState('comment', $this->input->get('comment', '', 'html'));
+		$model->setState('jpskey', $this->input->get('jpskey', '', 'raw'));
+		$model->setState('angiekey', $this->input->get('angiekey', '', 'raw'));
+		$model->setState('backupid', $this->input->get('backupid', null, 'cmd'));
+		$model->setState('tag', $this->input->get('tag', 'backend', 'cmd'));
+		$model->setState('errorMessage', $this->input->getString('errorMessage', ''));
+
+		// System Restore Point backup state variables (obsolete)
+		$model->setState('type', strtolower($this->input->get('type', '', 'cmd')));
+		$model->setState('name', strtolower($this->input->get('name', '', 'cmd')));
+		$model->setState('group', strtolower($this->input->get('group', '', 'cmd')));
+		$model->setState('customdirs', $this->input->get('customdirs', [], 'array'));
+		$model->setState('customfiles', $this->input->get('customfiles', [], 'array'));
+		$model->setState('extraprefixes', $this->input->get('extraprefixes', [], 'array'));
+		$model->setState('customtables', $this->input->get('customtables', [], 'array'));
+		$model->setState('skiptables', $this->input->get('skiptables', [], 'array'));
+		$model->setState('langfiles', $this->input->get('langfiles', [], 'array'));
+		$model->setState('xmlname', $this->input->getString('xmlname', ''));
+
+		// Set up the tag
+		define('AKEEBA_BACKUP_ORIGIN', $this->input->get('tag', 'backend', 'cmd'));
+
+		// Run the backup step
+		$ret_array = $model->runBackup();
+
+		// We use this nasty trick to avoid broken 3PD plugins from barfing all over our output
+		@ob_end_clean();
+		header('Content-type: text/plain');
+		header('Connection: close');
+		echo '###' . json_encode($ret_array) . '###';
+		flush();
+
+		$this->app->close();
+	}
+
+	/**
 	 * Default task; shows the initial page where the user selects a profile and enters description and comment
 	 */
 	public function display($cachable = false, $urlparams = [])
 	{
-		$document = $this->app->getDocument();
-		$viewType = $document->getType();
-		$viewName = $this->input->get('view', $this->default_view);
+		$document   = $this->app->getDocument();
+		$viewType   = $document->getType();
+		$viewName   = $this->input->get('view', $this->default_view);
 		$viewLayout = $this->input->get('layout', 'default', 'string');
 
-		$view = $this->getView($viewName, $viewType, '', array('base_path' => $this->basePath, 'layout' => $viewLayout));
+		$view = $this->getView(
+			$viewName, $viewType, '',
+			[
+				'base_path' => $this->basePath,
+				'layout'    => $viewLayout,
+			]
+		);
 
 		// Push the Control Panel model
 		$controlPanelModel = $this->getModel('Controlpanel', 'Administrator');
@@ -114,52 +193,4 @@ class BackupController extends BaseController
 
 		return $this;
 	}
-
-	/**
-	 * This task handles the AJAX requests
-	 */
-	public function ajax()
-	{
-		/** @var BackupModel $model */
-		$model = $this->getModel('Backup', 'Administrator');
-
-		// Push all necessary information to the model's state
-		$model->setState('profile', $this->input->get('profileid', Platform::getInstance()->get_active_profile(), 'int'));
-		$model->setState('ajax', $this->input->get('ajax', '', 'cmd'));
-		$model->setState('description', $this->input->get('description', '', 'string'));
-		$model->setState('comment', $this->input->get('comment', '', 'html'));
-		$model->setState('jpskey', $this->input->get('jpskey', '', 'raw'));
-		$model->setState('angiekey', $this->input->get('angiekey', '', 'raw'));
-		$model->setState('backupid', $this->input->get('backupid', null, 'cmd'));
-		$model->setState('tag', $this->input->get('tag', 'backend', 'cmd'));
-		$model->setState('errorMessage', $this->input->getString('errorMessage', ''));
-
-		// System Restore Point backup state variables (obsolete)
-		$model->setState('type', strtolower($this->input->get('type', '', 'cmd')));
-		$model->setState('name', strtolower($this->input->get('name', '', 'cmd')));
-		$model->setState('group', strtolower($this->input->get('group', '', 'cmd')));
-		$model->setState('customdirs', $this->input->get('customdirs', array(), 'array'));
-		$model->setState('customfiles', $this->input->get('customfiles', array(), 'array'));
-		$model->setState('extraprefixes', $this->input->get('extraprefixes', array(), 'array'));
-		$model->setState('customtables', $this->input->get('customtables', array(), 'array'));
-		$model->setState('skiptables', $this->input->get('skiptables', array(), 'array'));
-		$model->setState('langfiles', $this->input->get('langfiles', array(), 'array'));
-		$model->setState('xmlname', $this->input->getString('xmlname', ''));
-
-		// Set up the tag
-		define('AKEEBA_BACKUP_ORIGIN', $this->input->get('tag', 'backend', 'cmd'));
-
-		// Run the backup step
-		$ret_array = $model->runBackup();
-
-		// We use this nasty trick to avoid broken 3PD plugins from barfing all over our output
-		@ob_end_clean();
-		header('Content-type: text/plain');
-		header('Connection: close');
-		echo '###' . json_encode($ret_array) . '###';
-		flush();
-
-		$this->app->close();
-	}
-
 }

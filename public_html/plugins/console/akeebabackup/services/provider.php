@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,6 +9,7 @@ defined('_JEXEC') || die;
 
 use Joomla\CMS\Extension\PluginInterface;
 use Joomla\CMS\Extension\Service\Provider\MVCFactory;
+use Joomla\CMS\Factory;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
@@ -46,7 +47,11 @@ return new class implements ServiceProviderInterface {
 
 				$config['akeebaBackupCLICommandFactory'] = $container->get(CommandFactoryInterface::class);
 
-				return new AkeebaBackup($subject, $config);
+				$plugin = new AkeebaBackup($subject, $config);
+
+				$plugin->setApplication(Factory::getApplication());
+
+				return $plugin;
 			}
 		);
 	}

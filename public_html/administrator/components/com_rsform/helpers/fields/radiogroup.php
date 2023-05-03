@@ -141,11 +141,6 @@ class RSFormProFieldRadioGroup extends RSFormProFieldMultiple
 		} else {
 			$output .= $this->start.implode($this->glue, $parsed).$this->end;
 		}
-
-		if ($this->isRequired())
-		{
-			$output = '<div aria-required="true">' . $output . '</div>';
-		}
 		
 		return $output;
 	}
@@ -214,11 +209,6 @@ class RSFormProFieldRadioGroup extends RSFormProFieldMultiple
 			$attr['class'] .= ' ';
 		}
 		$attr['class'] .= 'rsform-radio';
-
-		if ($this->isRequired())
-		{
-			unset($attr['aria-required']);
-		}
 		
 		return $attr;
 	}

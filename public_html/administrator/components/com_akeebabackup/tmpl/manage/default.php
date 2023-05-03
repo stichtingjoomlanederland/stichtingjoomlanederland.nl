@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -111,7 +111,6 @@ if ($this->promptForBackupRestoration)
 						<tbody>
 						<?php foreach ($this->items as $i => $record) : ?>
 							<?php
-							$id = 1 - $id;
 							[$originDescription, $originIcon] = $this->getOriginInformation($record);
 							[$startTime, $duration, $timeZoneText] = $this->getTimeInformation($record);
 							[$statusClass, $statusIcon] = $this->getStatusInformation($record);

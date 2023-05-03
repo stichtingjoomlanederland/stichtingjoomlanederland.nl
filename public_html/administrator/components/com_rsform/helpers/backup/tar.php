@@ -14,6 +14,8 @@ class RSFormProTar
 	
 	// File pointer.
 	protected $fh;
+
+	protected $chunk = 1048576;
 	
 	public function __construct($path) {
 		$this->path = $path;
@@ -125,7 +127,7 @@ class RSFormProTar
 			throw new Exception('The gzclose() function is missing from your PHP installation.');
 		}
 		
-		$gzip 	= substr($this->path, 0, -3).'tgz';
+		$gzip 	= $this->getGzipPath();
 		$gz 	= @gzopen($gzip, 'a1');
 		
 		if (!$gz) {
@@ -158,11 +160,20 @@ class RSFormProTar
 	
 	// Gets the chunk size (used for compression)
 	public function getChunkSize() {
-		return 1024*1024;
+		return $this->chunk;
+	}
+
+	public function setChunkSize($size) {
+		$this->chunk = $size;
 	}
 	
 	// Gets current archive size.
 	public function getSize() {
 		return filesize($this->path);
+	}
+
+	public function getGzipPath()
+	{
+		return substr($this->path, 0, -3) . 'tgz';
 	}
 }

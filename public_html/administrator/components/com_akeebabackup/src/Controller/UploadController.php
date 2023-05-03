@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,10 +9,10 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Controller;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\ControllerEvents;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\CustomACL;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\ReusableModels;
-use Akeeba\Component\AkeebaBackup\Administrator\Model\Mixin\GetErrorsFromExceptions;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerCustomACLTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerEventsTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerReusableModelsTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\GetErrorsFromExceptionsTrait;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\UploadModel;
 use Akeeba\Component\AkeebaBackup\Administrator\View\Upload\HtmlView as UploadView;
 use Akeeba\Engine\Platform;
@@ -23,10 +23,10 @@ use Joomla\CMS\Uri\Uri;
 
 class UploadController extends BaseController
 {
-	use ControllerEvents;
-	use CustomACL;
-	use ReusableModels;
-	use GetErrorsFromExceptions;
+	use ControllerEventsTrait;
+	use ControllerCustomACLTrait;
+	use ControllerReusableModelsTrait;
+	use GetErrorsFromExceptionsTrait;
 
 	/**
 	 * Start the upload to remtoe storage

@@ -1,13 +1,15 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 /** @var $this \Akeeba\Component\AkeebaBackup\Administrator\View\Controlpanel\HtmlView */
 
 // Protect from unauthorized access
+use Joomla\CMS\Component\ComponentHelper;
+
 defined('_JEXEC') || die();
 
 ?>
@@ -26,6 +28,13 @@ defined('_JEXEC') || die();
 			<?php if( ! (empty($this->quickIconProfiles)) && $this->permissions['backup']): ?>
 				<?= $this->loadAnyTemplate('Controlpanel/oneclick') ?>
 			<?php endif ?>
+
+			<?php // Web Push ?>
+			<?php
+			if (ComponentHelper::getParams('com_akeebabackup')->get('push_preference') === 'webpush') {
+				echo $this->loadAnyTemplate('Controlpanel/webpush');
+			}
+			?>
 
 			<?php //  Basic operations ?>
 			<?= $this->loadAnyTemplate('Controlpanel/icons_basic') ?>

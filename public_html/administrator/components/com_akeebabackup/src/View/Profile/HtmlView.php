@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -16,8 +16,10 @@ use Joomla\CMS\Form\Form;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\GenericDataException;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
+use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 
+#[\AllowDynamicProperties]
 class HtmlView extends BaseHtmlView
 {
 	/**
@@ -64,7 +66,13 @@ class HtmlView extends BaseHtmlView
 		$this->state = $model->getState();
 
 		// Check for errors.
-		if (count($errors = $this->get('Errors')))
+		$errors = $this->get('Errors');
+
+		if (
+			(is_array($errors) || $errors instanceof \Countable)
+				? count($errors)
+				: 0
+		)
 		{
 			throw new GenericDataException(implode("\n", $errors), 500);
 		}
@@ -90,27 +98,27 @@ class HtmlView extends BaseHtmlView
 
 		ToolbarHelper::title($isNew ? Text::_('COM_AKEEBABACKUP_PROFILES_PAGETITLE_NEW') : Text::_('COM_AKEEBABACKUP_PROFILES_PAGETITLE_EDIT'), 'icon-akeeba');
 
-		$toolbarButtons = [];
+		$toolbar = Toolbar::getInstance();
+		$toolbar->apply('profile.apply');
 
-		// If not checked out, can save the item.
-		ToolbarHelper::apply('Profile.apply');
-		$toolbarButtons[] = ['save', 'Profile.save'];
-		$toolbarButtons[] = ['save2new', 'Profile.save2new'];
+		$saveGroup = $toolbar->dropdownButton('save-group');
+		$saveGroup->configure(
+			function (Toolbar $childBar) use ($isNew) {
+				$childBar->save('profile.save');
+				$childBar->save2new('profile.save2new');
 
-		// If an existing item, can save to a copy.
-		if (!$isNew)
-		{
-			$toolbarButtons[] = ['save2copy', 'Profile.save2copy'];
-		}
-
-		ToolbarHelper::saveGroup(
-			$toolbarButtons,
-			'btn-success'
+				// If an existing item, can save to a copy.
+				if (!$isNew)
+				{
+					$childBar->save2copy('profile.save2copy');
+				}
+			}
 		);
 
-		ToolbarHelper::cancel('Profile.cancel', $isNew ? 'JTOOLBAR_CANCEL' : 'JTOOLBAR_CLOSE');
+		$toolbar->cancel('profile.cancel', $isNew ? 'JTOOLBAR_CANCEL' : 'JTOOLBAR_CLOSE');
 
-		ToolbarHelper::divider();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-joomla/using-basic-operations.html#profiles-management');
+		$toolbar->divider();
+
+		$toolbar->help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-joomla/using-basic-operations.html#profiles-management');
 	}
 }

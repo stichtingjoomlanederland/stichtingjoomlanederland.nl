@@ -25,7 +25,7 @@ class RsformModelMenus extends JModelLegacy
 		$mainframe = JFactory::getApplication();
 
 		// Get pagination request variables
-		$limit 		= $mainframe->getUserStateFromRequest('com_rsform.menus.limit', 'limit', JFactory::getConfig()->get('list_limit'), 'int');
+		$limit 		= $mainframe->getUserStateFromRequest('com_rsform.menus.limit', 'limit', JFactory::getApplication()->get('list_limit'), 'int');
 		$limitstart = $mainframe->getUserStateFromRequest('com_rsform.menus.limitstart', 'limitstart', 0, 'int');
 
 		// In case limit has been changed, adjust it
@@ -79,11 +79,12 @@ class RsformModelMenus extends JModelLegacy
 	public function getFormTitle()
 	{
 		$formId = JFactory::getApplication()->input->getInt('formId');
-		$query = $this->_db->getQuery(true)
-			->select($this->_db->qn('FormTitle'))
-			->from($this->_db->qn('#__rsform_forms'))
-			->where($this->_db->qn('FormId') . ' = ' . $this->_db->q($formId));
+		$db     = $this->getDbo();
+		$query = $db->getQuery(true)
+			->select($db->qn('FormTitle'))
+			->from($db->qn('#__rsform_forms'))
+			->where($db->qn('FormId') . ' = ' . $db->q($formId));
 
-		return $this->_db->setQuery($query)->loadResult();
+		return $db->setQuery($query)->loadResult();
 	}
 }

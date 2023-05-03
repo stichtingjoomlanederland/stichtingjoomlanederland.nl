@@ -1,14 +1,13 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 defined('_JEXEC') || die();
 
 use Joomla\CMS\Language\Text;
-use Joomla\CMS\Router\Route;
 
 /** @var \Akeeba\Component\AkeebaBackup\Administrator\View\Filefilters\HtmlView $this */
 

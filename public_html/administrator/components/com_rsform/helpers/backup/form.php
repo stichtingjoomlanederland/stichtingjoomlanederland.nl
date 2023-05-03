@@ -515,7 +515,7 @@ class RSFormProBackupForm
 		// Add Mappings #__rsform_mappings
 		if ($mappings = $this->getMappings()) {
 
-			$prefix = JFactory::getConfig()->get('dbprefix');
+			$prefix = JFactory::getApplication()->get('dbprefix');
 
 			$this->xml->add('mappings');
 			foreach ($mappings as $mapping) {

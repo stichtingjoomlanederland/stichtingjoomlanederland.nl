@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,8 +9,7 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Extension;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Dispatcher\Dispatcher;
-use Akeeba\Component\AkeebaBackup\Administrator\Service\Html\AkeebaBackup as AkeebaBackupHtml;
+use Akeeba\Component\AkeebaBackup\Administrator\Service\ComponentParameters;
 use Joomla\CMS\Application\CMSApplicationInterface;
 use Joomla\CMS\Categories\CategoryServiceInterface;
 use Joomla\CMS\Categories\CategoryServiceTrait;
@@ -49,26 +48,11 @@ class AkeebaBackupComponent extends MVCComponent implements
 	 *
 	 * @return  void
 	 *
-	 * @since   4.0.0
+	 * @since   9.0.0
 	 */
 	public function boot(ContainerInterface $container)
 	{
 		$this->container = $container;
-
-		$this->getRegistry()->register('akeebabackup', new AkeebaBackupHtml);
-	}
-
-	/**
-	 * Returns the dispatcher for the given application.
-	 *
-	 * @param   CMSApplicationInterface  $application  The application
-	 *
-	 * @return  DispatcherInterface
-	 * @since   9.3.0
-	 */
-	public function getDispatcher(CMSApplicationInterface $application): DispatcherInterface
-	{
-		return parent::getDispatcher($application)->setDbo($this->container->get('DatabaseDriver'));
 	}
 
 	/**
@@ -82,5 +66,33 @@ class AkeebaBackupComponent extends MVCComponent implements
 	public function getContainer(): Container
 	{
 		return $this->container;
+	}
+
+	/**
+	 * Returns the dispatcher for the given application.
+	 *
+	 * @param   CMSApplicationInterface  $application  The application
+	 *
+	 * @return  DispatcherInterface
+	 * @since   9.3.0
+	 */
+	public function getDispatcher(CMSApplicationInterface $application): DispatcherInterface
+	{
+		$dispatcher = parent::getDispatcher($application);
+		$dispatcher->setDatabase($this->container->get('DatabaseDriver'));
+
+		return $dispatcher;
+	}
+
+	/**
+	 * Returns the component's parameters service
+	 *
+	 * @return ComponentParameters
+	 *
+	 * @since  9.4.0
+	 */
+	public function getComponentParametersService(): ComponentParameters
+	{
+		return $this->container->get(ComponentParameters::class);
 	}
 }

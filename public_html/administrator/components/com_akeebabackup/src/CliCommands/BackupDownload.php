@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -136,7 +136,7 @@ class BackupDownload extends AbstractCommand
 
 		if (is_dir($outFile))
 		{
-			$outFile = rtrim($outFile, '//\\') . DIRECTORY_SEPARATOR . $basename;
+			$outFile = rtrim($outFile, '/\\') . DIRECTORY_SEPARATOR . $basename;
 		}
 		else
 		{

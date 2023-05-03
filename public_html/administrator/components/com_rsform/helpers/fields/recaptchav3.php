@@ -89,7 +89,7 @@ class RSFormProFieldRecaptchav3 extends RSFormProField
 		{
 			$input 	  = JFactory::getApplication()->input;
 			$response = $input->post->get('g-recaptcha-response', '', 'raw');
-			$ip		  = $input->server->getString('REMOTE_ADDR');
+			$ip		  = \Joomla\Utilities\IpHelper::getIp();
 			$task	  = strtolower($input->get('task'));
 			$option	  = strtolower($input->get('option'));
 			$isAjax	  = $option == 'com_rsform' && $task == 'ajaxvalidate';

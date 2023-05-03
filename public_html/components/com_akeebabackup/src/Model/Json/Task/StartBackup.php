@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -55,7 +55,7 @@ class StartBackup extends AbstractTask
 		if (empty($description))
 		{
 			/** @var BackupModel $backupModel */
-			$backupModel = $this->factory->createModel('Backup', 'Administrator');
+			$backupModel = $this->factory->createModel('Backup', 'Administrator', ['ignore_request' => true]);
 			$description = $backupModel->getDefaultDescription() . ' (JSON API)';
 		}
 
@@ -73,7 +73,7 @@ class StartBackup extends AbstractTask
 		Platform::getInstance()->load_configuration($profile);
 
 		/** @var BackupModel $model */
-		$model = $this->factory->createModel('Backup', 'Administrator');
+		$model = $this->factory->createModel('Backup', 'Administrator', ['ignore_request' => true]);
 		$model->setState('tag', 'json');
 		$model->setState('description', $description);
 		$model->setState('comment', $comment);

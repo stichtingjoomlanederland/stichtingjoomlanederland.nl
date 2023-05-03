@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,14 +9,12 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\View\Manage;
 
 defined('_JEXEC') || die;
 
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewBackupStartTimeTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewLoadAnyTemplateTrait;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\ProfilesModel;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\StatisticsModel;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\BackupStartTimeAware;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\LoadAnyTemplate;
 use Akeeba\Engine\Factory as AkeebaFactory;
-use DateTimeZone;
 use Joomla\CMS\Component\ComponentHelper;
-use Joomla\CMS\Date\Date;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Form\Form;
 use Joomla\CMS\HTML\HTMLHelper;
@@ -30,26 +28,64 @@ use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Uri\Uri as JUri;
 use Joomla\Registry\Registry;
 
+#[\AllowDynamicProperties]
 class HtmlView extends BaseHtmlView
 {
-	use LoadAnyTemplate;
-	use BackupStartTimeAware;
-
-	/**
-	 * The search tools form
-	 *
-	 * @var    Form
-	 * @since  1.6
-	 */
-	public $filterForm;
+	use ViewLoadAnyTemplateTrait;
+	use ViewBackupStartTimeTrait;
 
 	/**
 	 * The active search filters
 	 *
-	 * @var    array
 	 * @since  1.6
+	 * @var    array
 	 */
 	public $activeFilters = [];
+
+	/**
+	 * The search tools form
+	 *
+	 * @since  1.6
+	 * @var    Form
+	 */
+	public $filterForm;
+
+	/**
+	 * List of frozen options for JHtmlSelect
+	 *
+	 * @var  array
+	 */
+	public $frozenList = [];
+
+	/**
+	 * List of records to display
+	 *
+	 * @var  array
+	 */
+	public $items = [];
+
+	/**
+	 * Order direction, ASC/DESC
+	 *
+	 * @var  string
+	 */
+	public $order_Dir = 'DESC';
+
+	/**
+	 * Pagination object
+	 *
+	 * @var Pagination
+	 */
+	public $pagination = null;
+
+	/**
+	 * Cache the user permissions
+	 *
+	 * @since 5.3.0
+	 * @var   array
+	 *
+	 */
+	public $permissions = [];
 
 	/**
 	 * List of Profiles objects
@@ -66,34 +102,6 @@ class HtmlView extends BaseHtmlView
 	public $profilesList = [];
 
 	/**
-	 * List of frozen options for JHtmlSelect
-	 *
-	 * @var  array
-	 */
-	public $frozenList = [];
-
-	/**
-	 * Order direction, ASC/DESC
-	 *
-	 * @var  string
-	 */
-	public $order_Dir = 'DESC';
-
-	/**
-	 * List of records to display
-	 *
-	 * @var  array
-	 */
-	public $items = [];
-
-	/**
-	 * Pagination object
-	 *
-	 * @var Pagination
-	 */
-	public $pagination = null;
-
-	/**
 	 * Should I pormpt the user ot run the configuration wizard?
 	 *
 	 * @var  bool
@@ -108,32 +116,29 @@ class HtmlView extends BaseHtmlView
 	public $sortFields = [];
 
 	/**
-	 * Cache the user permissions
-	 *
-	 * @var   array
-	 *
-	 * @since 5.3.0
+	 * @var array
 	 */
-	public $permissions = [];
+	protected $enginesPerProfile;
 
 	/**
 	 * The model state
 	 *
-	 * @var    Registry
 	 * @since  1.6
+	 * @var    Registry
 	 */
 	protected $state;
 
 	/**
-	 * @var array
+	 * @since 9.4.2
+	 * @var   int|null
 	 */
-	protected $enginesPerProfile;
+	private ?int $itemCount;
 
 	public function display($tpl = null)
 	{
 		// Load custom Javascript for this page
 		$this->document->getWebAssetManager()
-			->useScript('com_akeebabackup.manage');
+		               ->useScript('com_akeebabackup.manage');
 
 		$cParams = ComponentHelper::getParams('com_akeebabackup');
 
@@ -157,8 +162,7 @@ class HtmlView extends BaseHtmlView
 		Text::script('COM_AKEEBABACKUP_BUADMIN_LOG_DOWNLOAD_CONFIRM', false);
 		$this->document
 			->addScriptOptions('akeebabackup.Manage.baseURI', JUri::base())
-			->addScriptOptions('akeebabackup.Manage.downloadURL', Route::_('index.php?option=com_akeebabackup&task=Manage.download&' . $app->getSession()->getFormToken() . '=1', false))
-		;
+			->addScriptOptions('akeebabackup.Manage.downloadURL', Route::_('index.php?option=com_akeebabackup&task=Manage.download&' . $app->getSession()->getFormToken() . '=1', false));
 
 		/** @var StatisticsModel $model */
 		$model               = $this->getModel('Statistics');
@@ -177,7 +181,7 @@ class HtmlView extends BaseHtmlView
 		$profilesModel->setState('list.start', 0);
 		$profilesModel->setState('list.limit', 0);
 		$tempProfiles = $profilesModel->getItems();
-		$profiles = [];
+		$profiles     = [];
 
 		foreach ($tempProfiles as $profile)
 		{
@@ -256,38 +260,6 @@ class HtmlView extends BaseHtmlView
 	}
 
 	/**
-	 * Translates the internal backup type (e.g. cli) to a human readable string
-	 *
-	 * @param   string  $recordType  The internal backup type
-	 *
-	 * @return  string
-	 */
-	public function translateBackupType($recordType)
-	{
-		static $backup_types = null;
-
-		if (!is_array($backup_types))
-		{
-			// Load a mapping of backup types to textual representation
-			$scripting    = AkeebaFactory::getEngineParamsProvider()->loadScripting();
-			$backup_types = [];
-
-			foreach ($scripting['scripts'] as $key => $data)
-			{
-				$textKey            = str_replace('COM_AKEEBA_', 'COM_AKEEBABACKUP_', $data['text']);
-				$backup_types[$key] = Text::_($textKey);
-			}
-		}
-
-		if (array_key_exists($recordType, $backup_types))
-		{
-			return $backup_types[$recordType];
-		}
-
-		return '&ndash;';
-	}
-
-	/**
 	 * Returns the custom states for frozen/unfrozen records, for use with JGrid.state
 	 *
 	 * @return array[]
@@ -331,6 +303,58 @@ class HtmlView extends BaseHtmlView
 				'inactive_class' => 'x fa fa-tint',
 			],
 		];
+	}
+
+	/**
+	 * Translates the internal backup type (e.g. cli) to a human readable string
+	 *
+	 * @param   string  $recordType  The internal backup type
+	 *
+	 * @return  string
+	 */
+	public function translateBackupType($recordType)
+	{
+		static $backup_types = null;
+
+		if (!is_array($backup_types))
+		{
+			// Load a mapping of backup types to textual representation
+			$scripting    = AkeebaFactory::getEngineParamsProvider()->loadScripting();
+			$backup_types = [];
+
+			foreach ($scripting['scripts'] as $key => $data)
+			{
+				$textKey            = str_replace('COM_AKEEBA_', 'COM_AKEEBABACKUP_', $data['text']);
+				$backup_types[$key] = Text::_($textKey);
+			}
+		}
+
+		if (array_key_exists($recordType, $backup_types))
+		{
+			return $backup_types[$recordType];
+		}
+
+		return '&ndash;';
+	}
+
+	/**
+	 * Escapes backup comment to remove all tags, convert new-lines and finally convert HTML entities
+	 *
+	 * @param $comment
+	 *
+	 * @return string
+	 */
+	protected function escapeComment($comment)
+	{
+		if (!$comment)
+		{
+			return '';
+		}
+
+		$comment = strip_tags($comment);
+		$comment = nl2br($comment);
+
+		return $this->escape($comment);
 	}
 
 	/**
@@ -393,23 +417,24 @@ class HtmlView extends BaseHtmlView
 	}
 
 	/**
-	 * Escapes backup comment to remove all tags, convert new-lines and finally convert HTML entities
+	 * Get the profile name for the backup record (or "–" if the profile no longer exists)
 	 *
-	 * @param $comment
+	 * @param   array  $record  A backup record
 	 *
-	 * @return string
+	 * @return  string
 	 */
-	protected function escapeComment($comment)
+	protected function getProfileName($record)
 	{
-		if (!$comment)
+		$profileName = '&mdash;';
+
+		if (isset($this->profiles[$record['profile_id']]))
 		{
-			return '';
+			$profileName = $this->escape($this->profiles[$record['profile_id']]->description);
+
+			return $profileName;
 		}
 
-		$comment = strip_tags($comment);
-		$comment = nl2br($comment);
-
-		return $this->escape($comment);
+		return $profileName;
 	}
 
 	/**
@@ -450,25 +475,78 @@ class HtmlView extends BaseHtmlView
 		return [$statusClass, $statusIcon];
 	}
 
-	/**
-	 * Get the profile name for the backup record (or "–" if the profile no longer exists)
-	 *
-	 * @param   array  $record  A backup record
-	 *
-	 * @return  string
-	 */
-	protected function getProfileName($record)
+	private function addToolbar(): void
 	{
-		$profileName = '&mdash;';
+		$user        = Factory::getUser();
+		$permissions = [
+			'configure' => $user->authorise('akeebabackup.configure', 'com_akeebabackup'),
+			'backup'    => $user->authorise('akeebabackup.backup', 'com_akeebabackup'),
+		];
 
-		if (isset($this->profiles[$record['profile_id']]))
+		// Get the toolbar object instance
+		$toolbar = Toolbar::getInstance('toolbar');
+
+		ToolbarHelper::title(Text::_('COM_AKEEBABACKUP_BUADMIN'), 'icon-akeeba');
+
+		if (AKEEBABACKUP_PRO)
 		{
-			$profileName = $this->escape($this->profiles[$record['profile_id']]->description);
-
-			return $profileName;
+			$toolbar->linkButton('discover', 'COM_AKEEBABACKUP_DISCOVER')
+			        ->url(Uri::base() . 'index.php?option=com_akeebabackup&view=Discover')
+			        ->icon('fa fa-file-import');
 		}
 
-		return $profileName;
+		if ($permissions['configure'])
+		{
+			$dropdown = $toolbar->dropdownButton('status-group')
+			                    ->text('JTOOLBAR_CHANGE_STATUS')
+			                    ->toggleSplit(false)
+			                    ->icon('icon-ellipsis-h')
+			                    ->buttonClass('btn btn-action')
+			                    ->listCheck(true);
+
+			/** @var Toolbar $childBar */
+			$childBar = $dropdown->getChildToolbar();
+
+			$childBar->publish('manage.publish')
+			         ->icon('fa fa-check-circle')
+			         ->text('COM_AKEEBABACKUP_BUADMIN_LABEL_ACTION_FREEZE')
+			         ->listCheck(true);
+
+			$childBar->unpublish('manage.unpublish')
+			         ->icon('fa fa-times-circle')
+			         ->text('COM_AKEEBABACKUP_BUADMIN_LABEL_ACTION_UNFREEZE')
+			         ->listCheck(true);
+
+			if ($permissions['configure'] && AKEEBABACKUP_PRO)
+			{
+				$childBar->standardButton('restore', 'COM_AKEEBABACKUP_BUADMIN_LABEL_RESTORE', 'restore.main')
+				         ->buttonClass('bg-warning')
+				         ->icon('fa fa-history')
+				         ->listCheck(true);
+			}
+
+			$childBar->delete('manage.deletefiles')
+			         ->icon('fa fa-broom')
+			         ->text('COM_AKEEBABACKUP_BUADMIN_LABEL_DELETEFILES')
+			         ->message('JGLOBAL_CONFIRM_DELETE')
+			         ->listCheck(true);
+
+			$childBar->delete('manage.delete')
+			         ->message('JGLOBAL_CONFIRM_DELETE')
+			         ->listCheck(true);
+		}
+
+		if ($permissions['backup'])
+		{
+			$toolbar->edit('statistic.edit');
+		}
+
+		$toolbar->back()
+		        ->text('COM_AKEEBABACKUP_CONTROLPANEL')
+		        ->icon('fa fa-' . (Factory::getApplication()->getLanguage()->isRtl() ? 'arrow-right' : 'arrow-left'))
+		        ->url('index.php?option=com_akeebabackup');
+
+		$toolbar->help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-joomla/adminsiter-backup-files.html');
 	}
 
 	/**
@@ -512,7 +590,7 @@ class HtmlView extends BaseHtmlView
 		}
 		elseif ($to)
 		{
-			$toDate = new Date($to);
+			$toDate = clone Factory::getDate($to);
 			$to     = $toDate->format('Y-m-d') . ' 23:59:59';
 
 			$filters[] = [
@@ -578,79 +656,5 @@ class HtmlView extends BaseHtmlView
 			'by'    => $model->getState('list.ordering') ?? 'id',
 			'order' => $model->getState('list.direction') ?? 'DESC',
 		];
-	}
-
-	private function addToolbar(): void
-	{
-		$user = Factory::getUser();
-		$permissions = [
-			'configure' => $user->authorise('akeebabackup.configure', 'com_akeebabackup'),
-			'backup'    => $user->authorise('akeebabackup.backup', 'com_akeebabackup'),
-		];
-
-		// Get the toolbar object instance
-		$toolbar = Toolbar::getInstance('toolbar');
-
-		ToolbarHelper::title(Text::_('COM_AKEEBABACKUP_BUADMIN'), 'icon-akeeba');
-
-		if (AKEEBABACKUP_PRO)
-		{
-			$toolbar->linkButton('discover', 'COM_AKEEBABACKUP_DISCOVER')
-				->url(Uri::base() . 'index.php?option=com_akeebabackup&view=Discover')
-				->icon('fa fa-file-import');
-		}
-
-		if ($permissions['configure'])
-		{
-			$dropdown = $toolbar->dropdownButton('status-group')
-				->text('JTOOLBAR_CHANGE_STATUS')
-				->toggleSplit(false)
-				->icon('icon-ellipsis-h')
-				->buttonClass('btn btn-action')
-				->listCheck(true);
-
-			/** @var Toolbar $childBar */
-			$childBar = $dropdown->getChildToolbar();
-
-			$childBar->publish('manage.publish')
-				->icon('fa fa-check-circle')
-				->text('COM_AKEEBABACKUP_BUADMIN_LABEL_ACTION_FREEZE')
-				->listCheck(true);
-
-			$childBar->unpublish('manage.unpublish')
-				->icon('fa fa-times-circle')
-				->text('COM_AKEEBABACKUP_BUADMIN_LABEL_ACTION_UNFREEZE')
-				->listCheck(true);
-
-			if ($permissions['configure'] && AKEEBABACKUP_PRO)
-			{
-				$childBar->standardButton('restore', 'COM_AKEEBABACKUP_BUADMIN_LABEL_RESTORE', 'restore.main')
-					->buttonClass('bg-warning')
-					->icon('fa fa-history')
-					->listCheck(true);
-			}
-
-			$childBar->delete('manage.deletefiles')
-				->icon('fa fa-broom')
-				->text('COM_AKEEBABACKUP_BUADMIN_LABEL_DELETEFILES')
-				->message('JGLOBAL_CONFIRM_DELETE')
-				->listCheck(true);
-
-			$childBar->delete('manage.delete')
-				->message('JGLOBAL_CONFIRM_DELETE')
-				->listCheck(true);
-		}
-
-		if ($permissions['backup'])
-		{
-			$toolbar->edit('statistic.edit');
-		}
-
-		$toolbar->back()
-			->text('COM_AKEEBABACKUP_CONTROLPANEL')
-			->icon('fa fa-' . (Factory::getApplication()->getLanguage()->isRtl() ? 'arrow-right' : 'arrow-left'))
-			->url('index.php?option=com_akeebabackup');
-
-		$toolbar->help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-joomla/adminsiter-backup-files.html');
 	}
 }

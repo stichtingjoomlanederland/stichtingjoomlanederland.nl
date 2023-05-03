@@ -40,47 +40,47 @@ CREATE TABLE IF NOT EXISTS `#__jdidealgateway_emails`
 
 CREATE TABLE IF NOT EXISTS `#__jdidealgateway_logs`
 (
-    `id`               INT(10)        NOT NULL AUTO_INCREMENT
+    `id`               INT(10)          NOT NULL AUTO_INCREMENT
         COMMENT 'Auto increment ID',
-    `profile_id`       INT(10)        NOT NULL
+    `profile_id`       INT(10)          NOT NULL
         COMMENT 'The payment provider',
-    `trans`            VARCHAR(50)    NOT NULL
+    `trans`            VARCHAR(50)      NOT NULL
         COMMENT 'Transaction number',
-    `order_id`         VARCHAR(10)    NOT NULL
+    `order_id`         VARCHAR(10)      NOT NULL
         COMMENT 'Order ID',
-    `order_number`     VARCHAR(50)    NOT NULL
+    `order_number`     VARCHAR(50)      NOT NULL
         COMMENT 'Order Number',
-    `quantity`         INT(4)         NOT NULL DEFAULT '0'
+    `quantity`         INT(4)           NOT NULL DEFAULT '0'
         COMMENT 'The quantity purchased',
-    `currency`         CHAR(15)       NOT NULL DEFAULT 'EUR'
+    `currency`         CHAR(15)         NOT NULL DEFAULT 'EUR'
         COMMENT 'The currency the order is in',
-    `amount`           DECIMAL(12, 5) NOT NULL
+    `amount`           DECIMAL(12, 5)   NOT NULL
         COMMENT 'Amount to be paid',
-    `origin`           VARCHAR(50)    NOT NULL
+    `origin`           VARCHAR(50)      NOT NULL
         COMMENT 'Origin of call',
-    `card`             VARCHAR(50)    NOT NULL
+    `card`             VARCHAR(50)      NOT NULL
         COMMENT 'The payment card used',
-    `processed`        TINYINT(1)     NOT NULL DEFAULT '0'
+    `processed`        TINYINT(1)       NOT NULL DEFAULT '0'
         COMMENT 'Set a transaction if it has been checked',
-    `history`          TEXT           NOT NULL
+    `history`          TEXT             NOT NULL
         COMMENT 'History of payment request',
-    `date_added`       TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP
+    `date_added`       TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP
         COMMENT 'Date and time of payment',
-    `result`           VARCHAR(25)    NULL     DEFAULT NULL
+    `result`           VARCHAR(25)      NULL     DEFAULT NULL
         COMMENT 'Result of the payment request',
-    `notify_url`       VARCHAR(255)   NOT NULL
+    `notify_url`       VARCHAR(255)     NOT NULL
         COMMENT 'Notification URL',
-    `return_url`       VARCHAR(255)   NOT NULL
+    `return_url`       VARCHAR(255)     NOT NULL
         COMMENT 'Return URL',
-    `cancel_url`       VARCHAR(255)   NOT NULL
+    `cancel_url`       VARCHAR(255)     NOT NULL
         COMMENT 'Cancellation URL',
-    `paymentReference` VARCHAR(255)   NULL     DEFAULT NULL
+    `paymentReference` VARCHAR(255)     NULL     DEFAULT NULL
         COMMENT 'Overboeking reference',
-    `paymentId`        VARCHAR(255)   NULL     DEFAULT NULL
+    `paymentId`        VARCHAR(255)     NULL     DEFAULT NULL
         COMMENT 'Payment ID for checking transaction',
-    `language`         CHAR(7)        NOT NULL
+    `language`         CHAR(7)          NOT NULL
         COMMENT 'The user language',
-    `pid`              VARCHAR(50)    NOT NULL
+    `pid`              VARCHAR(50)      NOT NULL
         COMMENT 'A unique identifier for the transaction',
     `user_id`          INT(10) UNSIGNED NULL,
     PRIMARY KEY (`id`)
@@ -175,14 +175,14 @@ CREATE TABLE IF NOT EXISTS `#__jdidealgateway_statuses`
 CREATE TABLE IF NOT EXISTS `#__jdidealgateway_subscriptions`
 (
     `id`               INT(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Auto increment ID',
-    `customer_id`      INT(10) UNSIGNED NOT NULL COMMENT 'The customer ID',
+    `customer_id`      INT(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'The customer ID',
     `subscriptionId`   VARCHAR(30)      NOT NULL COMMENT 'The subscription ID',
     `customerId`       VARCHAR(30)      NOT NULL COMMENT 'The PSP customer ID',
     `profileId`        INT(10) UNSIGNED NOT NULL COMMENT 'The profile ID used to create the customer',
     `status`           VARCHAR(10)      NOT NULL,
     `currency`         VARCHAR(3)       NOT NULL,
     `amount`           VARCHAR(10)      NOT NULL,
-    `times`            TINYINT(2)       NOT NULL,
+    `times`            TINYINT(2)       NOT NULL DEFAULT 0,
     `interval`         VARCHAR(10)      NOT NULL,
     `description`      VARCHAR(255)     NOT NULL,
     `start`            DATETIME         NOT NULL,

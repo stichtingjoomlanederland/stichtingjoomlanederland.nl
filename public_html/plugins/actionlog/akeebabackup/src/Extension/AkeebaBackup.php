@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -26,14 +26,6 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 	 */
 	protected $autoloadLanguage = true;
 
-	/**
-	 * Application object.
-	 *
-	 * @var    \Joomla\CMS\Application\CMSApplication
-	 * @since  3.7.0
-	 */
-	protected $app;
-
 	private $defaultExtension = 'com_akeebabackup';
 
 	/**
@@ -53,7 +45,7 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 
 		// Register all public onSomething methods as event handlers
 		$events   = [];
-		$refClass = new \ReflectionClass(__CLASS__);
+		$refClass = new \ReflectionClass(self::class);
 		$methods  = $refClass->getMethods(ReflectionMethod::IS_PUBLIC);
 
 		foreach ($methods as $method)
@@ -242,7 +234,7 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 	public function onComAkeebabackupTransferControllerBeforeInitialiseUpload(Event $event)
 	{
 		$this->logUserAction([
-			'title' => $this->app->getSession()->get('akeebabackup.transfer.url', null),
+			'title' => $this->getApplication()->getSession()->get('akeebabackup.transfer.url', null),
 		], 'COM_AKEEBABACKUP_LOGS_TRANSFER_RUN');
 	}
 
@@ -333,7 +325,7 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 	private function logUserAction($title, string $messageLanguageKey, ?string $context = null, ?User $user = null): void
 	{
 		// Get the user if not defined
-		$user = $user ?? $this->app->getIdentity();
+		$user = $user ?? $this->getApplication()->getIdentity();
 
 		// No log for guests
 		if (empty($user) || ($user->guest))

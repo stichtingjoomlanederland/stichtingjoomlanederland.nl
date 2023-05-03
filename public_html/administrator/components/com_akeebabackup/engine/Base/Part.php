@@ -3,7 +3,7 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -14,7 +14,7 @@ defined('AKEEBAENGINE') || die();
 use Akeeba\Engine\Base\Exceptions\ErrorException;
 use Akeeba\Engine\Factory;
 use Exception;
-use Psr\Log\LogLevel;
+use Akeeba\Engine\Psr\Log\LogLevel;
 use Throwable;
 
 /**
@@ -201,6 +201,13 @@ abstract class Part
 		$timer               = Factory::getTimer();
 		$this->waitTimeMsec  = 0;
 		$this->lastException = null;
+
+		// Add a small wait based on the existence of a constant. Used in testing, to simulate slow servers.
+		if (defined('AKEEBA_BACKUP_TESTING_STEP_THROTTLING'))
+		{
+			/** @noinspection PhpUndefinedConstantInspection */
+			usleep((int) AKEEBA_BACKUP_TESTING_STEP_THROTTLING);
+		}
 
 		/**
 		 * Call the right action method, depending on engine part state.

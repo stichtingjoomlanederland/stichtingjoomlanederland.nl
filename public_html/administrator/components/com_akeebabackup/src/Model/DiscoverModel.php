@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,17 +9,15 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Model;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Model\Mixin\FetchDBO;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Exception;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 
+#[\AllowDynamicProperties]
 class DiscoverModel extends BaseDatabaseModel
 {
-	use FetchDBO;
-
 	/**
 	 * Returns a list of the archive files in a directory which do not already belong to a backup record
 	 *
@@ -53,7 +51,7 @@ class DiscoverModel extends BaseDatabaseModel
 		}
 
 		// Make sure these files do not already exist in another backup record
-		$db  = $this->getDB();
+		$db  = $this->getDatabase();
 		$sql = $db->getQuery(true)
 			->select($db->qn('absolute_path'))
 			->from($db->qn('#__akeebabackup_backups'))

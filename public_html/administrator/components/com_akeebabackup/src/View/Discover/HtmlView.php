@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,9 +9,9 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\View\Discover;
 
 defined('_JEXEC') || die;
 
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewLoadAnyTemplateTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewTaskBasedEventsTrait;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\DiscoverModel;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\LoadAnyTemplate;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\TaskBasedEvents;
 use Akeeba\Engine\Factory;
 use Joomla\CMS\Filter\InputFilter;
 use Joomla\CMS\Language\Text;
@@ -20,10 +20,11 @@ use Joomla\CMS\Router\Route;
 use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 
+#[\AllowDynamicProperties]
 class HtmlView extends BaseHtmlView
 {
-	use LoadAnyTemplate;
-	use TaskBasedEvents;
+	use ViewLoadAnyTemplateTrait;
+	use ViewTaskBasedEventsTrait;
 
 	/**
 	 * The directory we are currently listing

@@ -23,7 +23,7 @@ class RsformViewMappings extends JViewLegacy
 		$this->config 	= array(
 			'connection' => $this->mapping->connection,
 			'host' 		 => $this->mapping->host,
-			'driver' 	 => !empty($this->mapping->driver) ? $this->mapping->driver : JFactory::getConfig()->get('dbtype'),
+			'driver' 	 => !empty($this->mapping->driver) ? $this->mapping->driver : JFactory::getApplication()->get('dbtype'),
 			'port' 		 => $this->mapping->port,
 			'username'   => $this->mapping->username,
 			'password' 	 => $this->mapping->password,

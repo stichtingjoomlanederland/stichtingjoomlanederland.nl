@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,7 +9,6 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Model;
 
 defined('_JEXEC') or die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Model\Mixin\FetchDBO;
 use Exception;
 use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
@@ -18,10 +17,9 @@ use Joomla\Database\DatabaseDriver;
 use Joomla\Database\ParameterType;
 use SimpleXMLElement;
 
+#[\AllowDynamicProperties]
 class UpdatesModel extends BaseDatabaseModel
 {
-	use FetchDBO;
-
 	/** @var int The extension_id of this component */
 	protected $extension_id = 0;
 
@@ -82,7 +80,7 @@ class UpdatesModel extends BaseDatabaseModel
 		];
 
 		// Get a reference to the db driver
-		$db = $this->getDB();
+		$db = $this->getDatabase();
 
 		// Get the update sites for our extension
 		$updateSiteIds = $this->getUpdateSiteIds();
@@ -185,6 +183,8 @@ class UpdatesModel extends BaseDatabaseModel
 		// Do we still need to create a new update site?
 		if ($needNewUpdateSite)
 		{
+			$update_site['extra_query'] = $update_site['extra_query'] ?? '';
+
 			// No update sites defined. Create a new one.
 			$newSite = (object) $update_site;
 			$db->insertObject('#__update_sites', $newSite);
@@ -205,7 +205,7 @@ class UpdatesModel extends BaseDatabaseModel
 	 */
 	public function getUpdateSiteIds(): array
 	{
-		$db    = $this->getDB();
+		$db    = $this->getDatabase();
 		$query = $db->getQuery(true)
 			->select($db->qn('update_site_id'))
 			->from($db->qn('#__update_sites_extensions'))
@@ -232,7 +232,7 @@ class UpdatesModel extends BaseDatabaseModel
 	public function getUpdateSites(): ?array
 	{
 		$updateSiteIDs = $this->getUpdateSiteIds();
-		$db            = $this->getDB();
+		$db            = $this->getDatabase();
 		$query         = $db->getQuery(true)
 			->select('*')
 			->from($db->qn('#__update_sites'))
@@ -317,7 +317,7 @@ class UpdatesModel extends BaseDatabaseModel
 		}
 
 		// Find the extension ID
-		$db    = $this->getDB();
+		$db    = $this->getDatabase();
 		$query = $db->getQuery(true)
 			->select('*')
 			->from($db->qn('#__extensions'))
@@ -483,7 +483,7 @@ class UpdatesModel extends BaseDatabaseModel
 	 */
 	private function findExtensionId(string $element, string $type = 'component', ?string $folder = null): int
 	{
-		$db    = $this->getDB();
+		$db    = $this->getDatabase();
 		$query = $db->getQuery(true)
 			->select($db->qn('extension_id'))
 			->from($db->qn('#__extensions'))
@@ -523,7 +523,7 @@ class UpdatesModel extends BaseDatabaseModel
 	private function createFakePackageExtension()
 	{
 		/** @var DatabaseDriver $db */
-		$db = $this->getDB();
+		$db = $this->getDatabase();
 
 		$manifestCacheJson = json_encode([
 			'name'         => 'Akeeba Backup for Joomla! package',

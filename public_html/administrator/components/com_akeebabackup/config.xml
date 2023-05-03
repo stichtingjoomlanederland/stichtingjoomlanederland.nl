@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--~
   ~ @package   akeebabackup
-  ~ @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+  ~ @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
   ~ @license   GNU General Public License version 3, or later
   -->
 <config addfieldpath="/administrator/components/com_akeebabackup/src/Field"
@@ -175,6 +175,7 @@
 		<field name="jlibrariesdir" type="hidden" default="" label=""/>
 		<field name="show_howtorestoremodal" type="hidden" default="1" label=""/>
 		<field name="migrated_from_pkg_akeeba" type="hidden" default="0" label=""/>
+		<field name="vapidKey" type="hidden" />
 	</fieldset>
 
 	<fieldset name="push" label="COM_AKEEBABACKUP_CONFIG_PUSH_HEADER_LABEL" description="COM_AKEEBABACKUP_CONFIG_PUSH_HEADER_DESC">
@@ -193,6 +194,7 @@
 			   label="COM_AKEEBABACKUP_CONFIG_PUSH_PREFERENCE_LABEL"
 			   description="COM_AKEEBABACKUP_CONFIG_PUSH_PREFERENCE_DESC">
 			<option value="0">COM_AKEEBABACKUP_CONFIG_PUSH_PREFERENCE_OPT_NONE</option>
+			<option value="webpush">COM_AKEEBABACKUP_CONFIG_PUSH_PREFERENCE_OPT_WEBPUSH</option>
 			<option value="1">COM_AKEEBABACKUP_CONFIG_PUSH_PREFERENCE_OPT_PUSHBULLET</option>
 		</field>
 

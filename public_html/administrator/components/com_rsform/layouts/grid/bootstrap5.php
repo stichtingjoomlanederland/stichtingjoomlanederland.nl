@@ -35,7 +35,7 @@ class RSFormProGridBootstrap5 extends RSFormProGrid
 				$classes[] = 'formHidden';
 			}
 
-			$html[] = '<fieldset class="' . implode(' ', $classes) . '" id="rsform_{global:formid}_page_' . $page_index . '">';
+			$html[] = '<div class="' . implode(' ', $classes) . '" id="rsform_{global:formid}_page_' . $page_index . '">';
 			foreach ($rows as $row_index => $row)
 			{
 				// Start a new row
@@ -65,7 +65,7 @@ class RSFormProGridBootstrap5 extends RSFormProGrid
 				
 				$html[] = "\t".'</div>';
 			}
-			$html[] = '</fieldset>';
+			$html[] = '</div>';
 		}
 		
 		foreach ($this->hidden as $field)
@@ -142,8 +142,9 @@ class RSFormProGridBootstrap5 extends RSFormProGrid
 		if ($data->ComponentTypeId == RSFORM_FIELD_FREETEXT)
 		{
 			$block = $this->getBlock($data->ComponentName);
+			$type = $this->getBlock($data->ComponentTypeName);
 
-			$html[] = "\t"."\t"."\t".'<div class="rsform-block rsform-block-' . $block . $placeholders['error'] . '">';
+			$html[] = "\t"."\t"."\t".'<div class="rsform-block rsform-block-' . $block . ' rsform-type-' . $type . $placeholders['error'] . '">';
 			$html[] = "\t"."\t"."\t"."\t"."\t".$placeholders['body'];
 			$html[] = "\t"."\t"."\t".'</div>';
 		}
@@ -154,6 +155,7 @@ class RSFormProGridBootstrap5 extends RSFormProGrid
 		else
 		{
 			$block = $this->getBlock($data->ComponentName);
+			$type = $this->getBlock($data->ComponentTypeName);
 
             if ($this->formOptions->FormLayoutFlow == static::FLOW_HORIZONTAL)
             {
@@ -164,7 +166,7 @@ class RSFormProGridBootstrap5 extends RSFormProGrid
                 $class = 'mb-3';
             }
 
-			$html[] = "\t"."\t"."\t".'<div class="'. $class .' rsform-block rsform-block-' . $block . $placeholders['error'] . '">';
+			$html[] = "\t"."\t"."\t".'<div class="'. $class .' rsform-block rsform-block-' . $block . ' rsform-type-' . $type . $placeholders['error'] . '">';
 				if ($data->ComponentTypeId != RSFORM_FIELD_PAGEBREAK)
 				{
 					$label = '';

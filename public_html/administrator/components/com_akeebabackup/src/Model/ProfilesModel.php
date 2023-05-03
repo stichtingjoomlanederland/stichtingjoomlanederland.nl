@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,8 +9,7 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Model;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Model\Mixin\FetchDBO;
-use Akeeba\Component\AkeebaBackup\Administrator\Model\Mixin\StateFix;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ModelStateFixTrait;
 use Akeeba\Component\AkeebaBackup\Administrator\Table\ProfileTable;
 use Akeeba\Engine\Platform;
 use Exception;
@@ -24,10 +23,10 @@ use Joomla\Database\ParameterType;
 use Joomla\Database\QueryInterface;
 use RuntimeException;
 
+#[\AllowDynamicProperties]
 class ProfilesModel extends ListModel
 {
-	use FetchDBO;
-	use StateFix;
+	use ModelStateFixTrait;
 
 	/**
 	 * Constructor.
@@ -62,7 +61,7 @@ class ProfilesModel extends ListModel
 		$currentProfileID = JoomlaFactory::getApplication()->getSession()->get('akeebabackup.profile', null);
 
 		// Get the IDs of all profiles
-		$db    = $this->getDB();
+		$db    = $this->getDatabase();
 		$query = $db->getQuery(true)
 			->select($db->qn('id'))
 			->from($db->qn('#__akeebabackup_profiles'));
@@ -168,10 +167,12 @@ class ProfilesModel extends ListModel
 	 */
 	protected function getListQuery()
 	{
-		$db    = $this->getDB();
+		$db    = $this->getDatabase();
 		$query = $db->getQuery(true)
-			->select('*')
-			->from($db->qn('#__akeebabackup_profiles'));
+			->select(['p.*', $db->quoteName('ag.title', 'access_level')])
+			->from($db->qn('#__akeebabackup_profiles', 'p'))
+			->join('LEFT', $db->quoteName('#__viewlevels', 'ag'), $db->quoteName('ag.id') . ' = ' . $db->quoteName('p.access'))
+		;
 
 		// Description / ID search filter
 		$search = $this->getState('filter.search');
@@ -199,6 +200,13 @@ class ProfilesModel extends ListModel
 		{
 			$query->where($db->qn('quickicon') . ' = :quickicon')
 				->bind(':quickicon', $quickIcon, ParameterType::INTEGER);
+		}
+
+		$access_levels = $this->getState('filter.access_level');
+
+		if (!empty($access_levels) && is_array($access_levels))
+		{
+			$query->whereIn($db->quoteName('p.access'), $access_levels);
 		}
 
 		return $query;

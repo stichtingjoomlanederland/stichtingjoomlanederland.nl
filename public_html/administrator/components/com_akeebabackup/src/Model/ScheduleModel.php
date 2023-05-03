@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -10,11 +10,11 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Model;
 defined('_JEXEC') || die;
 
 use Akeeba\Engine\Platform;
-use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\Model\BaseModel;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Uri\Uri;
 
+#[\AllowDynamicProperties]
 class ScheduleModel extends BaseModel
 {
 	public function getPaths()

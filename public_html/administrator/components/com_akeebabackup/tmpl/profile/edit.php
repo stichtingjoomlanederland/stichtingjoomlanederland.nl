@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,10 +9,12 @@ defined('_JEXEC') || die;
 
 /** @var \Akeeba\Component\AkeebaBackup\Administrator\View\Profile\HtmlView $this */
 
+use Joomla\CMS\Factory as JoomlaFactory;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
 
+$user = JoomlaFactory::getApplication()->getIdentity();
 $wa = $this->document->getWebAssetManager();
 $wa->useScript('keepalive')
 	->useScript('form.validate');
@@ -28,6 +30,15 @@ $wa->useScript('keepalive')
 			<div class="card-body">
 				<?php echo $this->form->renderField('description'); ?>
 				<?php echo $this->form->renderField('quickicon'); ?>
+
+            <?php
+                // If we're working on the default profile (ID=1), hide the access level field. Since this is our fallback
+                // field, it MUST be always available to everyone
+                if ($this->item->id != 1 && $user->authorise('core.manage', 'com_akeebabackup'))
+                {
+	                echo $this->form->renderField('access');
+                }
+                ?>
 			</div>
 		</div>
 	</div>

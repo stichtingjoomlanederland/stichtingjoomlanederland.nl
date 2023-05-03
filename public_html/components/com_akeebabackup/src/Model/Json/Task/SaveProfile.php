@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -58,7 +58,7 @@ class SaveProfile extends AbstractTask
 
 		// Get a profile model
 		/** @var ProfileModel $profileModel */
-		$profileModel = $this->factory->createModel('Profile');
+		$profileModel = $this->factory->createModel('Profile', 'Administrator', ['ignore_request' => true]);
 		$profileTable = $profileModel->getTable();
 
 		// Load the profile

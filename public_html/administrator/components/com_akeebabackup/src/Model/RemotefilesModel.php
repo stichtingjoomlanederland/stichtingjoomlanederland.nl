@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,8 +9,8 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Model;
 
 defined('_JEXEC') || die;
 
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\GetErrorsFromExceptionsTrait;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\Exceptions\FrozenRecordError;
-use Akeeba\Component\AkeebaBackup\Administrator\Model\Mixin\GetErrorsFromExceptions;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Akeeba\Engine\Postproc\Exception\RangeDownloadNotSupported;
@@ -20,9 +20,10 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 use RuntimeException;
 
+#[\AllowDynamicProperties]
 class RemotefilesModel extends BaseDatabaseModel
 {
-	use GetErrorsFromExceptions;
+	use GetErrorsFromExceptionsTrait;
 
 	/**
 	 * The fragment size for chunked downloads. Default: 1MB

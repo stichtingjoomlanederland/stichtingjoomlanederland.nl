@@ -147,11 +147,6 @@ class RSFormProFieldCheckboxGroup extends RSFormProFieldMultiple
         {
             $this->addScriptDeclaration("RSFormPro.limitSelections({$this->formId}, '{$id}', {$max});");
         }
-
-		if ($this->isRequired())
-		{
-			$output = '<div aria-required="true">' . $output . '</div>';
-		}
 		
 		return $output;
 	}
@@ -221,11 +216,6 @@ class RSFormProFieldCheckboxGroup extends RSFormProFieldMultiple
 			$attr['class'] .= ' ';
 		}
 		$attr['class'] .= 'rsform-checkbox';
-
-		if ($this->isRequired())
-		{
-			unset($attr['aria-required']);
-		}
 		
 		return $attr;
 	}

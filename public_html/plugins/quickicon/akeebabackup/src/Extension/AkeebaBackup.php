@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,25 +9,26 @@ namespace Joomla\Plugin\Quickicon\AkeebaBackup\Extension;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Extension\AkeebaBackupComponent;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\StatisticsModel;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Joomla\CMS\Component\ComponentHelper;
-use Joomla\CMS\Date\Date;
 use Joomla\CMS\Document\Document;
+use Joomla\CMS\Factory as JoomlaFactory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Factory\MVCFactoryAwareTrait;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Uri\Uri;
-use Joomla\Database\DatabaseInterface;
+use Joomla\Database\DatabaseAwareInterface;
+use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Event\DispatcherInterface;
 use Joomla\Event\SubscriberInterface;
 use Joomla\Module\Quickicon\Administrator\Event\QuickIconsEvent;
 
-class AkeebaBackup extends CMSPlugin implements SubscriberInterface
+class AkeebaBackup extends CMSPlugin implements SubscriberInterface, DatabaseAwareInterface
 {
+	use DatabaseAwareTrait;
 	use MVCFactoryAwareTrait;
 
 	/**
@@ -37,22 +38,6 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface
 	 * @since  3.1
 	 */
 	protected $autoloadLanguage = true;
-
-	/**
-	 * Application object.
-	 *
-	 * @var    \Joomla\CMS\Application\CMSApplication
-	 * @since  3.7.0
-	 */
-	protected $app;
-
-	/**
-	 * Database driver object
-	 *
-	 * @var   DatabaseInterface
-	 * @since 9.3.0
-	 */
-	protected $db;
 
 	/**
 	 * The document.
@@ -116,7 +101,7 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface
 	{
 		$context = $event->getContext();
 
-		$user = $this->app->getIdentity();
+		$user = $this->getApplication()->getIdentity();
 		if ($context !== 'update_quickicon' || !$user->authorise('core.manage', 'com_installer'))
 		{
 			return;
@@ -130,11 +115,11 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface
 			define('AKEEBAROOT', JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine');
 
 			// Make sure we have a profile set throughout the component's lifetime
-			$profile_id = $this->app->getSession()->get('akeebebackup.profile');
+			$profile_id = $this->getApplication()->getSession()->get('akeebebackup.profile');
 
 			if (is_null($profile_id))
 			{
-				$this->app->getSession()->set('akeebabackup.profile', 1);
+				$this->getApplication()->getSession()->set('akeebabackup.profile', 1);
 			}
 
 			// Is Akeeba Engine available?
@@ -159,7 +144,7 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface
 			$DO_NOT_REMOVE = Platform::getInstance();
 
 			// Set the DBO to the Akeeba Engine platform for Joomla
-			Platform\Joomla::setDbDriver($this->db);
+			Platform\Joomla::setDbDriver($this->getDatabase());
 		}
 
 		// Set up the default icon
@@ -167,7 +152,7 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface
 		$url = rtrim($url, '/');
 
 		$profileId = (int) $this->params->get('profileid', 1);
-		$token     = $this->app->getSession()->getToken();
+		$token     = $this->getApplication()->getSession()->getToken();
 
 		if ($profileId <= 0)
 		{
@@ -228,7 +213,7 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface
 			{
 				$maxperiod        = $this->params->get('maxbackupperiod', 24);
 				$lastBackupRaw    = $record->backupstart;
-				$lastBackupObject = new Date($lastBackupRaw);
+				$lastBackupObject = clone JoomlaFactory::getDate($lastBackupRaw);
 				$lastBackup       = $lastBackupObject->toUnix();
 				$maxBackup        = time() - $maxperiod * 3600;
 				$warning          = ($lastBackup < $maxBackup);

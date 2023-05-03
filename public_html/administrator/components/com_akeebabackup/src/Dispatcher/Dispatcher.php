@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,9 +9,9 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Dispatcher;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Dispatcher\Mixin\AkeebaEngineAware;
-use Akeeba\Component\AkeebaBackup\Administrator\Dispatcher\Mixin\TriggerEvent;
 use Akeeba\Component\AkeebaBackup\Administrator\Helper\SecretWord;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\AkeebaEngineTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\TriggerEventTrait;
 use Akeeba\Engine\Platform;
 use Exception;
 use JLoader;
@@ -20,19 +20,19 @@ use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Dispatcher\ComponentDispatcher;
 use Joomla\CMS\Document\HtmlDocument;
-use Joomla\CMS\Factory as JFactory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\WebAsset\WebAssetItem;
-use Joomla\Database\DatabaseDriver;
+use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Database\DatabaseInterface;
 use ReflectionObject;
 use Throwable;
 
 class Dispatcher extends ComponentDispatcher
 {
-	use TriggerEvent;
-	use AkeebaEngineAware;
+	use TriggerEventTrait;
+	use AkeebaEngineTrait;
+	use DatabaseAwareTrait;
 
 	/**
 	 * The application instance
@@ -52,23 +52,18 @@ class Dispatcher extends ComponentDispatcher
 
 	protected $defaultController = 'controlpanel';
 
-	/**
-	 * The database driver of the application
-	 *
-	 * @var    DatabaseInterface|null
-	 * @since  9.3.0
-	 */
-	protected $dbo = null;
-
 	public function dispatch()
 	{
 		// Check the minimum supported PHP version
-		$minPHPVersion = '7.2.0';
-		$softwareName  = 'Akeeba Backup';
+		$minPHPVersion = '7.4.0';
 
-		if (!@require_once __DIR__ . '/../../tmpl/commontemplates/wrongphp.php')
-		{
-			return;
+		if (version_compare(PHP_VERSION, $minPHPVersion, 'lt')) {
+			throw new \RuntimeException(
+				sprintf(
+					'Akeeba Backup requires at least PHP version %s. Your server currently uses PHP version %s. Please upgrade your PHP version.',
+					$minPHPVersion, PHP_VERSION
+				)
+			);
 		}
 
 		// HHVM made sense in 2013. PHP 7 and later versions are a way better solution than a hybrid PHP interpreter.
@@ -100,30 +95,6 @@ class Dispatcher extends ComponentDispatcher
 		}
 	}
 
-	/**
-	 * Get the database driver object
-	 *
-	 * @return  null|DatabaseInterface
-	 * @since   9.3.0
-	 */
-	public function getDbo(): ?DatabaseInterface
-	{
-		return $this->dbo;
-	}
-
-	/**
-	 * @param   DatabaseInterface|null  $dbo
-	 *
-	 * @return  self
-	 * @since   9.3.0
-	 */
-	public function setDbo(?DatabaseInterface $dbo): self
-	{
-		$this->dbo = $dbo;
-
-		return $this;
-	}
-
 	protected function onBeforeDispatch()
 	{
 		// Make sure we have a version loaded
@@ -150,7 +121,7 @@ class Dispatcher extends ComponentDispatcher
 		$this->checkAccess();
 
 		// Load Akeeba Engine
-		$this->loadAkeebaEngine();
+		$this->loadAkeebaEngine($this->getDatabase(), $this->mvcFactory);
 
 		// Load the Akeeba Engine configuration
 		try
@@ -198,14 +169,14 @@ class Dispatcher extends ComponentDispatcher
 			return;
 		}
 
-		$dbDriver = $this->dbo->getName() ?? $this->dbo->name ?? 'mysql';
+		$dbDriver = $this->getDatabase()->getName() ?? $this->getDatabase()->name ?? 'mysql';
 
 		if ($dbDriver !== 'pdomysql')
 		{
 			return;
 		}
 
-		$this->dbo->disconnect();
+		$this->getDatabase()->disconnect();
 	}
 
 	/**

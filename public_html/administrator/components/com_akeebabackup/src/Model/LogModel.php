@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,16 +9,14 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Model;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Model\Mixin\FetchDBO;
 use Akeeba\Engine\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 
+#[\AllowDynamicProperties]
 class LogModel extends BaseDatabaseModel
 {
-	use FetchDBO;
-
 	/**
 	 * Get an array with the names of all log files in this backup profile
 	 *
@@ -185,7 +183,7 @@ class LogModel extends BaseDatabaseModel
 
 	protected function keepOnlyFailedLogs($logs)
 	{
-		$db            = $this->getDB();
+		$db            = $this->getDatabase();
 		$query         = $db->getQuery(true)
 		                    ->select([
 			                    $db->quoteName('tag'),

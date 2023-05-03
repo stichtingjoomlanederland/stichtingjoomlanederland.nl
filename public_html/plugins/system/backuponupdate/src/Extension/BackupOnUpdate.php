@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -16,13 +16,16 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Uri\Uri;
-use Joomla\Database\DatabaseInterface;
+use Joomla\Database\DatabaseAwareInterface;
+use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Database\ParameterType;
 use Joomla\Event\Event;
 use Joomla\Event\SubscriberInterface;
 
-class BackupOnUpdate extends CMSPlugin implements SubscriberInterface
+class BackupOnUpdate extends CMSPlugin implements SubscriberInterface, DatabaseAwareInterface
 {
+	use DatabaseAwareTrait;
+
 	/**
 	 * Load the language file on instantiation.
 	 *
@@ -30,22 +33,6 @@ class BackupOnUpdate extends CMSPlugin implements SubscriberInterface
 	 * @since  3.1
 	 */
 	protected $autoloadLanguage = true;
-
-	/**
-	 * Application object.
-	 *
-	 * @var    \Joomla\CMS\Application\CMSApplication
-	 * @since  3.7.0
-	 */
-	protected $app;
-
-	/**
-	 * The application's database driver object
-	 *
-	 * @var   DatabaseInterface
-	 * @since 9.3.0
-	 */
-	protected $db;
 
 	/**
 	 * The document.
@@ -113,7 +100,7 @@ class BackupOnUpdate extends CMSPlugin implements SubscriberInterface
 		}
 
 		// Make sure a user is logged in
-		$user = $this->app->getIdentity();
+		$user = $this->getApplication()->getIdentity();
 
 		if (!is_object($user) || $user->guest)
 		{
@@ -127,17 +114,17 @@ class BackupOnUpdate extends CMSPlugin implements SubscriberInterface
 		}
 
 		// Handle the flag toggle through AJAX
-		$jInput      = $this->app->input;
+		$jInput      = $this->getApplication()->input;
 		$toggleParam = $jInput->getCmd('_akeeba_backup_on_update_toggle');
 
-		if ($toggleParam && ($toggleParam == $this->app->getSession()->getToken()))
+		if ($toggleParam && ($toggleParam == $this->getApplication()->getSession()->getToken()))
 		{
 			$this->toggleBoUFlag();
 
 			$uri = Uri::getInstance();
 			$uri->delVar('_akeeba_backup_on_update_toggle');
 
-			$this->app->redirect($uri->toString());
+			$this->getApplication()->redirect($uri->toString());
 
 			return;
 		}
@@ -218,7 +205,7 @@ class BackupOnUpdate extends CMSPlugin implements SubscriberInterface
 	 */
 	private function getBoUFlag(): int
 	{
-		return (int) $this->app->getSession()->get('plg_system_backuponupdate.active', 1);
+		return (int) $this->getApplication()->getSession()->get('plg_system_backuponupdate.active', 1);
 	}
 
 	/**
@@ -229,7 +216,7 @@ class BackupOnUpdate extends CMSPlugin implements SubscriberInterface
 	 */
 	private function toggleBoUFlag(): void
 	{
-		$this->app->getSession()->set('plg_system_backuponupdate.active', 1 - $this->getBoUFlag());
+		$this->getApplication()->getSession()->set('plg_system_backuponupdate.active', 1 - $this->getBoUFlag());
 	}
 
 	/**
@@ -246,7 +233,7 @@ class BackupOnUpdate extends CMSPlugin implements SubscriberInterface
 		}
 
 		$this->isEnabled =
-			version_compare(PHP_VERSION, '7.2.0', '>=') &&
+			version_compare(PHP_VERSION, '7.4.0', '>=') &&
 			ComponentHelper::isEnabled('com_akeebabackup');
 
 		return $this->isEnabled;
@@ -267,7 +254,7 @@ class BackupOnUpdate extends CMSPlugin implements SubscriberInterface
 		// Get the extension ID for Joomla! itself (the files_joomla pseudo-extension)
 		try
 		{
-			$db            = $this->db;
+			$db            = $this->getDatabase();
 			$joomlaExtName = 'files_joomla';
 			$query         = $db->getQuery(true)
 				->select($db->qn('extension_id'))
@@ -290,7 +277,7 @@ class BackupOnUpdate extends CMSPlugin implements SubscriberInterface
 		// Fetch the Joomla update information from the database.
 		try
 		{
-			$db           = $this->db;
+			$db           = $this->getDatabase();
 			$query        = $db->getQuery(true)
 				->select('*')
 				->from($db->quoteName('#__updates'))
@@ -341,7 +328,7 @@ class BackupOnUpdate extends CMSPlugin implements SubscriberInterface
 		$textType    = $willBackup ? 'success' : 'danger';
 
 		$uri = Uri::getInstance();
-		$uri->setVar('_akeeba_backup_on_update_toggle', $this->app->getSession()->getToken());
+		$uri->setVar('_akeeba_backup_on_update_toggle', $this->getApplication()->getSession()->getToken());
 
 		$message =
 			'<h3 class="text-' . $textType . '">' .
@@ -359,6 +346,6 @@ class BackupOnUpdate extends CMSPlugin implements SubscriberInterface
 			Text::_('PLG_SYSTEM_BACKUPONUPDATE_LBL_CONTENT_TIP') .
 			'</em></p>';
 
-		$this->app->enqueueMessage($message, $messageType);
+		$this->getApplication()->enqueueMessage($message, $messageType);
 	}
 }

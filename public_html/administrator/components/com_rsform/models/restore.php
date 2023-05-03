@@ -152,8 +152,7 @@ class RsformModelRestore extends JModelLegacy
 	
 	public function deleteTemporaryFiles() {
 		// set the path to delete
-		$path = JFactory::getConfig()->get('tmp_path');
-		$path = $path.'/rsform_backup_'.$this->getKey();
+		$path = JFactory::getApplication()->get('tmp_path') . '/rsform_backup_'.$this->getKey();
 		
 		if (!JFolder::delete($path)) {
 			throw new Exception(sprintf('Could not remove temporary folder: "%s"!', $path));

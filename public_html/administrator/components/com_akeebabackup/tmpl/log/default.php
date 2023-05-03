@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,6 +9,7 @@ defined('_JEXEC') || die();
 
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Uri\Uri as JUri;
 
 /** @var  \Akeeba\Component\AkeebaBackup\Administrator\View\Log\HtmlView  $this */
 
@@ -17,28 +18,44 @@ HTMLHelper::_('formbehavior.chosen');
 
 <?php if(isset($this->logs) && count($this->logs)): ?>
 <form name="adminForm" id="adminForm" action="index.php" method="post"
-	  class="row row-cols-lg-auto g-3 align-items-center p-2 my-2 border bg-light">
-    <div class="col-12">
-		<label for="tag"><?= Text::_('COM_AKEEBABACKUP_LOG_CHOOSE_FILE_TITLE')?></label>
-	</div>
-    <div class="col-12">
-	    <?= HTMLHelper::_('select.genericlist', $this->logs, 'tag', [
-		    'list.select' => $this->tag,
-		    'list.attr'   => [
-			    'class'    => 'advancedSelect form-select',
-			    'onchange' => 'document.forms.adminForm.submit();',
-		    ], 'id'       => 'comAkeebaLogTagSelector',
-	    ]) ?>
-    </div>
+	class="d-flex flex-column gap-2 p-2 my-2 border bg-light">
+    <div class="row row-cols-lg-auto gap-1 align-items-center">
+		<?php if(empty($this->tag)): ?>
+		<div class="col">
+			<label for="tag"><?= Text::_('COM_AKEEBABACKUP_LOG_CHOOSE_FILE_TITLE')?></label>
+		</div>
+		<?php endif ?>
+		<div class="col flex-grow-1">
+			<?php if(!empty($this->tag)): ?>
+				<label for="tag" class="visually-hidden"><?= Text::_('COM_AKEEBABACKUP_LOG_CHOOSE_FILE_TITLE')?></label>
+			<?php endif ?>
+		    <?= HTMLHelper::_('select.genericlist', $this->logs, 'tag', [
+			    'list.select' => $this->tag,
+			    'list.attr'   => [
+				    'class'    => 'advancedSelect form-select w-100',
+				    'onchange' => 'document.forms.adminForm.submit();',
+			    ], 'id'       => 'comAkeebaLogTagSelector',
+		    ]) ?>
+		</div>
+	    <?php if(!empty($this->tag)): ?>
+			<div class="col flex-shrink-1">
+				<a class="btn btn-primary" href="<?= $this->escape(JUri::base()) ?>index.php?option=com_akeebabackup&view=Log&task=download&tag=<?= $this->escape($this->tag) ?>">
+					<span class="fa fa-download"></span>
+				    <?= Text::_('COM_AKEEBABACKUP_LOG_LABEL_DOWNLOAD') ?>
+				</a>
+			</div>
 
-	<?php if(!empty($this->tag)): ?>
-        <div class="col-12">
-            <a class="btn btn-primary" href="<?= $this->escape(JUri::base()) ?>index.php?option=com_akeebabackup&view=Log&task=download&tag=<?= $this->escape($this->tag) ?>">
-                <span class="fa fa-download"></span>
-				<?= Text::_('COM_AKEEBABACKUP_LOG_LABEL_DOWNLOAD') ?>
-            </a>
-        </div>
-	<?php endif ?>
+			<?php if ($this->hasAlice): ?>
+			<div class="col flex-shrink-1">
+				<a class="btn btn-outline-success" href="<?= $this->escape(JUri::base()) ?>index.php?option=com_akeebabackup&view=Alice&log=<?= $this->escape($this->tag) ?>&task=start&<?= \Joomla\CMS\Factory::getApplication()->getFormToken() ?>=1">
+					<span class="fa fa-diagnoses"></span>
+					<?= Text::_('COM_AKEEBABACKUP_ALICE_ANALYZE') ?>
+				</a>
+			</div>
+			<?php endif ?>
+	    <?php endif ?>
+	</div>
+
 
 	<input name="option" value="com_akeebabackup" type="hidden" />
 	<input name="view" value="Log" type="hidden" />

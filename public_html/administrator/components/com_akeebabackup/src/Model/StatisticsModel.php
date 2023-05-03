@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,15 +9,13 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Model;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Helper\ComponentParams;
-use Akeeba\Component\AkeebaBackup\Administrator\Model\Mixin\FetchDBO;
-use Akeeba\Component\AkeebaBackup\Administrator\Model\Mixin\StateFix;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ModelStateFixTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Service\ComponentParameters;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Exception;
 use Joomla\CMS\Access\Access;
 use Joomla\CMS\Component\ComponentHelper;
-use Joomla\CMS\Date\Date;
 use Joomla\CMS\Factory as JFactory;
 use Joomla\CMS\Factory as JoomlaFactory;
 use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
@@ -30,10 +28,10 @@ use Joomla\Database\DatabaseQuery;
 use Joomla\Database\ParameterType;
 use Joomla\Database\QueryInterface;
 
+#[\AllowDynamicProperties]
 class StatisticsModel extends ListModel
 {
-	use FetchDBO;
-	use StateFix;
+	use ModelStateFixTrait;
 	
 	public function __construct($config = [], MVCFactoryInterface $factory = null)
 	{
@@ -361,8 +359,16 @@ ENDBODY;
 
 		return [
 			'message' => [
-				"Found " . count($failed) . " failed backup(s)",
-				"Sent " . count($superAdmins) . " notifications",
+				sprintf(
+					'Found %d failed backup(s)',
+					(is_array($failed) || $failed instanceof \Countable)
+						? count($failed)
+						: 0
+				),
+				sprintf(
+					"Sent %s notifications",
+					count($superAdmins)
+				),
 			],
 			'result'  => false,
 		];
@@ -371,14 +377,16 @@ ENDBODY;
 	/**
 	 * Set the flag to hide the restoration instructions modal from the Manage Backups page
 	 *
+	 * @param   ComponentParameters  $componentParametersService
+	 *
 	 * @return  void
 	 */
-	public function hideRestorationInstructionsModal()
+	public function hideRestorationInstructionsModal(ComponentParameters $componentParametersService)
 	{
 		$cParams = ComponentHelper::getParams('com_akeebabackup');
 		$cParams->set('show_howtorestoremodal', 0);
 
-		ComponentParams::save($cParams);
+		$componentParametersService->save($cParams);
 	}
 
 	/**
@@ -435,7 +443,7 @@ ENDBODY;
 	protected function getListQuery()
 	{
 		/** @var DatabaseDriver $db */
-		$db    = $this->getDB();
+		$db    = $this->getDatabase();
 		$query = $db->getQuery(true)
 		            ->select('*')
 		            ->from($db->qn('#__akeebabackup_backups'));
@@ -465,21 +473,21 @@ ENDBODY;
 
 		if (!empty($from) && !empty($to))
 		{
-			$from = (new Date($from))->toSql();
-			$to   = (new Date($to))->toSql();
+			$from = (clone JoomlaFactory::getDate($from))->toSql();
+			$to   = (clone JoomlaFactory::getDate($to))->toSql();
 			$query->where($db->qn('backupstart') . ' BETWEEN :from AND :to')
 			      ->bind(':from', $from, ParameterType::STRING)
 			      ->bind(':to', $to, ParameterType::STRING);
 		}
 		elseif (!empty($from))
 		{
-			$from = (new Date($from))->toSql();
+			$from = (clone JoomlaFactory::getDate($from))->toSql();
 			$query->where($db->qn('backupstart') . ' >= :from')
 			      ->bind(':from', $from, ParameterType::STRING);
 		}
 		elseif (!empty($to))
 		{
-			$to = (new Date($to))->toSql();
+			$to = (clone JoomlaFactory::getDate($to))->toSql();
 			$query->where($db->qn('backupstart') . ' <= :to')
 			      ->bind(':to', $to, ParameterType::STRING);
 		}
@@ -544,7 +552,7 @@ ENDBODY;
 		}
 
 		// Get all usergroups with Super User access
-		$db     = $this->getDB();
+		$db     = $this->getDatabase();
 		$q      = $db->getQuery(true)
 		             ->select([$db->qn('id')])
 		             ->from($db->qn('#__usergroups'));
@@ -588,9 +596,9 @@ ENDBODY;
 	 */
 	private function updateLastCheck($exists)
 	{
-		$db = $this->getDB();
+		$db = $this->getDatabase();
 
-		$now      = new Date();
+		$now      = clone JoomlaFactory::getDate();
 		$nowToSql = $now->toSql();
 
 		$query = $db->getQuery(true)
@@ -624,7 +632,7 @@ ENDBODY;
 	 */
 	private function getLastCheck()
 	{
-		$db = $this->getDB();
+		$db = $this->getDatabase();
 
 		$query = $db->getQuery(true)
 		            ->select($db->qn('lastupdate'))

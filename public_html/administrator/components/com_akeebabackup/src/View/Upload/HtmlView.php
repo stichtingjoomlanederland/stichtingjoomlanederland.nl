@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,13 +9,13 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\View\Upload;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Model\UploadModel;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\TaskBasedEvents;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewTaskBasedEventsTrait;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 
+#[\AllowDynamicProperties]
 class HtmlView extends BaseHtmlView
 {
-	use TaskBasedEvents;
+	use ViewTaskBasedEventsTrait;
 
 	/**
 	 * ID of the record to reupload to remote torage

@@ -1,13 +1,15 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 defined('_JEXEC') || die;
 
 use Akeeba\Component\AkeebaBackup\Administrator\Extension\AkeebaBackupComponent;
+use Akeeba\Component\AkeebaBackup\Administrator\Provider\CacheCleaner;
+use Akeeba\Component\AkeebaBackup\Administrator\Provider\ComponentParameters;
 use Joomla\CMS\Component\Router\RouterFactoryInterface;
 use Joomla\CMS\Dispatcher\ComponentDispatcherFactoryInterface;
 use Joomla\CMS\Extension\ComponentInterface;
@@ -39,6 +41,8 @@ return new class implements ServiceProviderInterface {
 		$container->registerServiceProvider(new MVCFactory('Akeeba\\Component\\AkeebaBackup'));
 		$container->registerServiceProvider(new ComponentDispatcherFactory('Akeeba\\Component\\AkeebaBackup'));
 		$container->registerServiceProvider(new RouterFactory('\\Akeeba\\Component\\AkeebaBackup'));
+		$container->registerServiceProvider(new CacheCleaner());
+		$container->registerServiceProvider(new ComponentParameters('com_akeebabackup'));
 
 		$container->set(
 			ComponentInterface::class,

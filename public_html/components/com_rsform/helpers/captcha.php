@@ -119,6 +119,10 @@ class RSFormProCaptcha
 			
 		$imagelength = $this->Length * $this->Size + 10;
 		$imageheight = $this->Size*1.6;
+		
+		$imagelength = (int) $imagelength;
+		$imageheight = (int) $imageheight;
+		
 		$image       = imagecreate($imagelength, $imageheight);
 		$usebgrcolor = sscanf($this->data['BACKGROUNDCOLOR'], '#%2x%2x%2x');
 		$usestrcolor = sscanf($this->data['TEXTCOLOR'], '#%2x%2x%2x');

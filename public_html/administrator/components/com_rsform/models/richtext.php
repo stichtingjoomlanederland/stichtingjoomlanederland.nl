@@ -62,7 +62,7 @@ class RsformModelRichtext extends JModelLegacy
 			->from($db->qn('#__rsform_forms'))
 			->where($db->qn('FormId') . ' = ' . $db->q($formId));
 
-		$value = $this->_db->setQuery($query)->loadResult();
+		$value = $db->setQuery($query)->loadResult();
 
 		$translations = RSFormProHelper::getTranslations('forms', $formId, $this->getLang());
 		if ($translations && isset($translations[$opener]))
@@ -90,12 +90,12 @@ class RsformModelRichtext extends JModelLegacy
 
 		if (!isset($translations[$opener]))
 		{
-			$this->_db->insertObject('#__rsform_translations', $translation);
+			$this->getDbo()->insertObject('#__rsform_translations', $translation);
 		}
 		else
 		{
 			$translation->id = $translations[$opener];
-			$this->_db->updateObject('#__rsform_translations', $translation, array('id'));
+			$this->getDbo()->updateObject('#__rsform_translations', $translation, array('id'));
 		}
 	}
 }

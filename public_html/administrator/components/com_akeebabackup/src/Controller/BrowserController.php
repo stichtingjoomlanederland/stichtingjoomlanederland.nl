@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,10 +9,10 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Controller;
 
 defined('_JEXEC') or die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\ControllerEvents;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\CustomACL;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\RegisterControllerTasks;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\ReusableModels;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerCustomACLTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerEventsTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerRegisterTasksTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerReusableModelsTrait;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\BrowserModel;
 use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\MVC\Controller\BaseController;
@@ -21,10 +21,10 @@ use Joomla\Input\Input;
 
 class BrowserController extends BaseController
 {
-	use ControllerEvents;
-	use CustomACL;
-	use RegisterControllerTasks;
-	use ReusableModels;
+	use ControllerEventsTrait;
+	use ControllerCustomACLTrait;
+	use ControllerRegisterTasksTrait;
+	use ControllerReusableModelsTrait;
 
 	/**
 	 * The default view.
@@ -47,7 +47,7 @@ class BrowserController extends BaseController
 		$processFolder = $this->input->get('processfolder', 0, 'int');
 
 		/** @var BrowserModel $model */
-		$model = $this->getModel('Browser', 'Administrator', array('base_path' => $this->basePath));
+		$model = $this->getModel('Browser', 'Administrator', ['base_path' => $this->basePath]);
 		$model->setState('folder', $folder);
 		$model->setState('processfolder', $processFolder);
 		$model->makeListing();

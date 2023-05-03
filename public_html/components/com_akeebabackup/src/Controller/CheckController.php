@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,11 +9,11 @@ namespace Akeeba\Component\AkeebaBackup\Site\Controller;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\ControllerEvents;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\RegisterControllerTasks;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\ReusableModels;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerEventsTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerRegisterTasksTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerReusableModelsTrait;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\StatisticsModel;
-use Akeeba\Component\AkeebaBackup\Site\Controller\Mixin\FrontEndPermissions;
+use Akeeba\Component\AkeebaBackup\Site\Mixin\ControllerFrontEndPermissionsTrait;
 use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\MVC\Controller\BaseController;
 use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
@@ -21,10 +21,10 @@ use Joomla\Input\Input;
 
 class CheckController extends BaseController
 {
-	use ControllerEvents;
-	use RegisterControllerTasks;
-	use ReusableModels;
-	use FrontEndPermissions;
+	use ControllerEventsTrait;
+	use ControllerRegisterTasksTrait;
+	use ControllerReusableModelsTrait;
+	use ControllerFrontEndPermissionsTrait;
 
 	public function __construct($config = [], MVCFactoryInterface $factory = null, ?CMSApplication $app = null, ?Input $input = null)
 	{

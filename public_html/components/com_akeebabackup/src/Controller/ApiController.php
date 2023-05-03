@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,9 +9,9 @@ namespace Akeeba\Component\AkeebaBackup\Site\Controller;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\ControllerEvents;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\RegisterControllerTasks;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\ReusableModels;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerEventsTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerRegisterTasksTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerReusableModelsTrait;
 use Akeeba\Component\AkeebaBackup\Site\Model\Json\Task;
 use Akeeba\Engine\Platform;
 use Akeeba\Engine\Util\Complexify;
@@ -29,9 +29,9 @@ use RuntimeException;
 
 class ApiController extends BaseController
 {
-	use ControllerEvents;
-	use RegisterControllerTasks;
-	use ReusableModels;
+	use ControllerEventsTrait;
+	use ControllerRegisterTasksTrait;
+	use ControllerReusableModelsTrait;
 
 	/**
 	 * Secret Key (cached for quicker retrieval)

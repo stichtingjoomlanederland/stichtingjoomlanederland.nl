@@ -6,4 +6,4 @@ CREATE TABLE IF NOT EXISTS `#__rsform_component_type_fields` (
   `Properties` text NOT NULL,
   `Ordering` int(11) NOT NULL default '0',
   KEY `ComponentTypeId` (`ComponentTypeId`)
-) DEFAULT CHARSET=utf8;
+) DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_unicode_ci;

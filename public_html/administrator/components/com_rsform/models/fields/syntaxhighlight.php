@@ -34,7 +34,7 @@ class JFormFieldSyntaxhighlight extends JFormFieldTextarea
 		{
 			$syntax 	= !empty($this->element['syntax']) ? (string) $this->element['syntax'] : 'html';
 			$readonly 	= $this->readonly;
-			$instance 	= new \Joomla\CMS\Editor\Editor($editor);
+			$instance 	= \Joomla\CMS\Editor\Editor::getInstance($editor);
 
 			// Inline PHP
 			if ($syntax === 'php')

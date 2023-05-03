@@ -129,7 +129,7 @@ class RSFormProHelper
 		
 		if ($use_editor)
 		{
-			$instance = new \Joomla\CMS\Editor\Editor($editor);
+			$instance = \Joomla\CMS\Editor\Editor::getInstance($editor);
 			
 			$html = $instance->display($name, static::htmlEscape($html), '100%', 300, 75, 20, $buttons = false, $options['id'], $asset = null, $author = null, array('syntax' => $options['syntax'], 'readonly' => $options['readonly']));
 		}
@@ -192,15 +192,23 @@ class RSFormProHelper
 		return $cache[$formId][$name];
 	}
 
-	public static function createList($results, $value='value', $text='text')
+	public static function createList($results, $value = 'value', $text = 'text')
 	{
 		$list = array();
 		if (is_array($results))
+		{
 			foreach ($results as $result)
+			{
 				if (is_object($result))
-					$list[] = $result->{$value}.'|'.$result->{$text};
-				elseif (is_array($result))
-					$list[] = $result[$value].'|'.$result[$text];
+				{
+					$list[] = $result->{$value} . '|' . $result->{$text};
+                }
+                elseif (is_array($result))
+				{
+					$list[] = $result[$value] . '|' . $result[$text];
+                }
+            }
+        }
 
 		return implode("\n", $list);
 	}
@@ -374,7 +382,7 @@ class RSFormProHelper
         // Get the editor configuration setting
         if (is_null($editor))
         {
-            $editor = JFactory::getConfig()->get('editor');
+            $editor = JFactory::getApplication()->get('editor');
         }
 
 		return \Joomla\CMS\Editor\Editor::getInstance($editor);
@@ -588,7 +596,8 @@ class RSFormProHelper
 		else
 		{
 			// If it's a directory, get the language of the submission
-			if (($active = $mainframe->getMenu()->getActive()) && // get active menu
+			if ($mainframe->isClient('site') && // only site app, ignore cli
+                ($active = $mainframe->getMenu()->getActive()) && // get active menu
 				isset($active->query, $active->query['option'], $active->query['view']) // make sure we have option & query
 				&& $active->query['option'] == 'com_rsform' && $active->query['view'] == 'directory' // make sure it's a Directory view
 				&& ($params = $active->getParams()) // we have params
@@ -844,8 +853,7 @@ class RSFormProHelper
 	{
 		$db             = JFactory::getDbo();
         $mainframe      = JFactory::getApplication();
-        $config         = JFactory::getConfig();
-        $secret         = $config->get('secret');
+        $secret         = $mainframe->get('secret');
 		$u              = JUri::getInstance();
 		$SubmissionId   = (int) $SubmissionId;
         $placeholders   = array();
@@ -1240,7 +1248,7 @@ class RSFormProHelper
                 '{global:userip}'       	 => $submission->UserIp,
                 '{global:date_added}'   	 => RSFormProHelper::getDate($submission->DateSubmitted),
                 '{global:utc_date_added}'    => $submission->DateSubmitted,
-                '{global:sitename}'     	 => $config->get('sitename'),
+                '{global:sitename}'     	 => $mainframe->get('sitename'),
                 '{global:siteurl}'      	 => JUri::root(),
                 '{global:confirmation}' 	 => $confirmation,
                 '{global:confirmation_hash}' => $confirmation_hash,
@@ -1248,8 +1256,8 @@ class RSFormProHelper
                 '{global:deletion_hash}'     => $submission->SubmissionHash,
                 '{global:submissionid}' 	 => $submission->SubmissionId,
                 '{global:submission_id}' 	 => $submission->SubmissionId,
-                '{global:mailfrom}'     	 => $config->get('mailfrom'),
-                '{global:fromname}'     	 => $config->get('fromname'),
+                '{global:mailfrom}'     	 => $mainframe->get('mailfrom'),
+                '{global:fromname}'     	 => $mainframe->get('fromname'),
                 '{global:formid}'       	 => $formId,
                 '{global:language}'     	 => $submission->Lang,
 				'{global:formtitle}'		 => $form->FormTitle
@@ -1264,6 +1272,27 @@ class RSFormProHelper
 		if ($only_return_replacements)
         {
             return array($placeholders, $values);
+        }
+
+		if ($form->ConfirmSubmission && !empty($form->ConfirmSubmissionDefer))
+		{
+            $defer = json_decode($form->ConfirmSubmissionDefer);
+
+            if (!is_array($defer))
+            {
+                $defer = array();
+            }
+
+            // If submission is confirmed, do not resend emails that have been already sent before user confirmed
+            if ($submission->confirmed)
+            {
+                $defer = array_diff(array('UserEmail', 'AdminEmail', 'AdditionalEmails'), $defer);
+            }
+		}
+
+        if (empty($defer))
+        {
+            $defer = array();
         }
 
 		// We do this here again so we grab all placeholders, even those injected by plugins
@@ -1415,6 +1444,11 @@ class RSFormProHelper
 
 		$mainframe->triggerEvent('onRsformBeforeUserEmail', array(array('form' => &$form, 'placeholders' => &$placeholders, 'values' => &$values, 'submissionId' => $SubmissionId, 'userEmail'=>&$userEmail)));
 
+        if ($defer && in_array('UserEmail', $defer))
+        {
+            $userEmail['to'] = '';
+        }
+
 		// Script called before the User Email is sent.
 		eval($form->UserEmailScript);
 
@@ -1427,6 +1461,11 @@ class RSFormProHelper
 		}
 
 		$mainframe->triggerEvent('onRsformBeforeAdminEmail', array(array('form' => &$form, 'placeholders' => &$placeholders, 'values' => &$values, 'submissionId' => $SubmissionId, 'adminEmail'=>&$adminEmail)));
+
+		if ($defer && in_array('AdminEmail', $defer))
+		{
+			$adminEmail['to'] = '';
+		}
 
 		// Script called before the Admin Email is sent.
 		eval($form->AdminEmailScript);
@@ -1512,6 +1551,12 @@ class RSFormProHelper
                 }
 
 				$mainframe->triggerEvent('onRsformBeforeAdditionalEmail', array(array('form' => &$form, 'placeholders' => &$placeholders, 'values' => &$values, 'submissionId' => $SubmissionId, 'additionalEmail'=>&$additionalEmail)));
+
+				if ($defer && in_array('AdditionalEmails', $defer))
+				{
+					$additionalEmail['to'] = '';
+				}
+
 				eval($form->AdditionalEmailsScript);
 
 				// mail users
@@ -1596,7 +1641,6 @@ class RSFormProHelper
 		$mainframe 	= JFactory::getApplication();
 		$doc 		= JFactory::getDocument();
 		$user 		= JFactory::getUser();
-		$jconfig 	= JFactory::getConfig();
 		$u 			= RSFormProHelper::getURL();
 		$formId 	= (int) $formId;
 		$logged     = $user->id;
@@ -1771,7 +1815,7 @@ class RSFormProHelper
 			$invalid   = in_array($component->ComponentId, $validation);
 
 			// Some filtering in the field type
-			$type 	= (string) preg_replace('/[^A-Z0-9_\.-]/i', '', $data['ComponentTypeName']);
+			$type 	= (string) preg_replace('/[^A-Z0-9_\.-]/i', '', (string) $data['ComponentTypeName']);
 			$type 	= ltrim($type, '.');
 
 			$layouts = array(
@@ -1880,14 +1924,14 @@ class RSFormProHelper
 			'{global:formid}'		=> $form->FormId,
 			'{global:formtitle}'	=> $form->FormTitle,
 			'{global:username}'		=> $user->get('username'),
-			'{global:userip}'		=> $mainframe->input->server->getString('REMOTE_ADDR'),
+			'{global:userip}'		=> \Joomla\Utilities\IpHelper::getIp(),
 			'{global:userid}'		=> $user->get('id'),
 			'{global:useremail}'	=> $user->get('email'),
 			'{global:fullname}'		=> $user->get('name'),
-			'{global:sitename}'		=> $jconfig->get('sitename'),
+			'{global:sitename}'		=> $mainframe->get('sitename'),
 			'{global:siteurl}'		=> JUri::root(),
-			'{global:mailfrom}'		=> $jconfig->get('mailfrom'),
-			'{global:fromname}'		=> $jconfig->get('fromname')
+			'{global:mailfrom}'		=> $mainframe->get('mailfrom'),
+			'{global:fromname}'		=> $mainframe->get('fromname')
 		);
 
 		$find 	 = array_merge($find, array_keys($global));
@@ -2113,7 +2157,7 @@ class RSFormProHelper
 		}
 
 		$formparams = $session->get('com_rsform.formparams.formId'.$formId);
-		$output = base64_decode($formparams->thankYouMessage);
+		$output = isset($formparams->thankYouMessage) ? base64_decode($formparams->thankYouMessage) : '';
 
 		if ($formparams->loadLayoutFramework)
 		{
@@ -2180,8 +2224,7 @@ class RSFormProHelper
 			return $invalid;
 		}
 
-		$form       = RSFormProHelper::getForm($formId);
-
+		$form         = RSFormProHelper::getForm($formId);
 		$lang 		  = RSFormProHelper::getCurrentLanguage();
 		$translations = RSFormProHelper::getTranslations('forms', $formId, $lang);
 		if ($translations)
@@ -2235,7 +2278,7 @@ class RSFormProHelper
             $submission = (object) array(
                 'FormId'         => $formId,
                 'DateSubmitted'  => $date->toSql(),
-                'UserIp'         => $mainframe->input->server->getString('REMOTE_ADDR'),
+                'UserIp'         => \Joomla\Utilities\IpHelper::getIp(),
                 'Username'       => $user->username,
                 'UserId'         => $user->id,
                 'Lang'           => RSFormProHelper::getCurrentLanguage(),
@@ -2457,10 +2500,10 @@ class RSFormProHelper
 
 			if (!$form->ShowThankyou && $form->ReturnUrl)
 			{
-				$mainframe->redirect($form->ReturnUrl);
-				return;
+                $u = $form->ReturnUrl;
 			}
 
+			$mainframe->triggerEvent('onRsformBeforeReturnUrl', array($formId, $SubmissionId, $form, $u));
 			$mainframe->redirect($u);
 		}
 
@@ -2612,7 +2655,7 @@ class RSFormProHelper
 				$required 		= !empty($data['REQUIRED']) && $data['REQUIRED'] == 'YES';
 				$validationRule = !empty($data['VALIDATIONRULE']) ? $data['VALIDATIONRULE'] : '';
 
-				$type 	= (string) preg_replace('/[^A-Z0-9_\.-]/i', '', $component->ComponentTypeName);
+				$type 	= (string) preg_replace('/[^A-Z0-9_\.-]/i', '', (string) $component->ComponentTypeName);
 				$type 	= ltrim($type, '.');
 
 				$fieldTypeClass = 'RSFormProField' . $type;
@@ -3263,7 +3306,7 @@ class RSFormProHelper
 				}
 			}
 
-			$results[$formId]['secret'] = JFactory::getConfig()->get('secret');
+			$results[$formId]['secret'] = JFactory::getApplication()->get('secret');
 		}
 
 		return $raw ? $results[$formId] : array(

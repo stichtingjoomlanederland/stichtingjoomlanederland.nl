@@ -220,3 +220,67 @@ textarea.rsform-error:focus {
 		display: none;
 	}
 }
+
+.rsform-dir-progress-wrapper {
+	width: 100%;
+	border: 1px solid #cccccc;
+}
+
+.rsform-dir-progress-bar {
+	color: white;
+	background: green;
+	width: 50px;
+	text-align: center;
+	padding: 2px;
+	transition: width 0.6s ease;
+}
+
+.rsfp-directory-dynamic-filter-container {
+	margin-top: 1%;
+	margin-bottom: 1%;
+}
+
+.rsform-dir-row {
+	margin-bottom: 18px;
+}
+
+.rsform-dir-row:before,
+.rsform-dir-row:after {
+	display: table;
+	content: "";
+}
+
+.rsform-dir-row:after {
+	clear: both;
+}
+
+.rsform-dir-caption {
+	float: left;
+	width: 20%;
+	padding-top: 5px;
+	text-align: right;
+}
+
+.rsform-dir-input {
+	margin-left: 22%;
+}
+
+@media screen and (max-width: 650px) {
+	.rsform-dir-row {
+		float: none;
+		width: auto;
+		padding-top: 0;
+		text-align: left;
+	}
+
+	.rsform-dir-input {
+		margin-left: 0;
+	}
+
+	.rsform-dir-caption {
+		float: none;
+		width: auto;
+		padding-top: 0;
+		text-align: left;
+	}
+}

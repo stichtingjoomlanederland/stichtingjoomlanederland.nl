@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -15,7 +15,6 @@ use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Exception;
 use InvalidArgumentException;
-use Joomla\Application\ApplicationInterface;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Factory as JoomlaFactory;
 use Joomla\CMS\Filesystem\Path;
@@ -26,7 +25,8 @@ use Joomla\Component\Scheduler\Administrator\Event\ExecuteTaskEvent;
 use Joomla\Component\Scheduler\Administrator\Task\Status;
 use Joomla\Component\Scheduler\Administrator\Task\Task;
 use Joomla\Component\Scheduler\Administrator\Traits\TaskPluginTrait;
-use Joomla\Database\DatabaseDriver;
+use Joomla\Database\DatabaseAwareInterface;
+use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Database\ParameterType;
 use Joomla\Event\EventInterface;
 use Joomla\Event\SubscriberInterface;
@@ -40,8 +40,9 @@ use function strlen;
  *
  * @since 9.2.0
  */
-class AkeebaBackup extends CMSPlugin implements SubscriberInterface
+class AkeebaBackup extends CMSPlugin implements SubscriberInterface, DatabaseAwareInterface
 {
+	use DatabaseAwareTrait;
 	use TaskPluginTrait;
 	use InitialiseEngine;
 
@@ -59,28 +60,12 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface
 	];
 
 	/**
-	 * The application under which we are running.
-	 *
-	 * @var   ApplicationInterface
-	 * @since 9.2.0
-	 */
-	protected $app;
-
-	/**
 	 * Affects constructor behavior. If true, language files will be loaded automatically.
 	 *
 	 * @var    boolean
 	 * @since  9.2.0
 	 */
 	protected $autoloadLanguage = true;
-
-	/**
-	 * The application's database driver object
-	 *
-	 * @var   DatabaseDriver
-	 * @since 9.2.0
-	 */
-	protected $db;
 
 	/**
 	 * A registry object to keep track of parameters between subsequent calls of the resumable task.
@@ -216,7 +201,7 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface
 
 		try
 		{
-			$db    = $this->db;
+			$db    = $this->getDatabase();
 			$query = $db->getQuery(true)
 				->select($db->quoteName('data'))
 				->from($db->quoteName('#__akeebabackup_storage'))
@@ -248,7 +233,7 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface
 
 		try
 		{
-			$db    = $this->db;
+			$db    = $this->getDatabase();
 			$query = $db->getQuery(true)
 				->delete($db->quoteName('#__akeebabackup_storage'))
 				->where($db->quoteName('tag') . ' = :key')
@@ -281,7 +266,7 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface
 				'tag'  => $key,
 				'data' => $this->taskInfoRegistry->toString(),
 			];
-			$this->db->insertObject('#__akeebabackup_storage', $o, 'tag');
+			$this->getDatabase()->insertObject('#__akeebabackup_storage', $o, 'tag');
 		}
 		catch (Exception $e)
 		{
@@ -326,7 +311,7 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface
 		// Set the active profile
 		define('AKEEBA_PROFILE', $profile);
 
-		$this->initialiseComponent($this->app);
+		$this->initialiseComponent($this->getApplication());
 
 		/**
 		 * DO NOT REMOVE!
@@ -439,7 +424,7 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface
 	 */
 	private function takeCLIBackup(ExecuteTaskEvent $event): int
 	{
-		// Get some basic information about the task at hand.
+        // Get some basic information about the task at hand.
 		/** @var Task $task */
 		$task    = $event->getArgument('subject');
 		$profile = (int) $event->getArgument('params')->profileid ?? 1;
@@ -465,7 +450,7 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface
 		// Set the active profile
 		define('AKEEBA_PROFILE', $profile);
 
-		$this->initialiseComponent($this->app);
+		$this->initialiseComponent($this->getApplication());
 
 		/**
 		 * DO NOT REMOVE!
@@ -489,8 +474,8 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface
 		$model->setState('description', $model->getDefaultDescription() . ' (Joomla Scheduled Tasks, CLI-only task)');
 		$model->setState('comment', 'Backup taken automatically using the Joomla Scheduled Tasks feature.');
 
-		// Dummy array so that the loop iterates once
-		$array = [
+		// Dummy backupResult so that the loop iterates once
+		$backupResult = [
 			'HasRun'       => 0,
 			'Error'        => '',
 			'cli_firstrun' => 1,
@@ -498,13 +483,13 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface
 
 		$hasWarnings = false;
 
-		while (($array['HasRun'] != 1) && (empty($array['Error'])))
+		while (($backupResult['HasRun'] != 1) && (empty($backupResult['Error'])))
 		{
-			if (isset($array['cli_firstrun']) && $array['cli_firstrun'])
+			if (isset($backupResult['cli_firstrun']) && $backupResult['cli_firstrun'])
 			{
 				$this->logTask(sprintf('Starting a new backup with profile %u.', $profile));
 
-				$array = $model->startBackup([
+				$backupResult = $model->startBackup([
 					'akeeba.tuning.min_exec_time'           => 0,
 					'akeeba.tuning.max_exec_time'           => 15,
 					'akeeba.tuning.run_time_bias'           => 100,
@@ -522,22 +507,22 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface
 			{
 				$this->logTask('Continuing the backup');
 
-				$array = $model->stepBackup();
+				$backupResult = $model->stepBackup();
 			}
 
 			// Print the new progress bar and info
 			$this->logTask(sprintf('Last tick: %s', date('Y-m-d H:i:s \G\M\TO (T)')), 'debug');
-			$this->logTask(sprintf('Domain: %s', $array['Domain'] ?? ''), 'debug');
-			$this->logTask(sprintf('Step: %s', $array['Step'] ?? ''), 'debug');
-			$this->logTask(sprintf('Substep: %s', $array['Substep'] ?? ''), 'debug');
-			$this->logTask(sprintf('Progress: %s', $array['Progress'] ?? 0.0), 'debug');
+			$this->logTask(sprintf('Domain: %s', $backupResult['Domain'] ?? ''), 'debug');
+			$this->logTask(sprintf('Step: %s', $backupResult['Step'] ?? ''), 'debug');
+			$this->logTask(sprintf('Substep: %s', $backupResult['Substep'] ?? ''), 'debug');
+			$this->logTask(sprintf('Progress: %s', $backupResult['Progress'] ?? 0.0), 'debug');
 
 			// Output any warnings
-			if (!empty($array['Warnings']))
+			if (!empty($backupResult['Warnings']))
 			{
 				$hasWarnings = true;
 
-				foreach ($array['Warnings'] as $warning)
+				foreach ($backupResult['Warnings'] as $warning)
 				{
 					$this->logTask($warning, 'warning');
 				}

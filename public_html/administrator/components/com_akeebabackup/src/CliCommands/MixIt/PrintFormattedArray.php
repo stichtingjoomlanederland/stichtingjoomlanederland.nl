@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -32,6 +32,8 @@ trait PrintFormattedArray
 		{
 			$data = [];
 		}
+
+		$headers = null;
 
 		if (!empty($data))
 		{
@@ -71,7 +73,8 @@ trait PrintFormattedArray
 					$line1 = Text::_('COM_AKEEBABACKUP_CLI_ERR_CANNOT_GENERATE_YAML');
 					$line2 = Text::_('COM_AKEEBABACKUP_CLI_ERR_YAML_EXTENSION_NOT_FOUND');
 
-					$this->ioStyle->error(<<< ERROR
+					$this->ioStyle->error(
+						<<< ERROR
 $line1
 
 $line2

@@ -205,14 +205,24 @@ function processComponent(componentType) {
 
 	// Build data array
 	var data = {
-		'componentName'     : jQuery('#NAME').val(),
-		'formId'            : jQuery('#formId').val(),
-		'currentComponentId': jQuery('#componentIdToEdit').val(),
+		'componentName'     : document.getElementById('NAME').value,
+		'formId'            : document.getElementById('formId').value,
+		'currentComponentId': document.getElementById('componentIdToEdit').value,
 		'componentType'     : componentType
 	};
 
+	var extraData = RSFormPro.editModal.getFormFields();
+
 	if (componentType == 9) {
 		data['destination'] = jQuery('#DESTINATION').val();
+	}
+
+	if (extraData.length > 0)
+	{
+		for (var f = 0; f < extraData.length; f++)
+		{
+			data[extraData[f].name] = extraData[f].value;
+		}
 	}
 
 	jQuery.post(url, data, function (response, status, jqXHR) {

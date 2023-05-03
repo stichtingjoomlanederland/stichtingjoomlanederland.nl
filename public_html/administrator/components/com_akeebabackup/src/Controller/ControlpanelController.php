@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,12 +9,11 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Controller;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\ControllerEvents;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\CustomACL;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\RegisterControllerTasks;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\ReusableModels;
-use Akeeba\Component\AkeebaBackup\Administrator\Helper\ComponentParams;
 use Akeeba\Component\AkeebaBackup\Administrator\Helper\Utils;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerCustomACLTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerEventsTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerRegisterTasksTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerReusableModelsTrait;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\BackupModel;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\ConfigurationwizardModel;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\ControlpanelModel;
@@ -37,10 +36,10 @@ use RuntimeException;
 
 class ControlpanelController extends BaseController
 {
-	use ControllerEvents;
-	use CustomACL;
-	use RegisterControllerTasks;
-	use ReusableModels;
+	use ControllerEventsTrait;
+	use ControllerCustomACLTrait;
+	use ControllerRegisterTasksTrait;
+	use ControllerReusableModelsTrait;
 
 	/**
 	 * The default view.
@@ -55,18 +54,6 @@ class ControlpanelController extends BaseController
 		parent::__construct($config, $factory, $app, $input);
 
 		$this->registerControllerTasks('main');
-	}
-
-	public function test($cachable = false, $urlparams = [])
-	{
-		/** @var UpgradeModel $model */
-		$model          = $this->getModel('Upgrade');
-		$results        = $model->runCustomHandlerEvent('onNeedsMigration');
-		$needsMigration = in_array(true, $model->runCustomHandlerEvent('onNeedsMigration'), true);
-
-		$results = $model->runCustomHandlerEvent('onMigrateSettings');
-		var_dump($needsMigration, $results);
-		echo "Done!";
 	}
 
 	public function main($cachable = false, $urlparams = [])
@@ -110,7 +97,7 @@ class ControlpanelController extends BaseController
 
 		// Check if we need to toggle the settings encryption feature
 		$model->checkSettingsEncryption();
-		$model->updateMagicParameters();
+		$model->updateMagicParameters($this->app->bootComponent('com_akeebabackup')->getComponentParametersService());
 
 		// Convert existing log files to the new .log.php format
 		/** @var BackupModel $backupModel */
@@ -128,6 +115,7 @@ class ControlpanelController extends BaseController
 		// Make sure all of my extensions are assigned to my package.
 		/** @var UpgradeModel $upgradeModel */
 		$upgradeModel = $this->getModel('Upgrade', 'Administrator');
+		$upgradeModel->init();
 		$upgradeModel->adoptMyExtensions();
 
 		// Push the upgrade model to the HTML view
@@ -136,6 +124,10 @@ class ControlpanelController extends BaseController
 		// Push the usage statistics model into the HTML view
 		$usagestatsModel = $this->getModel('Usagestats');
 		$this->getView()->setModel($usagestatsModel, false);
+
+		// Push the Push model into the view
+		$pushModel = $this->getModel('Push');
+		$this->getView()->setModel($pushModel, false);
 
 		return parent::display($cachable, $urlparams);
 	}
@@ -194,7 +186,9 @@ class ControlpanelController extends BaseController
 
 		$params->set('frontend_secret_word', $newSecret);
 
-		ComponentParams::save($params);
+		$this->app->bootComponent('com_akeebabackup')
+		          ->getComponentParametersService()
+		          ->save($params);
 
 		$msg = Text::sprintf('COM_AKEEBABACKUP_CPANEL_MSG_FESECRETWORD_RESET', $newSecret);
 
@@ -303,7 +297,9 @@ class ControlpanelController extends BaseController
 		// Reset the flag so the updates could take place
 		$params->set('lastUpsellDismiss', $reset ? 0 : time());
 
-		ComponentParams::save($params);
+		$this->app->bootComponent('com_akeebabackup')
+			->getComponentParametersService()
+			->save($params);
 
 		$this->setRedirect(Uri::base() . 'index.php?option=com_akeebabackup');
 	}

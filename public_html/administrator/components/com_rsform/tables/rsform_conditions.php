@@ -47,12 +47,14 @@ class TableRSForm_Conditions extends JTable
 
 			if ($this->id)
 			{
-				$query = $this->_db->getQuery(true);
+				$db = $this->getDbo();
+
+				$query = $db->getQuery(true);
 				$query->select('*')
-					->from($this->_db->qn('#__rsform_condition_details'))
-					->where($this->_db->qn('condition_id') . ' = ' . $this->_db->q($this->id));
-				$this->_db->setQuery($query);
-				$this->details = $this->_db->loadObjectList();
+					->from($db->qn('#__rsform_condition_details'))
+					->where($db->qn('condition_id') . ' = ' . $db->q($this->id));
+				$db->setQuery($query);
+				$this->details = $db->loadObjectList();
 			}
 			else
 			{
@@ -69,11 +71,13 @@ class TableRSForm_Conditions extends JTable
 
 		if ($result)
 		{
+			$db = $this->getDbo();
+
 			// Delete previous condition details
-			$query = $this->_db->getQuery(true)
-				->delete($this->_db->qn('#__rsform_condition_details'))
-				->where($this->_db->qn('condition_id') . ' = ' . $this->_db->q($this->id));
-			$this->_db->setQuery($query)
+			$query = $db->getQuery(true)
+				->delete($db->qn('#__rsform_condition_details'))
+				->where($db->qn('condition_id') . ' = ' . $db->q($this->id));
+			$db->setQuery($query)
 				->execute();
 
 			if (isset($src['detail_component_id'], $src['operator'], $src['value']))
@@ -109,10 +113,11 @@ class TableRSForm_Conditions extends JTable
 
 		if ($result)
 		{
-			$query = $this->_db->getQuery(true)
-				->delete($this->_db->qn('#__rsform_condition_details'))
-				->where($this->_db->qn('condition_id') . ' = ' . $this->_db->q($this->id));
-			$this->_db->setQuery($query)
+			$db = $this->getDbo();
+			$query = $db->getQuery(true)
+				->delete($db->qn('#__rsform_condition_details'))
+				->where($db->qn('condition_id') . ' = ' . $db->q($this->id));
+			$db->setQuery($query)
 				->execute();
 		}
 

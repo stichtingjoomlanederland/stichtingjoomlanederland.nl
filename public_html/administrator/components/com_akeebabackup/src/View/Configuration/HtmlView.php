@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,8 +9,8 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\View\Configuration;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\LoadAnyTemplate;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\ProfileIdAndName;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewLoadAnyTemplateTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewProfileIdAndNameTrait;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Joomla\CMS\Language\Text;
@@ -18,10 +18,11 @@ use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 
+#[\AllowDynamicProperties]
 class HtmlView extends BaseHtmlView
 {
-	use ProfileIdAndName;
-	use LoadAnyTemplate;
+	use ViewProfileIdAndNameTrait;
+	use ViewLoadAnyTemplateTrait;
 
 	/**
 	 * Status of the settings encryption: -1 disabled by user, 0 not available, 1 enabled and active
@@ -39,40 +40,11 @@ class HtmlView extends BaseHtmlView
 
 	public function display($tpl = null)
 	{
+		$this->addToolbar();
+
 		// Load our Javascript
 		$wa = $this->document->getWebAssetManager();
 		$wa->useScript('com_akeebabackup.configuration');
-
-		// Set up the toolbar
-		ToolbarHelper::title(Text::_('COM_AKEEBABACKUP_CONFIG'), 'icon-akeeba');
-
-		ToolbarHelper::apply();
-		ToolbarHelper::save();
-		ToolbarHelper::custom('savenew', 'save-new.png', 'save-new_f2.png', 'JTOOLBAR_SAVE_AND_NEW', false);
-		ToolbarHelper::cancel();
-
-		// Configuration wizard button. We apply styling to it.
-		$bar = Toolbar::getInstance('toolbar');
-		$bar->appendButton('Link', 'bolt', '<strong>' . Text::_('COM_AKEEBABACKUP_CONFWIZ') . '</strong>', 'index.php?option=com_akeebabackup&view=Configurationwizard');
-
-		ToolbarHelper::spacer();
-
-		if (AKEEBABACKUP_PRO)
-		{
-			$bar->appendButton('Link', 'calendar', Text::_('COM_AKEEBABACKUP_SCHEDULE'), 'index.php?option=com_akeebabackup&view=Schedule');
-		}
-
-		ToolbarHelper::preferences('com_akeebabackup', '500', '660');
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-joomla/configuration.html');
-
-		$js = <<< JS
-window.addEventListener('DOMContentReady', function() {
-    var elButtons = document.querySelectorAll('#toolbar-bolt>button');
-    elButtons[0].classList += ' btn-primary';
-});
-
-JS;
-		$wa->addInlineScript($js);
 
 		// Get the backup profile ID and name
 		$this->getProfileIdAndName();
@@ -84,13 +56,13 @@ JS;
 		$this->promptForConfigurationwizard = Factory::getConfiguration()->get('akeeba.flag.confwiz', 0) != 1;
 
 		// Push script options
-		$urls = array(
+		$urls = [
 			'browser'      => addslashes('index.php?option=com_akeebabackup&view=Browser&processfolder=1&tmpl=component&folder='),
 			'testFtp'      => addslashes('index.php?option=com_akeebabackup&view=Configuration&task=testftp'),
 			'testSftp'     => addslashes('index.php?option=com_akeebabackup&view=Configuration&task=testsftp'),
 			'dpeauthopen'  => addslashes('index.php?option=com_akeebabackup&view=Configuration&task=dpeoauthopen&format=raw'),
 			'dpecustomapi' => addslashes('index.php?option=com_akeebabackup&view=Configuration&task=dpecustomapi&format=raw'),
-		);
+		];
 
 		// Push script options
 		$this->document->addScriptOptions('akeebabackup.Configuration.URLs', $urls);
@@ -111,6 +83,42 @@ JS;
 		Text::script('JNO');
 
 		parent::display($tpl);
+	}
+
+	protected function addToolbar(): void
+	{
+		// Set up the toolbar
+		ToolbarHelper::title(Text::_('COM_AKEEBABACKUP_CONFIG'), 'icon-akeeba');
+
+		$toolbar = Toolbar::getInstance('toolbar');
+		$toolbar->apply('apply');
+
+		$saveGroup = $toolbar->dropdownButton('save-group');
+		$saveGroup->configure(
+			function (Toolbar $childBar) {
+				$childBar->save('save');
+				$childBar->save2copy('savenew');
+			}
+		);
+
+		$toolbar->cancel('cancel');
+
+		$toolbar->link(
+			Text::_('COM_AKEEBABACKUP_CONFWIZ'),
+			'index.php?option=com_akeebabackup&view=Configurationwizard'
+		)
+		        ->icon('fa fa-bolt');
+
+		if (AKEEBABACKUP_PRO)
+		{
+			$toolbar->link(
+				Text::_('COM_AKEEBABACKUP_SCHEDULE'),
+				'index.php?option=com_akeebabackup&view=Schedule'
+			)->icon('fa fa-calendar');
+		}
+
+		$toolbar->preferences('com_akeebabackup');
+		$toolbar->help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-joomla/configuration.html');
 	}
 
 	/**

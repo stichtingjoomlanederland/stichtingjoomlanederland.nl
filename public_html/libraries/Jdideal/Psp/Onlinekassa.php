@@ -4,7 +4,7 @@
  * @subpackage  Omnikassa
  *
  * @author      Roland Dalmulder <contact@rolandd.com>
- * @copyright   Copyright (C) 2017 - 2022 RolandD Cyber Produksi. All rights reserved.
+ * @copyright   Copyright (C) 2017 - 2023 RolandD Cyber Produksi. All rights reserved.
  * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  * @link        https://rolandd.com
  */
@@ -704,7 +704,7 @@ class Onlinekassa
 		// Call the bank
 		$result = $http->get(
 			$this->getUrl($jdideal)
-			. 'order/server/api/events/results/merchant.order.status.changed',
+			. '/order/server/api/events/results/merchant.order.status.changed',
 			$headers
 		);
 		$data   = json_decode($result->body, true);

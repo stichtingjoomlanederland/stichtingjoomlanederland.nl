@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,13 +9,13 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Controller;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\ControllerEvents;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\CustomACL;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\RegisterControllerTasks;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerCustomACLTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerEventsTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerProfileAccessTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerProfileRestrictionTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerRegisterTasksTrait;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\ConfigurationModel;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\ProfileModel;
-use Akeeba\Component\AkeebaBackup\Administrator\Model\ProfilesModel;
-use Akeeba\Component\AkeebaBackup\Administrator\Table\ProfileTable;
 use Akeeba\Engine\Platform;
 use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Language\Text;
@@ -26,15 +26,23 @@ use Joomla\Input\Input;
 
 class ConfigurationController extends BaseController
 {
-	use ControllerEvents;
-	use CustomACL;
-	use RegisterControllerTasks;
+	use ControllerEventsTrait;
+	use ControllerRegisterTasksTrait;
+	use ControllerProfileAccessTrait;
+	use ControllerCustomACLTrait
+	{
+		ControllerCustomACLTrait::onBeforeExecute as onBeforeExecuteACL;
+	}
+	use ControllerProfileRestrictionTrait
+	{
+		ControllerProfileRestrictionTrait::onBeforeExecute as onBeforeExecuteRestrictedProfile;
+	}
 
 	/**
 	 * The default view.
 	 *
-	 * @var    string
 	 * @since  1.6
+	 * @var    string
 	 */
 	protected $default_view = 'Configuration';
 
@@ -43,11 +51,6 @@ class ConfigurationController extends BaseController
 		parent::__construct($config, $factory, $app, $input);
 
 		$this->registerControllerTasks('main');
-	}
-
-	public function main($cachable = false, $urlparams = [])
-	{
-		return parent::display($cachable, $urlparams);
 	}
 
 	/**
@@ -98,12 +101,86 @@ class ConfigurationController extends BaseController
 		if ($mustSaveProfile)
 		{
 			$profileRecord->description = $profileName;
-			$profileRecord->quickicon = $quickIcon;
+			$profileRecord->quickicon   = $quickIcon;
 
 			$profileModel->save((array) $profileRecord);
 		}
 
 		$this->setRedirect(Uri::base() . 'index.php?option=com_akeebabackup&view=Configuration', Text::_('COM_AKEEBABACKUP_CONFIG_SAVE_OK'));
+	}
+
+	/**
+	 * Handle the cancel task which doesn't save anything and returns to the Control Panel page
+	 */
+	public function cancel($cachable = false, $urlparams = [])
+	{
+		// CSRF prevention
+		$this->checkToken();
+		$this->setRedirect(Uri::base() . 'index.php?option=com_akeebabackup');
+	}
+
+	/**
+	 * Runs a custom API call against the selected data processing engine and returns the JSON encoded result
+	 */
+	public function dpecustomapi($cachable = false, $urlparams = [])
+	{
+		/** @var ConfigurationModel $model */
+		$model = $this->getModel('Configuration', 'Administrator');
+		$model->setState('engine', $this->input->get('engine', '', 'raw'));
+		$model->setState('method', $this->input->get('method', '', 'raw'));
+		$model->setState('params', $this->input->get('params', [], 'raw'));
+
+		@ob_end_clean();
+		echo '###' . json_encode($model->dpeCustomAPICall()) . '###';
+		flush();
+
+		$this->app->close();
+	}
+
+	/**
+	 * Runs a custom API call against the selected data processing engine and returns the raw result
+	 */
+	public function dpecustomapiraw($cachable = false, $urlparams = [])
+	{
+		/** @var ConfigurationModel $model */
+		$model = $this->getModel('Configuration', 'Administrator');
+		$model->setState('engine', $this->input->get('engine', '', 'raw'));
+		$model->setState('method', $this->input->get('method', '', 'raw'));
+		$model->setState('params', $this->input->get('params', [], 'raw'));
+
+		@ob_end_clean();
+		echo $model->dpeCustomAPICall();
+		flush();
+
+		$this->app->close();
+	}
+
+	/**
+	 * Opens an OAuth window for the selected data processing engine
+	 */
+	public function dpeoauthopen($cachable = false, $urlparams = [])
+	{
+		/** @var ConfigurationModel $model */
+		$model = $this->getModel('Configuration', 'Administrator');
+		$model->setState('engine', $this->input->get('engine', '', 'raw'));
+		$model->setState('params', $this->input->get('params', [], 'raw'));
+
+		@ob_end_clean();
+		$model->dpeOuthOpen();
+		flush();
+
+		$this->app->close();
+	}
+
+	public function main($cachable = false, $urlparams = [])
+	{
+		return parent::display($cachable, $urlparams);
+	}
+
+	protected function onBeforeExecute(&$task)
+	{
+		$this->onBeforeExecuteACL($task);
+		$this->onBeforeExecuteRestrictedProfile($task);
 	}
 
 	/**
@@ -131,7 +208,7 @@ class ConfigurationController extends BaseController
 
 		/** @var ProfileModel $profilesModel */
 		$profilesModel = $this->getModel('Profile');
-		$profile = $profilesModel->getTable();
+		$profile       = $profilesModel->getTable();
 
 		if (!$profile->load($profileId))
 		{
@@ -151,16 +228,6 @@ class ConfigurationController extends BaseController
 		$url       = Uri::base() . 'index.php?option=com_akeebabackup&task=SwitchProfile&profileid=' . $profile->getId() .
 			'&returnurl=' . $returnUrl . '&' . $token . '=1';
 		$this->setRedirect($url);
-	}
-
-	/**
-	 * Handle the cancel task which doesn't save anything and returns to the Control Panel page
-	 */
-	public function cancel($cachable = false, $urlparams = [])
-	{
-		// CSRF prevention
-		$this->checkToken();
-		$this->setRedirect(Uri::base() . 'index.php?option=com_akeebabackup');
 	}
 
 	/**
@@ -225,59 +292,6 @@ class ConfigurationController extends BaseController
 
 		@ob_end_clean();
 		echo '###' . json_encode($testResult) . '###';
-		flush();
-
-		$this->app->close();
-	}
-
-	/**
-	 * Opens an OAuth window for the selected data processing engine
-	 */
-	public function dpeoauthopen($cachable = false, $urlparams = [])
-	{
-		/** @var ConfigurationModel $model */
-		$model = $this->getModel('Configuration', 'Administrator');
-		$model->setState('engine', $this->input->get('engine', '', 'raw'));
-		$model->setState('params', $this->input->get('params', [], 'raw'));
-
-		@ob_end_clean();
-		$model->dpeOuthOpen();
-		flush();
-
-		$this->app->close();
-	}
-
-	/**
-	 * Runs a custom API call against the selected data processing engine and returns the JSON encoded result
-	 */
-	public function dpecustomapi($cachable = false, $urlparams = [])
-	{
-		/** @var ConfigurationModel $model */
-		$model = $this->getModel('Configuration', 'Administrator');
-		$model->setState('engine', $this->input->get('engine', '', 'raw'));
-		$model->setState('method', $this->input->get('method', '', 'raw'));
-		$model->setState('params', $this->input->get('params', [], 'raw'));
-
-		@ob_end_clean();
-		echo '###' . json_encode($model->dpeCustomAPICall()) . '###';
-		flush();
-
-		$this->app->close();
-	}
-
-	/**
-	 * Runs a custom API call against the selected data processing engine and returns the raw result
-	 */
-	public function dpecustomapiraw($cachable = false, $urlparams = [])
-	{
-		/** @var ConfigurationModel $model */
-		$model = $this->getModel('Configuration', 'Administrator');
-		$model->setState('engine', $this->input->get('engine', '', 'raw'));
-		$model->setState('method', $this->input->get('method', '', 'raw'));
-		$model->setState('params', $this->input->get('params', [], 'raw'));
-
-		@ob_end_clean();
-		echo $model->dpeCustomAPICall();
 		flush();
 
 		$this->app->close();

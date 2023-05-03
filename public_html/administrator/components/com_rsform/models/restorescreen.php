@@ -28,6 +28,6 @@ class RsformModelRestorescreen extends JModelAdmin
 	
 	public function getTempDir()
 	{
-		return JFactory::getConfig()->get('tmp_path');
+		return JFactory::getApplication()->get('tmp_path');
 	}
 }

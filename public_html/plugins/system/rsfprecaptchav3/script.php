@@ -10,7 +10,7 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 
 class plgSystemRsfprecaptchav3InstallerScript
 {
-	protected static $minJoomla = '3.7.0';
+	protected static $minJoomla = '3.9.0';
 	protected static $minComponent = '3.1.0';
 
 	public function preflight($type, $parent)

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -81,7 +81,7 @@ class SetIncludedDirectory extends AbstractTask
 		Platform::getInstance()->load_configuration($profile);
 
 		/** @var IncludefoldersModel $model */
-		$model = $this->factory->createModel('Includefolders', 'Administrator');
+		$model = $this->factory->createModel('Includefolders', 'Administrator', ['ignore_request' => true]);
 
 		$data = [$path, $virtualFolder];
 

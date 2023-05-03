@@ -7,7 +7,7 @@
 	<license>GNU General Public License</license>
 	<authorEmail>support@rsjoomla.com</authorEmail>
 	<authorUrl>www.rsjoomla.com</authorUrl>
-	<version>3.1.0</version>
+	<version>3.1.1</version>
 	<description><![CDATA[PLG_SYSTEM_RSFPRECAPTCHAV3_DESC]]></description>
 	<scriptfile>script.php</scriptfile>
 	

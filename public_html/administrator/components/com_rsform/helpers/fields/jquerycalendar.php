@@ -126,6 +126,11 @@ class RSFormProFieldJqueryCalendar extends RSFormProField
 		if ($readonly) {
 			$input .= ' readonly="readonly"';
 		}
+		if ($placeholder = $this->getProperty('PLACEHOLDER', ''))
+		{
+			$input .= ' placeholder="'.$this->escape($placeholder).'"';
+		}
+
 		// Add the value
 		$input .= ' value="'.$this->escape($value).'"';
 		// Additional HTML
@@ -179,7 +184,12 @@ class RSFormProFieldJqueryCalendar extends RSFormProField
 
 	protected function getButtonInput($label, $additional)
 	{
-		return '<input id="btnjQ' . $this->customId . '" type="button" value="' . $this->escape($label) . '" ' . $additional . '/>';
+		if (!$this->getProperty('ALLOWHTML'))
+		{
+			$label = $this->escape($label);
+		}
+
+		return '<button id="btnjQ' . $this->customId . '" type="button"' . $additional . '>' . $label . '</button>';
 	}
 	
 	// set the field output - function needed for overwriting in the layout classes

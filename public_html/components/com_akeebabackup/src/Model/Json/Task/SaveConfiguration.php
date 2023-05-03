@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -28,13 +28,13 @@ class SaveConfiguration extends AbstractTask
 	 *
 	 * @throws  RuntimeException  In case of an error
 	 */
-	public function execute(array $parameters = array())
+	public function execute(array $parameters = [])
 	{
 		// Get the passed configuration values
-		$defConfig = array(
+		$defConfig = [
 			'profile'      => -1,
-			'engineconfig' => array()
-		);
+			'engineconfig' => []
+		];
 
 		$defConfig = array_merge($defConfig, $parameters);
 

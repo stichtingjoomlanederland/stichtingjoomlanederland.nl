@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -39,7 +39,7 @@ class DeleteFiles extends AbstractTask
 		$backup_id = (int) $defConfig['backup_id'];
 
 		/** @var StatisticModel $model */
-		$model = $this->factory->createModel('Statistic', 'Adminstrator');
+		$model = $this->factory->createModel('Statistic', 'Adminstrator', ['ignore_request' => true]);
 		$model->setState('id', $backup_id);
 
 		$ids = [$backup_id];

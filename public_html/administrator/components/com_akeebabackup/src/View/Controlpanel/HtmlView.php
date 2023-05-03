@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -10,26 +10,28 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\View\Controlpanel;
 defined('_JEXEC') || die;
 
 use Akeeba\Component\AkeebaBackup\Administrator\Helper\Status;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewLoadAnyTemplateTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewProfileIdAndNameTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewProfileListTrait;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\ControlpanelModel;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\UpdatesModel;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\UpgradeModel;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\UsagestatsModel;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\LoadAnyTemplate;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\ProfileIdAndName;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\ProfileList;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
+use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 use Joomla\CMS\User\User;
 use Joomla\Session\Session;
 
+#[\AllowDynamicProperties]
 class HtmlView extends BaseHtmlView
 {
-	use ProfileList, ProfileIdAndName, LoadAnyTemplate;
+	use ViewProfileListTrait, ViewProfileIdAndNameTrait, ViewLoadAnyTemplateTrait;
 
 	/**
 	 * List of profiles to display as Quick Icons in the control panel page
@@ -193,10 +195,7 @@ class HtmlView extends BaseHtmlView
 
 	public function display($tpl = null)
 	{
-		ToolbarHelper::title(Text::_('COM_AKEEBABACKUP_' . (AKEEBABACKUP_PRO ? 'PRO' : 'CORE')), 'icon-akeeba');
-		ToolbarHelper::preferences('com_akeebabackup');
-		ToolbarHelper::spacer();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-joomla/control-panel.html');
+		$this->addToolbar();
 
 		/** @var ControlpanelModel $model */
 		$model = $this->getModel();
@@ -261,8 +260,9 @@ class HtmlView extends BaseHtmlView
 
 		/** @var UpgradeModel $upgradeModel */
 		$upgradeModel                      = $this->getModel('Upgrade');
+		$upgradeModel->init();
 		$this->canUpgradeFromAkeebaBackup8 = in_array(true, $upgradeModel->runCustomHandlerEvent('onNeedsMigration'), true);
-		$this->akeebaBackup8PackageId      = $upgradeModel->getExtensionId('pkg_akeeba');
+		$this->akeebaBackup8PackageId      = $this->get('akeebaBackup8PackageId');
 
 		/** @var UpdatesModel $updatesModel */
 		$updatesModel       = $this->getModel('Updates');
@@ -278,6 +278,15 @@ class HtmlView extends BaseHtmlView
 		$this->addJSScriptOptions();
 
 		parent::display($tpl);
+	}
+
+	protected function addToolbar(): void
+	{
+		ToolbarHelper::title(Text::_('COM_AKEEBABACKUP_' . (AKEEBABACKUP_PRO ? 'PRO' : 'CORE')), 'icon-akeeba');
+
+		$toolbar = Toolbar::getInstance('toolbar');
+		$toolbar->preferences('com_akeebabackup');
+		$toolbar->help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-joomla/control-panel.html');
 	}
 
 	/**

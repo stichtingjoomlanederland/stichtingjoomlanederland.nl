@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -16,7 +16,8 @@ use Joomla\CMS\Installer\Installer;
 use Joomla\CMS\MVC\Model\BaseModel;
 use Joomla\CMS\Table\Extension;
 use Joomla\CMS\User\UserHelper;
-use Joomla\Database\DatabaseDriver;
+use Joomla\Database\DatabaseAwareInterface;
+use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Database\DatabaseInterface;
 use Joomla\Database\ParameterType;
 use RuntimeException;
@@ -35,8 +36,11 @@ use Throwable;
  * - Downgrading from a Pro to a Core version of an extension.
  * - Executing custom, extension-specific upgrade tasks.
  */
-class UpgradeModel extends BaseModel
+#[\AllowDynamicProperties]
+class UpgradeModel extends BaseModel implements DatabaseAwareInterface
 {
+	use DatabaseAwareTrait;
+
 	/**
 	 * Name of the package being replaced
 	 *
@@ -78,17 +82,32 @@ class UpgradeModel extends BaseModel
 			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/src/Model/UsageStatisticsModel.php',
 
 			// Remove iDriveSync — the service has been discontinued
-			'administrator/components/com_akeebabackup/engine/Postproc/idrivesync.json',
-			'administrator/components/com_akeebabackup/engine/Postproc/Idrivesync.php',
-			'administrator/components/com_akeebabackup/engine/Postproc/Connector/Idrivesync.php',
+			JPATH_ADMINISTRATOR . 'administrator/components/com_akeebabackup/engine/Postproc/idrivesync.json',
+			JPATH_ADMINISTRATOR . 'administrator/components/com_akeebabackup/engine/Postproc/Idrivesync.php',
+			JPATH_ADMINISTRATOR . 'administrator/components/com_akeebabackup/engine/Postproc/Connector/Idrivesync.php',
 
 			// Remove Piecon
-			'media/com_akeebabackup/js/piecon.js',
-			'media/com_akeebabackup/js/piecon.min.js',
-			'media/com_akeebabackup/js/piecon.min.js.map',
+			JPATH_ADMINISTRATOR . 'media/com_akeebabackup/js/piecon.js',
+			JPATH_ADMINISTRATOR . 'media/com_akeebabackup/js/piecon.min.js',
+			JPATH_ADMINISTRATOR . 'media/com_akeebabackup/js/piecon.min.js.map',
+
+			// Legacy helpers
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/src/Helper/CacheCleaner.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/src/Helper/ComponentParams.php',
+
+			// Legacy filters
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/platform/Joomla/Filter/Stack/StackMyjoomla.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/platform/Joomla/Filter/Stack/myjoomla.json',
 		],
 		'folders' => [
-			'administrator/components/com_akeebabackup/pkatform/Joomla/Finalization',
+			JPATH_ADMINISTRATOR . 'administrator/components/com_akeebabackup/platform/Joomla/Finalization',
+
+			// Legacy traits
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/src/Controller/Mixin',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/src/Dispatcher/Mixin',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/src/Model/Mixin',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/src/Table/Mixin',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/src/View/Mixin',
 		],
 	];
 
@@ -208,7 +227,6 @@ class UpgradeModel extends BaseModel
 
 			// Pro features: integrated restoration — Should be removed by Joomla itself
 			// JPATH_ADMINISTRATOR . '/components/com_akeebabackup/restore.php',
-
 		],
 		'folders' => [
 			// Pro features: API application — Should be removed by Joomla itself
@@ -315,10 +333,8 @@ class UpgradeModel extends BaseModel
 	 */
 	private $customHandlers = [];
 
-	public function __construct($config = [])
+	public function init()
 	{
-		parent::__construct($config);
-
 		// Find out the common extensions
 		if ($this->isSamePackage())
 		{
@@ -333,39 +349,6 @@ class UpgradeModel extends BaseModel
 
 		// Load extension-specific adapters
 		$this->loadCustomHandlers();
-	}
-
-	/**
-	 * Get the database driver.
-	 *
-	 * @return  DatabaseInterface  The database driver.
-	 *
-	 * @throws  \UnexpectedValueException
-	 *
-	 * @since   9.3.0
-	 */
-	public function getDbo()
-	{
-		if (!is_object($this->_db))
-		{
-			$this->_db = Factory::getContainer()->get(DatabaseDriver::class);
-		}
-
-		return $this->_db;
-	}
-
-	/**
-	 * Set the database driver.
-	 *
-	 * @param   DatabaseInterface  $db  The database driver.
-	 *
-	 * @return  void
-	 *
-	 * @since   9.3.0
-	 */
-	public function setDbo(DatabaseInterface $db = null)
-	{
-		$this->_db = $db;
 	}
 
 	/**
@@ -479,7 +462,7 @@ class UpgradeModel extends BaseModel
 			return $this->extensionIds[$extension];
 		}
 
-		$db    = $this->getDbo();
+		$db    = $this->getDatabase();
 		$query = $db->getQuery(true)
 		            ->select($db->quoteName('extension_id'))
 		            ->from($db->quoteName('#__extensions'));
@@ -551,7 +534,7 @@ class UpgradeModel extends BaseModel
 		$extensionIDs = array_merge($extensionIDs);
 
 		// Reassign all extensions
-		$db    = $this->getDbo();
+		$db    = $this->getDatabase();
 		$query = $db->getQuery(true)
 		            ->update($db->quoteName('#__extensions'))
 		            ->set($db->qn('package_id') . ' = :package_id')
@@ -623,7 +606,7 @@ class UpgradeModel extends BaseModel
 			return;
 		}
 
-		$db    = $this->getDbo();
+		$db    = $this->getDatabase();
 		$query = $db->getQuery(true)
 		            ->update($db->quoteName('#__extensions'))
 		            ->set($db->qn('enabled') . ' = 1')
@@ -858,7 +841,7 @@ class UpgradeModel extends BaseModel
 		$extensionIDs = array_merge($extensionIDs);
 
 		// Reassign all extensions
-		$db    = $this->getDbo();
+		$db    = $this->getDatabase();
 		$query = $db->getQuery(true)
 		            ->update($db->quoteName('#__extensions'))
 		            ->set($db->qn('package_id') . ' = :package_id')
@@ -889,7 +872,7 @@ class UpgradeModel extends BaseModel
 
 		// Get the existing list of extensions dependent on the specified version of FOF.
 		$keyName = 'fof' . $fofVersion . '0';
-		$db      = $this->getDbo();
+		$db      = $this->getDatabase();
 		$query   = $db->getQuery(true)
 		              ->select($db->quoteName('value'))
 		              ->from($db->quoteName('#__akeeba_common'))
@@ -977,10 +960,7 @@ class UpgradeModel extends BaseModel
 		$filePath = $this->getCachedManifestPath($oldPackage);
 		$contents = $xml->asXML();
 
-		if (@file_put_contents($filePath, $contents) === false)
-		{
-			// File::write($filePath, $contents);
-		}
+		@file_put_contents($filePath, $contents);
 	}
 
 	/**
@@ -1238,8 +1218,7 @@ class UpgradeModel extends BaseModel
 		}
 
 		// Get an Extension table object and Installer object.
-		/** @noinspection PhpParamsInspection */
-		$row       = new Extension($this->getDbo());
+		$row       = new Extension($this->getDatabase());
 		$installer = Installer::getInstance();
 
 		// Load the extension row or fail the uninstallation immediately.
@@ -1348,7 +1327,7 @@ class UpgradeModel extends BaseModel
 			}
 
 			// Add the custom handler, passing a reference to ourselves
-			$this->customHandlers[$bareNameCanonical] = new $classFQN($this);
+			$this->customHandlers[$bareNameCanonical] = new $classFQN($this, $this->getDatabase());
 		}
 	}
 

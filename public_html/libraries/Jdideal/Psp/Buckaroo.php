@@ -4,13 +4,15 @@
  * @subpackage  Buckaroo
  *
  * @author      Roland Dalmulder <contact@rolandd.com>
- * @copyright   Copyright (C) 2009 - 2022 RolandD Cyber Produksi. All rights reserved.
+ * @copyright   Copyright (C) 2009 - 2023 RolandD Cyber Produksi. All rights reserved.
  * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  * @link        https://rolandd.com
  */
 
 namespace Jdideal\Psp;
 
+use Buckaroo\BuckarooClient;
+use Buckaroo\PaymentMethods\iDeal\iDeal;
 use Jdideal\Gateway;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Http\HttpFactory;
@@ -186,7 +188,23 @@ class Buckaroo
 				case 'ideal':
 					$options[] = HTMLHelper::_('select.option', 'ideal',
 						Text::_('COM_JDIDEALGATEWAY_PAYMENT_METHOD_IDEAL'));
-					$banks     = $this->getBanks();
+					$buckaroo  = new BuckarooClient($jdideal->get('merchant_key'), $jdideal->get('secret_key'));
+					/** @var iDeal */
+					$methods = $buckaroo->method('ideal')->issuers();
+
+					if (is_array($methods))
+					{
+						$banks = [];
+					}
+
+					foreach ($methods as $issuer)
+					{
+						$banks['Nederland']['items'][] = HTMLHelper::_(
+							'select.option',
+							$issuer['id'],
+							$issuer['name']
+						);
+					}
 					break;
 			}
 		}
@@ -473,34 +491,6 @@ class Buckaroo
 		}
 
 		return $return;
-	}
-
-	/**
-	 * Request the list of banks.
-	 *
-	 * @return  array  List of available banks.
-	 *
-	 * @since   2.13
-	 *
-	 * @throws  \InvalidArgumentException
-	 */
-	private function getBanks()
-	{
-		$options                 = array();
-		$options['_']['id']      = 'NL';
-		$options['_']['text']    = 'Nederland';
-		$options['_']['items']   = array();
-		$options['_']['items'][] = HTMLHelper::_('select.option', 'ABNANL2A', 'ABN Amro Bank');
-		$options['_']['items'][] = HTMLHelper::_('select.option', 'INGBNL2A', 'ING');
-		$options['_']['items'][] = HTMLHelper::_('select.option', 'KNABNL2H', 'Knab');
-		$options['_']['items'][] = HTMLHelper::_('select.option', 'RABONL2U', 'Rabobank');
-		$options['_']['items'][] = HTMLHelper::_('select.option', 'SNSBNL2A', 'SNS Bank');
-		$options['_']['items'][] = HTMLHelper::_('select.option', 'ASNBNL21', 'ASN Bank');
-		$options['_']['items'][] = HTMLHelper::_('select.option', 'RBRBNL21', 'Regio Bank');
-		$options['_']['items'][] = HTMLHelper::_('select.option', 'TRIONL2U', 'Triodos Bank');
-		$options['_']['items'][] = HTMLHelper::_('select.option', 'FVLBNL22', 'Van Lanschot Bankiers');
-
-		return $options;
 	}
 
 	/**

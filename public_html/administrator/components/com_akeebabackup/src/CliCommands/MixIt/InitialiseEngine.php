@@ -1,22 +1,21 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Component\AkeebaBackup\Administrator\CliCommands\MixIt;
 
 use Akeeba\Component\AkeebaBackup\Administrator\Extension\AkeebaBackupComponent;
+use Akeeba\Component\AkeebaBackup\Administrator\Helper\PushMessages;
 use Akeeba\Component\AkeebaBackup\Administrator\Helper\SecretWord;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Joomla\Application\ApplicationInterface;
 use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Component\ComponentHelper;
-use Joomla\CMS\Factory as JFactory;
 use Joomla\CMS\Factory as JoomlaFactory;
-use Joomla\Database\DatabaseDriver;
 use Joomla\Database\DatabaseInterface;
 
 /**
@@ -26,6 +25,18 @@ use Joomla\Database\DatabaseInterface;
  */
 trait InitialiseEngine
 {
+	private $componentObject;
+
+	protected function getComponentObject(ApplicationInterface $app): AkeebaBackupComponent
+	{
+		if (empty($this->componentObject))
+		{
+			$this->componentObject = $app->bootComponent('com_akeebabackup');
+		}
+
+		return $this->componentObject;
+	}
+
 	/**
 	 * Initialise the Akeeba Backup engine.
 	 *
@@ -54,8 +65,7 @@ trait InitialiseEngine
 		$lang->load('com_akeebabackup', JPATH_ADMINISTRATOR, 'en-GB', true, true);
 		$lang->load('com_akeebabackup', JPATH_ADMINISTRATOR, null, true, false);
 
-		/** @var AkeebaBackupComponent $componentObject */
-		$componentObject = $app->bootComponent('com_akeebabackup');
+		$componentObject = $this->getComponentObject($this->getApplication());
 		$dbo = $componentObject->getContainer()->get('DatabaseDriver');
 
 		// Load Akeeba Engine
@@ -137,6 +147,29 @@ trait InitialiseEngine
 
 		// Tell the Akeeba Engine where to load the platform from
 		Platform::addPlatform('joomla', JPATH_ADMINISTRATOR . '/components/com_akeebabackup/platform/Joomla');
+
+		// Add our custom push notifications handler
+		Factory::setPushClass(PushMessages::class);
+
+		if (method_exists($this, 'getMVCFactory'))
+		{
+			PushMessages::$mvcFactory = $this->getMVCFactory();
+		}
+		else
+		{
+			// This part of the code executes in Joomla Scheduled Tasks
+			$comAkeebaExtension = $app->bootComponent('com_akeeba');
+			try
+			{
+				PushMessages::$mvcFactory = method_exists($comAkeebaExtension, 'getMVCFactory')
+					? $comAkeebaExtension->getMVCFactory()
+					: null;
+			}
+			catch (\Exception $e)
+			{
+				// Yeah, no MVCFactory set. Don't care about push messages.
+			}
+		}
 
 		// !!! IMPORTANT !!! DO NOT REMOVE! This triggers Akeeba Engine's autoloader. Without it the next line fails!
 		$DO_NOT_REMOVE = Platform::getInstance();

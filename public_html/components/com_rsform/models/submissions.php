@@ -48,7 +48,7 @@ class RsformModelSubmissions extends JModelLegacy
 		}
 		
 		// Get pagination request variables
-		$limit		= $app->input->get('limit', JFactory::getConfig()->get('list_limit'), 'int');
+		$limit		= $app->input->get('limit', JFactory::getApplication()->get('list_limit'), 'int');
 		$limitstart	= $app->input->get('limitstart', 0, 'int');
 
 		$previousFiltersHash = $app->getUserState('com_rsform.submissions.currentfilterhash', '');
@@ -73,20 +73,21 @@ class RsformModelSubmissions extends JModelLegacy
 	
 	public function _buildQuery()
 	{
-		$query = $this->_db->getQuery(true)
-			->select($this->_db->qn('s.SubmissionId'))
-			->select($this->_db->qn('s.confirmed'))
-			->from($this->_db->qn('#__rsform_submissions', 's'))
-			->where($this->_db->qn('s.FormId') . ' = ' . $this->_db->q($this->formId));
+		$db = $this->getDbo();
+		$query = $db->getQuery(true)
+			->select($db->qn('s.SubmissionId'))
+			->select($db->qn('s.confirmed'))
+			->from($db->qn('#__rsform_submissions', 's'))
+			->where($db->qn('s.FormId') . ' = ' . $db->q($this->formId));
 
 		if ($this->params->get('show_confirmed', 0))
 		{
-			$query->where($this->_db->qn('s.confirmed') . ' = ' . $this->_db->q(1));
+			$query->where($db->qn('s.confirmed') . ' = ' . $db->q(1));
 		}
 
 		if ($lang = $this->params->get('lang', ''))
 		{
-			$query->where($this->_db->qn('s.Lang') . ' = ' . $this->_db->q($lang));
+			$query->where($db->qn('s.Lang') . ' = ' . $db->q($lang));
 		}
 
 		// If we're filtering results
@@ -96,26 +97,26 @@ class RsformModelSubmissions extends JModelLegacy
 		{
 			$or = array();
 
-			$escapedFilter = $this->_db->q('%' . $this->_db->escape($filter) . '%', false);
+			$escapedFilter = $db->q('%' . $db->escape($filter) . '%', false);
 
 			if (in_array('DateSubmitted', $areas) && !preg_match('#([^0-9\-: ])#', $filter))
 			{
-				$or[] = $this->_db->qn('s.DateSubmitted') . ' LIKE ' . $escapedFilter;
+				$or[] = $db->qn('s.DateSubmitted') . ' LIKE ' . $escapedFilter;
 			}
 			if (in_array('Username', $areas))
 			{
-				$or[] = $this->_db->qn('s.Username') . ' LIKE ' . $escapedFilter;
+				$or[] = $db->qn('s.Username') . ' LIKE ' . $escapedFilter;
 			}
 			if (in_array('UserIp', $areas))
 			{
-				$or[] = $this->_db->qn('s.UserIp') . ' LIKE ' . $escapedFilter;
+				$or[] = $db->qn('s.UserIp') . ' LIKE ' . $escapedFilter;
 			}
 			if (in_array('FieldValue', $areas))
 			{
-				$or[] = $this->_db->qn('sv.FieldValue') . ' LIKE ' . $escapedFilter;
+				$or[] = $db->qn('sv.FieldValue') . ' LIKE ' . $escapedFilter;
 
-				$query->join('left', $this->_db->qn('#__rsform_submission_values', 'sv') . ' ON (' . $this->_db->qn('s.SubmissionId') . ' = ' . $this->_db->qn('sv.SubmissionId') . ')')
-					->group(array($this->_db->qn('s.SubmissionId')));
+				$query->join('left', $db->qn('#__rsform_submission_values', 'sv') . ' ON (' . $db->qn('s.SubmissionId') . ' = ' . $db->qn('sv.SubmissionId') . ')')
+					->group(array($db->qn('s.SubmissionId')));
 			}
 
 			if ($or)
@@ -139,7 +140,7 @@ class RsformModelSubmissions extends JModelLegacy
 				}
 				else
 				{
-					$query->where($this->_db->qn('s.UserId') . ' = ' . $this->_db->q($user->id));
+					$query->where($db->qn('s.UserId') . ' = ' . $db->q($user->id));
 				}
 			}
 			else
@@ -149,14 +150,14 @@ class RsformModelSubmissions extends JModelLegacy
 
 				if ($userId)
 				{
-					$query->where($this->_db->qn('s.UserId') . ' IN (' . implode(',', $this->_db->q($userId)) . ')');
+					$query->where($db->qn('s.UserId') . ' IN (' . implode(',', $db->q($userId)) . ')');
 				}
 			}
 		}
 
 		// Set ordering
 		$dir = $this->params->get('sort_submissions') ? 'ASC' : 'DESC';
-		$query->order($this->_db->qn('s.DateSubmitted') . ' ' . $this->_db->escape($dir));
+		$query->order($db->qn('s.DateSubmitted') . ' ' . $db->escape($dir));
 
 		// set the current filters hash
 		JFactory::getApplication()->setUserState('com_rsform.submissions.currentfilterhash', $this->getFiltersHash());
@@ -207,17 +208,19 @@ class RsformModelSubmissions extends JModelLegacy
 	{
 		if (empty($this->_data) && $this->_query)
 		{
+			$db = $this->getDbo();
+
 			try
 			{
-				$this->_db->setQuery('SET SQL_BIG_SELECTS=1')->execute();
+				$db->setQuery('SET SQL_BIG_SELECTS=1')->execute();
 			}
 			catch (Exception $e)
 			{
 
 			}
 			
-			$this->_db->setQuery($this->_query, $this->getState('com_rsform.submissions.formId'.$this->formId.'.limitstart'), $this->getState('com_rsform.submissions.formId'.$this->formId.'.limit'));
-			$this->_data = $this->_db->loadObjectList();
+			$db->setQuery($this->_query, $this->getState('com_rsform.submissions.formId'.$this->formId.'.limitstart'), $this->getState('com_rsform.submissions.formId'.$this->formId.'.limit'));
+			$this->_data = $db->loadObjectList();
 		}
 		
 		return $this->_data;
@@ -281,6 +284,7 @@ class RsformModelSubmissions extends JModelLegacy
 	public function getDetailTemplate()
 	{
 		$app			= JFactory::getApplication();
+		$db             = $this->getDbo();
 		$cid 			= $app->input->getInt('cid');
 		$format 		= $app->input->getCmd('format');
 		$user   		= JFactory::getUser();
@@ -297,11 +301,11 @@ class RsformModelSubmissions extends JModelLegacy
 		}
 
 		// Grab submission
-		$query = $this->_db->getQuery(true)
+		$query = $db->getQuery(true)
 			->select('*')
-			->from($this->_db->qn('#__rsform_submissions'))
-			->where($this->_db->qn('SubmissionId') . ' = ' . $this->_db->q($cid));
-		$submission = $this->_db->setQuery($query)->loadObject();
+			->from($db->qn('#__rsform_submissions'))
+			->where($db->qn('SubmissionId') . ' = ' . $db->q($cid));
+		$submission = $db->setQuery($query)->loadObject();
 
 		// Submission doesn't exist
 		if (!$submission)

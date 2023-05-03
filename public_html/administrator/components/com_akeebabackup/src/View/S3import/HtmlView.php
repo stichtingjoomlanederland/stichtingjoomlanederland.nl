@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,9 +9,9 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\View\S3import;
 
 defined('_JEXEC') || die;
 
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewLoadAnyTemplateTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewTaskBasedEventsTrait;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\S3importModel;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\LoadAnyTemplate;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\TaskBasedEvents;
 use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
@@ -21,10 +21,11 @@ use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 use Joomla\Session\SessionInterface;
 
+#[\AllowDynamicProperties]
 class HtmlView extends BaseHtmlView
 {
-	use TaskBasedEvents;
-	use LoadAnyTemplate;
+	use ViewTaskBasedEventsTrait;
+	use ViewLoadAnyTemplateTrait;
 
 	public $s3access;
 

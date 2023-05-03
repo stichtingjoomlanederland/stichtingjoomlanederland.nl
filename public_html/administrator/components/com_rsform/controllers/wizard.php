@@ -21,7 +21,6 @@ class RsformControllerWizard extends RsformController
 	public function stepFinal()
 	{
 		$app            = JFactory::getApplication();
-		$config         = JFactory::getConfig();
 		$rsformConfig   = RSFormProConfig::getInstance();
 		$data           = $app->input->post->get('jform', array(), 'array');
 		$row            = JTable::getInstance('RSForm_Forms', 'Table');
@@ -47,8 +46,8 @@ class RsformControllerWizard extends RsformController
 		// Admin Email
 		if (!empty($data['AdminEmail']))
 		{
-			$data['AdminEmailFrom'] = $config->get('mailfrom');
-			$data['AdminEmailFromName'] = $config->get('fromname');
+			$data['AdminEmailFrom'] = $app->get('mailfrom');
+			$data['AdminEmailFromName'] = $app->get('fromname');
 			$data['AdminEmailSubject'] = JText::sprintf('RSFP_ADMIN_EMAIL_DEFAULT_SUBJECT', $data['FormTitle']);
 			$data['AdminEmailText'] = JText::_('RSFP_ADMIN_EMAIL_DEFAULT_MESSAGE');
 		}
@@ -56,8 +55,8 @@ class RsformControllerWizard extends RsformController
 		// User Email
 		if (!empty($data['UserEmail']))
 		{
-			$data['UserEmailFrom'] = $config->get('mailfrom');
-			$data['UserEmailFromName'] = $config->get('fromname');
+			$data['UserEmailFrom'] = $app->get('mailfrom');
+			$data['UserEmailFromName'] = $app->get('fromname');
 			$data['UserEmailSubject'] = JText::_('RSFP_USER_EMAIL_DEFAULT_SUBJECT');
 			$data['UserEmailText'] = JText::_('RSFP_USER_EMAIL_DEFAULT_MESSAGE');
 		}

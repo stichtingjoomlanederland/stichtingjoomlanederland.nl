@@ -7,4 +7,4 @@ CREATE TABLE IF NOT EXISTS `#__rsform_posts` (
   `silent` tinyint(1) NOT NULL,
   `url` text NOT NULL,
   PRIMARY KEY (`form_id`)
-) DEFAULT CHARSET=utf8;
+) DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_unicode_ci;

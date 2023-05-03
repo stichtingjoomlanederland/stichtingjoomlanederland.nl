@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -28,12 +28,10 @@ class GetBackupInfo extends AbstractTask
 	 *
 	 * @throws  RuntimeException  In case of an error
 	 */
-	public function execute(array $parameters = array())
+	public function execute(array $parameters = [])
 	{
 		// Get the passed configuration values
-		$defConfig = array(
-			'backup_id' => 0,
-		);
+		$defConfig = ['backup_id' => 0];
 
 		$defConfig = array_merge($defConfig, $parameters);
 
@@ -54,11 +52,11 @@ class GetBackupInfo extends AbstractTask
 		if (empty($filenames))
 		{
 			// Archives are not stored on the server or no files produced
-			$record['filenames'] = array();
+			$record['filenames'] = [];
 		}
 		else
 		{
-			$filedata = array();
+			$filedata = [];
 			$i        = 0;
 
 			// Get file sizes per part
@@ -67,11 +65,7 @@ class GetBackupInfo extends AbstractTask
 				$i++;
 				$size       = @filesize($file);
 				$size       = is_numeric($size) ? $size : 0;
-				$filedata[] = array(
-					'part' => $i,
-					'name' => basename($file),
-					'size' => $size
-				);
+				$filedata[] = ['part' => $i, 'name' => basename($file), 'size' => $size];
 			}
 
 			// Add the file info to $record['filenames']

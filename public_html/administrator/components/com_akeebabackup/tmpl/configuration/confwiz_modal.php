@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -10,7 +10,7 @@ use Joomla\CMS\Language\Text;
 
 defined('_JEXEC') || die();
 
-/** @var \Joomla\CMS\MVC\View\HtmlView|\Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\LoadAnyTemplate $this */
+/** @var \Joomla\CMS\MVC\View\HtmlView|\Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewLoadAnyTemplateTrait $this */
 
 // Make sure we only ever add this HTML and JS once per page
 if (defined('AKEEBA_VIEW_JAVASCRIPT_CONFWIZ_MODAL'))

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,27 +9,254 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Model;
 
 defined('_JEXEC') or die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Dispatcher\Mixin\TriggerEvent;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\TriggerEventTrait;
 use Akeeba\Engine\Base\Part;
 use Akeeba\Engine\Core\Timer;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
+use Akeeba\Engine\Psr\Log\LogLevel;
 use Akeeba\Engine\Util\PushMessages;
+use Akeeba\WebPush\WebPush\WebPush;
 use DateTimeZone;
 use DirectoryIterator;
 use Exception;
 use Joomla\CMS\Application\CMSApplication;
-use Joomla\CMS\Date\Date;
 use Joomla\CMS\Factory as JoomlaFactory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 use Joomla\CMS\User\User;
-use Psr\Log\LogLevel;
 use RuntimeException;
 
+#[\AllowDynamicProperties]
 class BackupModel extends BaseDatabaseModel
 {
-	use TriggerEvent;
+	use TriggerEventTrait;
+
+	/**
+	 * Convert the old, plaintext log files (.log) into their .log.php counterparts.
+	 *
+	 * @param   int  $timeOut  Maximum time, in seconds, to spend doing this conversion.
+	 *
+	 * @return  void
+	 *
+	 * @since   7.0.3
+	 */
+	public function convertLogFiles($timeOut = 10)
+	{
+		$registry = Factory::getConfiguration();
+		$logDir   = $registry->get('akeeba.basic.output_directory', '[DEFAULT_OUTPUT]', true);
+
+		$timer = new Timer($timeOut, 75);
+
+		// Part I. Remove these obsolete files first
+		$killFiles = [
+			'akeeba.log',
+			'akeeba.backend.log',
+			'akeeba.frontend.log',
+			'akeeba.cli.log',
+			'akeeba.json.log',
+		];
+
+		foreach ($killFiles as $fileName)
+		{
+			$path = $logDir . '/' . $fileName;
+
+			if (@is_file($path))
+			{
+				@unlink($path);
+			}
+		}
+
+		if ($timer->getTimeLeft() <= 0.01)
+		{
+			return;
+		}
+
+		// Part II. Convert .log files.
+		try
+		{
+			$di = new DirectoryIterator($logDir);
+		}
+		catch (Exception $e)
+		{
+			return;
+		}
+
+		foreach ($di as $file)
+		{
+
+			try
+			{
+				if (!$file->isFile())
+				{
+					continue;
+				}
+
+				$baseName = $file->getFilename();
+
+				if (substr($baseName, 0, 7) !== 'akeeba.')
+				{
+					continue;
+				}
+
+				if (substr($baseName, -4) !== '.log')
+				{
+					continue;
+				}
+
+				$this->convertLogFile($file->getPathname());
+
+				if ($timer->getTimeLeft() <= 0.01)
+				{
+					return;
+				}
+			}
+			catch (Exception $e)
+			{
+				/**
+				 * Someone did something stupid, like using the site's root as the backup output directory while having
+				 * an open_basedir restriction. Sorry, mate, you get insecure junk. We had warned you. You didn't heed
+				 * the warning. That's your problem now.
+				 */
+			}
+		}
+	}
+
+	/**
+	 * Get the default backup description.
+	 *
+	 * The default description is "Backup taken on DATE TIME" where DATE TIME is the current timestamp in the most
+	 * specific timezone. The timezone order, from least to most specific, is:
+	 * * UTC (fallback)
+	 * * Server Timezone from Joomla's Global Configuration
+	 * * Timezone from the current user's profile (only applicable to backend backups)
+	 * * Forced backup timezone
+	 *
+	 * @param   string  $format  Date and time format. Default: DATE_FORMAT_LC2 plus the abbreviated timezone
+	 *
+	 * @return  string
+	 */
+	public function getDefaultDescription(string $format = ''): string
+	{
+		// If no date format is specified we use DATE_FORMAT_LC2 plus the abbreviated timezone
+		if (empty($format))
+		{
+			$format = Text::_('DATE_FORMAT_LC2') . ' T';
+		}
+
+		// Get the most specific Joomla timezone (UTC, overridden by server timezone, overridden by user timezone)
+		$joomlaTimezone = JoomlaFactory::getApplication()->get('offset', 'UTC');
+
+		if (!JoomlaFactory::getApplication()->isClient('cli'))
+		{
+			$user = JoomlaFactory::getApplication()->getIdentity() ?? (new User());
+
+			if (!$user->guest)
+			{
+				$joomlaTimezone = $user->getParam('timezone', $joomlaTimezone);
+			}
+		}
+
+		$timezone = $joomlaTimezone;
+
+		// The forced timezone overrides everything else
+		$forcedTZ = Platform::getInstance()->get_platform_configuration_option('forced_backup_timezone', 'AKEEBA/DEFAULT');
+
+		if (!empty($forcedTZ) && ($forcedTZ != 'AKEEBA/DEFAULT'))
+		{
+			$timezone = $forcedTZ;
+		}
+
+		// Convert the current date and time to the selected timezone
+		$dateNow = clone JoomlaFactory::getDate();
+		$tz      = new DateTimeZone($timezone);
+
+		$dateNow->setTimezone($tz);
+
+		return Text::_('COM_AKEEBABACKUP_BACKUP_DEFAULT_DESCRIPTION') . ' ' . $dateNow->format($format, true);
+	}
+
+	/**
+	 * Get the profile used to take the last backup for the specified tag
+	 *
+	 * @param   string       $tag       The backup tag a.k.a. backup origin (backend, frontend, json, ...)
+	 * @param   string|null  $backupId  (optional) The Backup ID
+	 *
+	 * @return  int  The profile ID of the latest backup taken with the specified tag / backup ID
+	 */
+	public function getLastBackupProfile(string $tag, ?string $backupId = null): int
+	{
+		$filters = [
+			['field' => 'tag', 'value' => $tag],
+		];
+
+		if (!empty($backupId))
+		{
+			$filters[] = ['field' => 'backupid', 'value' => $backupId];
+		}
+
+		$statList = Platform::getInstance()->get_statistics_list([
+				'filters' => $filters,
+				'order'   => [
+					'by' => 'id', 'order' => 'DESC',
+				],
+			]
+		);
+
+		if (is_array($statList))
+		{
+			$stat = array_pop($statList);
+
+			return (int) $stat['profile_id'];
+		}
+
+		// Backup entry not found. If backupId was specified, try without a backup ID
+		if (!empty($backupId))
+		{
+			return $this->getLastBackupProfile($tag);
+		}
+
+		// Else, return the default backup profile
+		return 1;
+	}
+
+	/**
+	 * Send a push notification for a failed backup
+	 *
+	 * State variables expected (MUST be set):
+	 * errorMessage  The error message
+	 *
+	 * @return  void
+	 */
+	public function pushFail()
+	{
+		$this->initialiseWebPush();
+
+		$errorMessage = $this->getState('errorMessage');
+
+		$platform = Platform::getInstance();
+		$key      = 'COM_AKEEBABACKUP_PUSH_ENDBACKUP_FAIL_BODY_WITH_MESSAGE';
+
+		if (empty($errorMessage))
+		{
+			$key = 'COM_AKEEBABACKUP_PUSH_ENDBACKUP_FAIL_BODY';
+		}
+
+		$pushSubject = sprintf(
+			$platform->translate('COM_AKEEBABACKUP_PUSH_ENDBACKUP_FAIL_SUBJECT'),
+			$platform->get_site_name(),
+			$platform->get_host()
+		);
+		$pushDetails = sprintf(
+			$platform->translate($key),
+			$platform->get_site_name(),
+			$platform->get_host(),
+			$errorMessage
+		);
+
+		$push = new PushMessages();
+		$push->message($pushSubject, $pushDetails);
+	}
 
 	/**
 	 * Starts or step a backup process. Set the state variable "ajax" to the task you want to execute OR call the
@@ -42,6 +269,13 @@ class BackupModel extends BaseDatabaseModel
 	 */
 	public function runBackup(): array
 	{
+		$this->initialiseWebPush();
+
+		if (!defined('AKEEBADEBUG') && JoomlaFactory::getApplication()->get('debug', false))
+		{
+			define('AKEEBADEBUG', 1);
+		}
+
 		$ret_array = [];
 
 		$ajaxTask = $this->getState('ajax');
@@ -89,6 +323,8 @@ class BackupModel extends BaseDatabaseModel
 	 */
 	public function startBackup(array $overrides = []): array
 	{
+		$this->initialiseWebPush();
+
 		// Get information from the model state
 		$tag         = $this->getState('tag', null);
 		$description = $this->getState('description', '');
@@ -287,6 +523,8 @@ class BackupModel extends BaseDatabaseModel
 	 */
 	public function stepBackup($requireBackupId = true)
 	{
+		$this->initialiseWebPush();
+
 		// Get information from the model state
 		$tag      = $this->getState('tag', defined('AKEEBA_BACKUP_ORIGIN') ? AKEEBA_BACKUP_ORIGIN : null);
 		$backupId = $this->getState('backupid', null);
@@ -373,271 +611,6 @@ class BackupModel extends BaseDatabaseModel
 	}
 
 	/**
-	 * Send a push notification for a failed backup
-	 *
-	 * State variables expected (MUST be set):
-	 * errorMessage  The error message
-	 *
-	 * @return  void
-	 */
-	public function pushFail()
-	{
-		$errorMessage = $this->getState('errorMessage');
-
-		$platform = Platform::getInstance();
-		$key      = 'COM_AKEEBABACKUP_PUSH_ENDBACKUP_FAIL_BODY_WITH_MESSAGE';
-
-		if (empty($errorMessage))
-		{
-			$key = 'COM_AKEEBABACKUP_PUSH_ENDBACKUP_FAIL_BODY';
-		}
-
-		$pushSubject = sprintf(
-			$platform->translate('COM_AKEEBABACKUP_PUSH_ENDBACKUP_FAIL_SUBJECT'),
-			$platform->get_site_name(),
-			$platform->get_host()
-		);
-		$pushDetails = sprintf(
-			$platform->translate($key),
-			$platform->get_site_name(),
-			$platform->get_host(),
-			$errorMessage
-		);
-
-		$push = new PushMessages();
-		$push->message($pushSubject, $pushDetails);
-	}
-
-	/**
-	 * Convert the old, plaintext log files (.log) into their .log.php counterparts.
-	 *
-	 * @param   int  $timeOut  Maximum time, in seconds, to spend doing this conversion.
-	 *
-	 * @return  void
-	 *
-	 * @since   7.0.3
-	 */
-	public function convertLogFiles($timeOut = 10)
-	{
-		$registry = Factory::getConfiguration();
-		$logDir   = $registry->get('akeeba.basic.output_directory', '[DEFAULT_OUTPUT]', true);
-
-		$timer = new Timer($timeOut, 75);
-
-		// Part I. Remove these obsolete files first
-		$killFiles = [
-			'akeeba.log',
-			'akeeba.backend.log',
-			'akeeba.frontend.log',
-			'akeeba.cli.log',
-			'akeeba.json.log',
-		];
-
-		foreach ($killFiles as $fileName)
-		{
-			$path = $logDir . '/' . $fileName;
-
-			if (@is_file($path))
-			{
-				@unlink($path);
-			}
-		}
-
-		if ($timer->getTimeLeft() <= 0.01)
-		{
-			return;
-		}
-
-		// Part II. Convert .log files.
-		try
-		{
-			$di = new DirectoryIterator($logDir);
-		}
-		catch (Exception $e)
-		{
-			return;
-		}
-
-		foreach ($di as $file)
-		{
-
-			try
-			{
-				if (!$file->isFile())
-				{
-					continue;
-				}
-
-				$baseName = $file->getFilename();
-
-				if (substr($baseName, 0, 7) !== 'akeeba.')
-				{
-					continue;
-				}
-
-				if (substr($baseName, -4) !== '.log')
-				{
-					continue;
-				}
-
-				$this->convertLogFile($file->getPathname());
-
-				if ($timer->getTimeLeft() <= 0.01)
-				{
-					return;
-				}
-			}
-			catch (Exception $e)
-			{
-				/**
-				 * Someone did something stupid, like using the site's root as the backup output directory while having
-				 * an open_basedir restriction. Sorry, mate, you get insecure junk. We had warned you. You didn't heed
-				 * the warning. That's your problem now.
-				 */
-			}
-		}
-	}
-
-	/**
-	 * Get the default backup description.
-	 *
-	 * The default description is "Backup taken on DATE TIME" where DATE TIME is the current timestamp in the most
-	 * specific timezone. The timezone order, from least to most specific, is:
-	 * * UTC (fallback)
-	 * * Server Timezone from Joomla's Global Configuration
-	 * * Timezone from the current user's profile (only applicable to backend backups)
-	 * * Forced backup timezone
-	 *
-	 * @param   string  $format  Date and time format. Default: DATE_FORMAT_LC2 plus the abbreviated timezone
-	 *
-	 * @return  string
-	 */
-	public function getDefaultDescription(string $format = ''): string
-	{
-		// If no date format is specified we use DATE_FORMAT_LC2 plus the abbreviated timezone
-		if (empty($format))
-		{
-			$format = Text::_('DATE_FORMAT_LC2') . ' T';
-		}
-
-		// Get the most specific Joomla timezone (UTC, overridden by server timezone, overridden by user timezone)
-		$joomlaTimezone = JoomlaFactory::getApplication()->get('offset', 'UTC');
-
-		if (!JoomlaFactory::getApplication()->isClient('cli'))
-		{
-			$user = JoomlaFactory::getApplication()->getIdentity() ?? (new User());
-
-			if (!$user->guest)
-			{
-				$joomlaTimezone = $user->getParam('timezone', $joomlaTimezone);
-			}
-		}
-
-		$timezone = $joomlaTimezone;
-
-		// The forced timezone overrides everything else
-		$forcedTZ = Platform::getInstance()->get_platform_configuration_option('forced_backup_timezone', 'AKEEBA/DEFAULT');
-
-		if (!empty($forcedTZ) && ($forcedTZ != 'AKEEBA/DEFAULT'))
-		{
-			$timezone = $forcedTZ;
-		}
-
-		// Convert the current date and time to the selected timezone
-		$dateNow = new Date();
-		$tz      = new DateTimeZone($timezone);
-
-		$dateNow->setTimezone($tz);
-
-		return Text::_('COM_AKEEBABACKUP_BACKUP_DEFAULT_DESCRIPTION') . ' ' . $dateNow->format($format, true);
-	}
-
-	/**
-	 * Method to auto-populate the state.
-	 *
-	 * This method should only be called once per instantiation and is designed
-	 * to be called on the first call to the getState() method unless the
-	 * configuration flag to ignore the request is set.
-	 *
-	 * @return  void
-	 *
-	 * @note    Calling getState in this method will result in recursion.
-	 * @throws  Exception
-	 * @since   9.0.0
-	 */
-	protected function populateState()
-	{
-		/** @var CMSApplication $app */
-		$app   = JoomlaFactory::getApplication();
-		$input = $app->input;
-
-		$profile = (int) $app->getSession()->get('akeebabackup.profile', 1);
-		$profile = defined('AKEEBA_PROFILE') ? AKEEBA_PROFILE : $profile;
-		$profile = max($profile, 1);
-
-		$stateVariables = [
-			'tag'          => $input->get('tag', null, 'string'),
-			'backupId'     => $input->get('backupid', null, 'string'),
-			'description'  => $input->get('description', '', 'string'),
-			'comment'      => $input->get('comment', '', 'html'),
-			'jpskey'       => $input->get('jpskey', null, 'raw'),
-			'angiekey'     => $input->get('angiekey', null, 'raw'),
-			'profile'      => $input->get('profile', $profile, 'int'),
-			'ajax'         => $input->get('ajax', '', 'cmd'),
-			'errorMessage' => $input->get('errorMessage', '', 'raw'),
-		];
-
-		foreach ($stateVariables as $k => $v)
-		{
-			$this->setState($k, $v);
-		}
-	}
-
-	/**
-	 * Get the profile used to take the last backup for the specified tag
-	 *
-	 * @param   string       $tag       The backup tag a.k.a. backup origin (backend, frontend, json, ...)
-	 * @param   string|null  $backupId  (optional) The Backup ID
-	 *
-	 * @return  int  The profile ID of the latest backup taken with the specified tag / backup ID
-	 */
-	public function getLastBackupProfile(string $tag, ?string $backupId = null): int
-	{
-		$filters = [
-			['field' => 'tag', 'value' => $tag],
-		];
-
-		if (!empty($backupId))
-		{
-			$filters[] = ['field' => 'backupid', 'value' => $backupId];
-		}
-
-		$statList = Platform::getInstance()->get_statistics_list([
-				'filters' => $filters,
-				'order'   => [
-					'by' => 'id', 'order' => 'DESC',
-				],
-			]
-		);
-
-		if (is_array($statList))
-		{
-			$stat = array_pop($statList);
-
-			return (int) $stat['profile_id'];
-		}
-
-		// Backup entry not found. If backupId was specified, try without a backup ID
-		if (!empty($backupId))
-		{
-			return $this->getLastBackupProfile($tag);
-		}
-
-		// Else, return the default backup profile
-		return 1;
-	}
-
-	/**
 	 * Converts a log file from .log to .log.php
 	 *
 	 * @param   string  $filePath
@@ -705,6 +678,47 @@ class BackupModel extends BaseDatabaseModel
 	}
 
 	/**
+	 * Method to auto-populate the state.
+	 *
+	 * This method should only be called once per instantiation and is designed
+	 * to be called on the first call to the getState() method unless the
+	 * configuration flag to ignore the request is set.
+	 *
+	 * @return  void
+	 *
+	 * @note    Calling getState in this method will result in recursion.
+	 * @throws  Exception
+	 * @since   9.0.0
+	 */
+	protected function populateState()
+	{
+		/** @var CMSApplication $app */
+		$app   = JoomlaFactory::getApplication();
+		$input = $app->input;
+
+		$profile = (int) $app->getSession()->get('akeebabackup.profile', 1);
+		$profile = defined('AKEEBA_PROFILE') ? AKEEBA_PROFILE : $profile;
+		$profile = max($profile, 1);
+
+		$stateVariables = [
+			'tag'          => $input->get('tag', null, 'string'),
+			'backupId'     => $input->get('backupid', null, 'string'),
+			'description'  => $input->get('description', '', 'string'),
+			'comment'      => $input->get('comment', '', 'html'),
+			'jpskey'       => $input->get('jpskey', null, 'raw'),
+			'angiekey'     => $input->get('angiekey', null, 'raw'),
+			'profile'      => $input->get('profile', $profile, 'int'),
+			'ajax'         => $input->get('ajax', '', 'cmd'),
+			'errorMessage' => $input->get('errorMessage', '', 'raw'),
+		];
+
+		foreach ($stateVariables as $k => $v)
+		{
+			$this->setState($k, $v);
+		}
+	}
+
+	/**
 	 * Get a new backup ID string.
 	 *
 	 * In the past we were trying to get the next backup record ID using two methods:
@@ -726,4 +740,25 @@ class BackupModel extends BaseDatabaseModel
 		return 'id-' . gmdate('Ymd-His') . '-' . $microseconds;
 	}
 
+	/**
+	 * Make sure we can load the Web Push helper, if needed and not already loaded
+	 *
+	 * @return  void
+	 * @since   9.3.1
+	 */
+	private function initialiseWebPush()
+	{
+		$pushPreference = Platform::getInstance()->get_platform_configuration_option('push_preference', '0');
+
+		if ($pushPreference !== 'webpush')
+		{
+			return;
+		}
+
+		if (!class_exists(WebPush::class))
+		{
+			\JLoader::registerNamespace('Akeeba\\WebPush', JPATH_ADMINISTRATOR . '/components/com_akeebabackup/webpush');
+		}
+
+	}
 }

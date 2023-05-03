@@ -91,17 +91,22 @@ class RSFormProValidations
 
 	public static function email($email, $extra = null, $data = null)
 	{
-		if ($list = array_filter(RSFormProConfig::getInstance()->get('disposable_domains', array(), true)))
-		{
-			list($user, $domain) = explode('@', $email, 2);
+		$result = JMailHelper::isEmailAddress($email);
 
-			if (in_array(strtolower($domain), $list))
+		if ($result)
+		{
+			if ($list = array_filter(RSFormProConfig::getInstance()->get('disposable_domains', array(), true)))
 			{
-				return false;
+				list($user, $domain) = explode('@', $email, 2);
+
+				if (in_array(strtolower($domain), $list))
+				{
+					return false;
+				}
 			}
 		}
 
-		return JMailHelper::isEmailAddress($email);
+		return $result;
 	}
 
 	public static function emaildns($email, $extra = null, $data = null)
@@ -161,7 +166,7 @@ class RSFormProValidations
 		$formId 	= isset($form['formId']) ? $form['formId'] : 0;
 		$user		= JFactory::getUser();
 		$userField 	= $user->guest ? 's.UserIp' : 's.UserId';
-		$userValue 	= $user->guest ? $app->input->server->getString('REMOTE_ADDR') : $user->id;
+		$userValue 	= $user->guest ? \Joomla\Utilities\IpHelper::getIp() : $user->id;
 		$option 	= $app->input->getCmd('option');
 		$ctrl 		= $app->input->getCmd('controller');
 		$task 		= $app->input->getCmd('task');

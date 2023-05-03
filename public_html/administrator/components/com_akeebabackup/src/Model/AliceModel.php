@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -10,7 +10,6 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Model;
 defined('_JEXEC') or die;
 
 use Akeeba\Alice\Check\Base;
-use Akeeba\Component\AkeebaBackup\Administrator\Model\Mixin\FetchDBO;
 use Akeeba\Engine\Core\Timer;
 use Akeeba\Engine\Factory;
 use DirectoryIterator;
@@ -19,10 +18,9 @@ use Joomla\CMS\Factory as JoomlaFactory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 
+#[\AllowDynamicProperties]
 class AliceModel extends BaseDatabaseModel
 {
-	use FetchDBO;
-
 	protected static $stateVars = [
 		'log', 'logToAnalyze', 'checks', 'totalChecks', 'doneChecks', 'currentSection', 'currentCheck', 'aliceError',
 		'aliceWarnings', 'aliceException',
@@ -106,7 +104,7 @@ class AliceModel extends BaseDatabaseModel
 			$this->setState('checks', $checks);
 
 			/** @var Base $check */
-			$check = new $checkClass($logPath, $this->getDB());
+			$check = new $checkClass($logPath, $this->getDatabase());
 			$this->setState('currentCheck', Text::_($check->getCheckLanguageKey()));
 			$this->setState('doneChecks', $this->getState('doneChecks') + 1);
 
@@ -218,7 +216,7 @@ class AliceModel extends BaseDatabaseModel
 			}
 
 			/** @var Base $checkObject */
-			$checkObject        = new $classname('', $this->getDB());
+			$checkObject        = new $classname('', $this->getDatabase());
 			$checks[$classname] = $checkObject->getPriority();
 		}
 

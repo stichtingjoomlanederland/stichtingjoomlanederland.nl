@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -32,7 +32,7 @@ class GetProfiles extends AbstractTask
 	public function execute(array $parameters = [])
 	{
 		/** @var ProfilesModel $model */
-		$model = $this->factory->createModel('Profiles', 'Administrator');
+		$model = $this->factory->createModel('Profiles', 'Administrator', ['ignore_request' => true]);
 
 		$model->setState('list.start', 0);
 		$model->setState('list.limit', 0);

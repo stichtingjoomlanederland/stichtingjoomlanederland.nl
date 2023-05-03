@@ -3,7 +3,7 @@
  * @package    JDiDEAL
  *
  * @author     Roland Dalmulder <contact@rolandd.com>
- * @copyright  Copyright (C) 2009 - 2022 RolandD Cyber Produksi. All rights reserved.
+ * @copyright  Copyright (C) 2009 - 2023 RolandD Cyber Produksi. All rights reserved.
  * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  * @link       https://rolandd.com
  */
@@ -13,6 +13,7 @@ defined('_JEXEC') or die;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Date\Date;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Filesystem\File;
 use Joomla\CMS\Filesystem\Folder;
 use Joomla\CMS\Installer\Adapter\ComponentAdapter;
 use Joomla\CMS\Installer\InstallerScript;
@@ -27,6 +28,9 @@ use Joomla\Registry\Registry;
  */
 class Com_JdidealgatewayInstallerScript extends InstallerScript
 {
+	private $ingHome = JPATH_SITE . '/libraries/Jdideal/Psp/Ing';
+	private $backupFolder = JPATH_SITE . '/libraries/ropayments-backup';
+
 	/**
 	 * Extension script constructor.
 	 *
@@ -126,6 +130,7 @@ class Com_JdidealgatewayInstallerScript extends InstallerScript
 	 */
 	public function preflight($type, $parent): bool
 	{
+		$this->backupConfiguration();
 		$this->removeFiles();
 
 		return true;
@@ -151,6 +156,7 @@ class Com_JdidealgatewayInstallerScript extends InstallerScript
 		$this->installStatuses();
 		$this->fixFailureStatus();
 		$this->addRecurringProfile();
+		$this->restoreConfiguration();
 	}
 
 	/**
@@ -667,5 +673,71 @@ class Com_JdidealgatewayInstallerScript extends InstallerScript
 			$db->setQuery($query)
 				->execute();
 		}
+	}
+
+	/**
+	 * Backup ING certificates and configuration.
+	 *
+	 * @return  void
+	 *
+	 * @since   8.0.3
+	 */
+	private function backupConfiguration(): void
+	{
+		if (!file_exists($this->ingHome . '/certificates'))
+		{
+			return;
+		}
+
+		Folder::copy($this->ingHome . '/certificates', $this->backupFolder, '', true);
+
+		if (!file_exists($this->ingHome . '/Connector/config.conf'))
+		{
+			return;
+		}
+
+		File::copy($this->ingHome . '/Connector/config.conf', $this->backupFolder . '/config.conf', '', true);
+	}
+
+	/**
+	 * Restore ING certificates and configuration.
+	 *
+	 * @return  void
+	 *
+	 * @since   8.0.3
+	 */
+	private function restoreConfiguration(): void
+	{
+		if (!file_exists($this->backupFolder) || !file_exists($this->ingHome))
+		{
+			return;
+		}
+
+		if (!($dh = @opendir($this->backupFolder)))
+		{
+			throw new \RuntimeException('Cannot open source folder', -1);
+		}
+
+		while (($file = readdir($dh)) !== false)
+		{
+			if (in_array($file, ['.', '..']))
+			{
+				continue;
+			}
+
+			if ($file === 'config.conf')
+			{
+				File::copy($this->backupFolder . '/' . $file, $this->ingHome . '/Connector/' . $file);
+
+				continue;
+			}
+
+			if (!file_exists($this->ingHome . '/certificates/' . $file))
+			{
+				File::copy($this->backupFolder . '/' . $file, $this->ingHome . '/certificates/' . $file);
+			}
+		}
+
+		Folder::delete($this->backupFolder);
 	}
 }

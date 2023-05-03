@@ -10,6 +10,7 @@
     }
   ],
   "require": {
+    "buckaroo/sdk": "^1.0",
     "gingerpayments/ginger-php": "^2.1",
     "mollie/mollie-api-php": "^2.0",
     "opensdks/omnikassa2-sdk": "^1.6",

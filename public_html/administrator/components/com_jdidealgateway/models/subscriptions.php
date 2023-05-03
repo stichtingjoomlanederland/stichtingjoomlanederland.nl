@@ -3,7 +3,7 @@
  * @package    JDiDEAL
  *
  * @author     Roland Dalmulder <contact@rolandd.com>
- * @copyright  Copyright (C) 2009 - 2022 RolandD Cyber Produksi. All rights reserved.
+ * @copyright  Copyright (C) 2009 - 2023 RolandD Cyber Produksi. All rights reserved.
  * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  * @link       https://rolandd.com
  */
@@ -76,21 +76,19 @@ class JdidealgatewayModelSubscriptions extends ListModel
 	 *
 	 * @return  JDatabaseQuery
 	 *
+	 * @throws  Exception
 	 * @since   4.0
 	 *
-	 * @throws  Exception
 	 */
 	protected function getListQuery()
 	{
 		$db = $this->getDbo();
 
-		// Create a new query object.
 		$query = parent::getListQuery();
 
-		// Select the required fields from the table.
 		$query->select(
 			$db->quoteName(
-				array(
+				[
 					'subscriptions.id',
 					'subscriptions.subscriptionId',
 					'subscriptions.status',
@@ -104,7 +102,7 @@ class JdidealgatewayModelSubscriptions extends ListModel
 					'subscriptions.cancelled',
 					'subscriptions.profileId',
 					'customers.name',
-				)
+				]
 			)
 		)
 			->from($db->quoteName('#__jdidealgateway_subscriptions', 'subscriptions'))

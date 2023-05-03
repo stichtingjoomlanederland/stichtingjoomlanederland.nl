@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -15,11 +15,11 @@ use Akeeba\Engine\Postproc\Connector\S3v4\Configuration;
 use Akeeba\Engine\Postproc\Connector\S3v4\Connector as Amazons3;
 use Exception;
 use Joomla\CMS\Application\CMSApplication;
-use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Model\BaseModel;
 use RuntimeException;
 
+#[\AllowDynamicProperties]
 class S3importModel extends BaseModel
 {
 	/**

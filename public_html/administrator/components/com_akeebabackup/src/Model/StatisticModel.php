@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,22 +9,23 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Model;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Dispatcher\Mixin\TriggerEvent;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\TriggerEventTrait;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\Exceptions\FrozenRecordError;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Joomla\CMS\Factory as JoomlaFactory;
-use Joomla\CMS\Filesystem\File;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Log\Log;
 use Joomla\CMS\MVC\Model\AdminModel;
 use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\Event\DispatcherAwareInterface;
 use Joomla\Utilities\ArrayHelper;
 use RuntimeException;
 
+#[\AllowDynamicProperties]
 class StatisticModel extends AdminModel
 {
-	use TriggerEvent;
+	use TriggerEventTrait;
 
 	/**
 	 * @inheritDoc
@@ -131,7 +132,16 @@ class StatisticModel extends AdminModel
 			$context = $this->option . '.' . $this->name;
 
 			// Trigger the before delete event.
-			$result = JoomlaFactory::getApplication()->triggerEvent($this->event_before_delete, [$context, $table]);
+			$dispatcher  =
+				class_exists(DispatcherAwareInterface::class) && ($this instanceof DispatcherAwareInterface)
+					? $this->getDispatcher()
+					: \Joomla\CMS\Factory::getApplication()->getDispatcher();
+			$className   = self::getEventClassByEventName($this->event_before_delete);
+			$eventObject = new $className($this->event_before_delete, [$context, $table]);
+			$result      = $dispatcher
+				->dispatch($this->event_before_delete, $eventObject)
+				->getArgument('result') ?: [];
+			$result      = is_array($result) ? $result : [];
 
 			if (\in_array(false, $result, true))
 			{
@@ -155,7 +165,14 @@ class StatisticModel extends AdminModel
 			}
 
 			// Trigger the after event.
-			JoomlaFactory::getApplication()->triggerEvent($this->event_after_delete, [$context, $table]);
+			$dispatcher  =
+				class_exists(DispatcherAwareInterface::class) && ($this instanceof DispatcherAwareInterface)
+					? $this->getDispatcher()
+					: \Joomla\CMS\Factory::getApplication()->getDispatcher();
+			$className   = self::getEventClassByEventName($this->event_after_delete);
+			$eventObject = new $className($this->event_after_delete, [$context, $table]);
+
+			$dispatcher->dispatch($this->event_after_delete, $eventObject);
 		}
 
 		// Clear the component's cache
@@ -269,4 +286,16 @@ class StatisticModel extends AdminModel
 		}
 	}
 
+	protected function canDelete($record)
+	{
+		// Allow the check to be overridden by the API task
+		$override = $this->getState('workaround.override_canDelete');
+
+		if ($override !== null && is_bool($override))
+		{
+			return $override;
+		}
+
+		return parent::canDelete($record);
+	}
 }

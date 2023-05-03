@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -13,7 +13,6 @@ use Akeeba\Component\AkeebaBackup\Administrator\Model\UpgradeModel;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Installer\Adapter\PackageAdapter;
 use Joomla\CMS\Installer\InstallerAdapter;
-use Joomla\CMS\Log\Log;
 use Joomla\Database\DatabaseDriver;
 use Joomla\Database\DatabaseInterface;
 
@@ -23,7 +22,7 @@ use Joomla\Database\DatabaseInterface;
  * @see https://docs.joomla.org/Manifest_files#Script_file
  * @see UpgradeModel
  */
-class Pkg_AkeebabackupInstallerScript
+class Pkg_AkeebabackupInstallerScript extends \Joomla\CMS\Installer\InstallerScript
 {
 	/**
 	 * @var   DatabaseDriver|DatabaseInterface|null
@@ -31,8 +30,17 @@ class Pkg_AkeebabackupInstallerScript
 	 */
 	protected $dbo;
 
+	protected $minimumPhp = '7.4.0';
+
+	protected $minimumJoomla = '4.2.0';
+
 	public function preflight($type, $parent)
 	{
+		if (!parent::preflight($type, $parent))
+		{
+			return false;
+		}
+
 		$this->setDboFromAdapter($parent);
 
 		// Do not run on uninstall.
@@ -42,16 +50,6 @@ class Pkg_AkeebabackupInstallerScript
 		}
 
 		define('AKEEBABACKUP_INSTALLATION_PRO', is_file($parent->getParent()->getPath('source') . '/com_akeebabackup-pro.zip'));
-
-		// Prevent users from installing this on Joomla 3
-		if (version_compare(JVERSION, '3.999.999', 'le'))
-		{
-			$msg = "<p>This version of Akeeba Backup cannot run on Joomla 3. Please download and install Akeeba Backup 8 instead. Kindly note that our site's Downloads page clearly indicates which version of our software is compatible with Joomla 3 and which version is compatible with Joomla 4.</p>";
-
-			Log::add($msg, Log::WARNING, 'jerror');
-
-			return false;
-		}
 
 		return true;
 	}
@@ -109,7 +107,6 @@ class Pkg_AkeebabackupInstallerScript
 				return null;
 			}
 
-			/** @noinspection PhpIncludeInspection */
 			include_once $filePath;
 		}
 
@@ -127,9 +124,18 @@ class Pkg_AkeebabackupInstallerScript
 			return null;
 		}
 
-		if (method_exists($upgradeModel, 'setDbo'))
+		if (method_exists($upgradeModel, 'setDatabase'))
+		{
+			$upgradeModel->setDatabase($this->dbo ?? Factory::getContainer()->get('DatabaseDriver'));
+		}
+		elseif (method_exists($upgradeModel, 'setDbo'))
 		{
 			$upgradeModel->setDbo($this->dbo ?? Factory::getContainer()->get('DatabaseDriver'));
+		}
+
+		if (method_exists($upgradeModel, 'init'))
+		{
+			$upgradeModel->init();
 		}
 
 		return $upgradeModel;

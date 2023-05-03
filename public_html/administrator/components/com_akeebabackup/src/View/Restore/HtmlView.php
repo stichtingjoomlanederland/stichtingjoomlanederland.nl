@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,10 +9,10 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\View\Restore;
 
 defined('_JEXEC') || die;
 
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewBackupStartTimeTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewLoadAnyTemplateTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ViewTaskBasedEventsTrait;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\RestoreModel;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\BackupStartTimeAware;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\LoadAnyTemplate;
-use Akeeba\Component\AkeebaBackup\Administrator\View\Mixin\TaskBasedEvents;
 use Akeeba\Engine\Platform;
 use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
@@ -23,11 +23,12 @@ use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 use Joomla\CMS\Uri\Uri;
 
+#[\AllowDynamicProperties]
 class HtmlView extends BaseHtmlView
 {
-	use LoadAnyTemplate;
-	use BackupStartTimeAware;
-	use TaskBasedEvents;
+	use ViewLoadAnyTemplateTrait;
+	use ViewBackupStartTimeTrait;
+	use ViewTaskBasedEventsTrait;
 
 	/**
 	 * Backup record ID we are restoring

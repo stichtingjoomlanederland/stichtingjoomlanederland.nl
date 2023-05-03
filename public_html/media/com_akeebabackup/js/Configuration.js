@@ -1,6 +1,6 @@
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 "use strict";
@@ -1163,7 +1163,7 @@ if (typeof akeebabackup.Configuration === "undefined")
                     header.id = "auigrp_" + rootnode.id + "_" + group_id;
                     cardOuterWrapper.appendChild(header);
 
-                    // All of the options are rendered inside the card body
+                    // All the options are rendered inside the card body
                     var container       = document.createElement("div");
                     container.className = "card-body";
                     cardOuterWrapper.appendChild(container);
@@ -1182,10 +1182,15 @@ if (typeof akeebabackup.Configuration === "undefined")
                         var current_id = "var[" + config_key + "]";
 
                         // Option row DIV
+                        var showOn        = defdata['showon'] ?? null;
                         var row_div       = document.createElement("div");
                         row_div.className = "row mb-3";
                         row_div.id        = "akconfigrow." + config_key;
 
+                        if (showOn)
+                        {
+                            row_div.dataset.showon = JSON.stringify(showOn);
+                        }
                         /**
                          * We must append the option row to the container only if the option type is NOT 'hidden' or
                          * 'none'. These two option types are non-GUI elements. We only render a hidden field for them.
@@ -1221,6 +1226,9 @@ if (typeof akeebabackup.Configuration === "undefined")
                         }
                     }
                 }
+
+                // Re-initialise the ShowOn JavaScript
+                Joomla.Showon.initialise(rootnode);
             },
 
         onChangeScriptType:
@@ -1499,7 +1507,7 @@ function akeeba_onedrivebusiness_refreshdrives(params)
         };
     }
 
-    akeeba.System.AjaxURL = akeeba.Configuration.URLs["dpecustomapi"];
+    akeebabackup.System.AjaxURL = akeebabackup.Configuration.URLs["dpecustomapi"];
 
     var data = {
         engine: "onedrivebusiness",
@@ -1512,7 +1520,7 @@ function akeeba_onedrivebusiness_refreshdrives(params)
         }
     };
 
-    akeeba.System.doAjax(
+    akeebabackup.System.doAjax(
         data,
         function (res)
         {
@@ -1695,14 +1703,14 @@ akeebabackup.System.documentReady(function() {
             // Work around browsers which blatantly ignore autocomplete=off
             setTimeout(akeebabackup.Configuration.restoreDefaultPasswords, 1000);
 
-            // Render the configuration UI in the timeout to prevent Safari from auto-filling the password fields
+            // Render the configuration UI in the timeout to prevent Safari from autofilling the password fields
             akeebabackup.Configuration.parseConfigData(Joomla.getOptions("akeebabackup.Configuration.GUIData", {}));
 
             akeebabackup.Configuration.initialisePopovers();
 
             // Reload drive lists if applicable
-            akeeba_googledrive_refreshdrives(akeeba.Configuration.engines.postproc.googledrive.parameters);
-            akeeba_onedrivebusiness_refreshdrives(akeeba.Configuration.engines.postproc.onedrivebusiness.parameters);
+            akeeba_googledrive_refreshdrives(akeebabackup.Configuration.engines.postproc.googledrive.parameters);
+            akeeba_onedrivebusiness_refreshdrives(akeebabackup.Configuration.engines.postproc.onedrivebusiness.parameters);
         }, 10);
     }
 });

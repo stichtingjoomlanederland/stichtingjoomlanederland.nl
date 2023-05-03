@@ -44,7 +44,7 @@ class RSFormProRestore
 	
 	public function __construct($options = array()) {
 		$this->db 			= JFactory::getDbo();
-		$this->tmp 			= JFactory::getConfig()->get('tmp_path');
+		$this->tmp 			= JFactory::getApplication()->get('tmp_path');
 		$this->key 			= isset($options['key']) ? $options['key'] : null;
 		$this->overwrite 	= isset($options['overwrite']) ? $options['overwrite'] : null;
 		$this->form 		= isset($options['form']) ? $options['form'] : null;

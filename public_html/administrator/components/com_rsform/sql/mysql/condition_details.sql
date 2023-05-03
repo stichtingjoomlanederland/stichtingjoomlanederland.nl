@@ -7,4 +7,4 @@ CREATE TABLE IF NOT EXISTS `#__rsform_condition_details` (
   PRIMARY KEY (`id`),
   KEY `condition_id` (`condition_id`),
   KEY `component_id` (`component_id`)
-) DEFAULT CHARSET=utf8;
+) DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_unicode_ci;

@@ -3,7 +3,7 @@
  * @package    JDiDEAL
  *
  * @author     Roland Dalmulder <contact@rolandd.com>
- * @copyright  Copyright (C) 2009 - 2022 RolandD Cyber Produksi. All rights reserved.
+ * @copyright  Copyright (C) 2009 - 2023 RolandD Cyber Produksi. All rights reserved.
  * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  * @link       https://rolandd.com
  */
@@ -70,9 +70,9 @@ class AddonJdidealgateway implements AddonInterface
 	 *
 	 * @return  array    Order details.
 	 *
+	 * @throws  RuntimeException
 	 * @since   2.0.0
 	 *
-	 * @throws  RuntimeException
 	 */
 	public function getOrderInformation(string $orderId, array $data): array
 	{
@@ -184,15 +184,26 @@ class AddonJdidealgateway implements AddonInterface
 	 *
 	 * @return  array  Customer details.
 	 *
+	 * @throws  RuntimeException
 	 * @since   2.0.0
 	 *
-	 * @throws  RuntimeException
 	 */
 	public function getCustomerInformation(string $orderId): array
 	{
 		// Collect the data
 		$query = $this->db->getQuery(true)
-			->select($this->db->quoteName('user_email', 'email'))
+			->select(
+				$this->db->quoteName(
+					[
+						'user_email',
+						'user_email',
+					],
+					[
+						'name',
+						'email',
+					]
+				)
+			)
 			->select($this->db->quoteName('amount'))
 			->from($this->db->quoteName('#__jdidealgateway_pays'))
 			->where($this->db->quoteName('id') . ' = ' . (int) $orderId);

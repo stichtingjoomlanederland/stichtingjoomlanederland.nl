@@ -10,6 +10,12 @@
         "title": "COM_AKEEBA_CONFIG_POSTPROCPARTS_TITLE",
         "description": "COM_AKEEBA_CONFIG_POSTPROCPARTS_DESCRIPTION"
     },
+    "engine.postproc.common.abort_on_fail": {
+        "default": "0",
+        "type": "bool",
+        "title": "COM_AKEEBA_CONFIG_POSTPROC_ABORT_ON_FAIL_TITLE",
+        "description": "COM_AKEEBA_CONFIG_POSTPROC_ABORT_ON_FAIL_DESCRIPTION"
+    },
     "engine.postproc.common.delete_after": {
         "default": "1",
         "type": "bool",

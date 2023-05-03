@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -69,6 +69,7 @@ class Migrate extends \Joomla\Console\Command\AbstractCommand
 
 		/** @var UpgradeModel $model */
 		$model   = $this->getMVCFactory()->createModel('Upgrade', 'Administrator');
+		$model->init();
 		$results = $model->runCustomHandlerEvent('onMigrateSettings');
 		$success = in_array(true, $results, true);
 

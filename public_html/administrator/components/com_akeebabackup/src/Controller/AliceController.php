@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,12 +9,11 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Controller;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\ControllerEvents;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\CustomACL;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\RegisterControllerTasks;
-use Akeeba\Component\AkeebaBackup\Administrator\Controller\Mixin\ReusableModels;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerCustomACLTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerEventsTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerRegisterTasksTrait;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerReusableModelsTrait;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\AliceModel;
-use Akeeba\Component\AkeebaBackup\Administrator\Model\LogModel;
 use Akeeba\Engine\Core\Timer;
 use Exception;
 use Joomla\CMS\Application\CMSApplication;
@@ -27,10 +26,10 @@ use RuntimeException;
 
 class AliceController extends BaseController
 {
-	use ControllerEvents;
-	use CustomACL;
-	use RegisterControllerTasks;
-	use ReusableModels;
+	use ControllerEventsTrait;
+	use ControllerCustomACLTrait;
+	use ControllerRegisterTasksTrait;
+	use ControllerReusableModelsTrait;
 
 	public function __construct($config = [], MVCFactoryInterface $factory = null, ?CMSApplication $app = null, ?Input $input = null)
 	{
@@ -56,7 +55,7 @@ class AliceController extends BaseController
 	public function start()
 	{
 		// Make sure we have an anti-CSRF token
-		$this->checkToken();
+		$this->checkToken('request');
 
 		// Reset the model state and tell which log file we'll be scanning
 		/** @var AliceModel $model */
@@ -72,7 +71,7 @@ class AliceController extends BaseController
 	public function step()
 	{
 		// Make sure we have an anti-CSRF token
-		$this->checkToken();
+		$this->checkToken('request');
 
 		// Run a scanner step
 		/** @var AliceModel $model */

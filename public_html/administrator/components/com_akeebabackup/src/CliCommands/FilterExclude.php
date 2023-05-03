@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,16 +9,16 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\CliCommands;
 
 defined('_JEXEC') || die;
 
+use Akeeba\Component\AkeebaBackup\Administrator\CliCommands\MixIt\ArgumentUtilities;
+use Akeeba\Component\AkeebaBackup\Administrator\CliCommands\MixIt\ConfigureIO;
+use Akeeba\Component\AkeebaBackup\Administrator\CliCommands\MixIt\FilterRoots;
 use Akeeba\Component\AkeebaBackup\Administrator\CliCommands\MixIt\InitialiseEngine;
+use Akeeba\Component\AkeebaBackup\Administrator\CliCommands\MixIt\IsPro;
+use Akeeba\Component\AkeebaBackup\Administrator\CliCommands\MixIt\PrintFormattedArray;
 use Akeeba\Engine\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Factory\MVCFactoryAwareTrait;
 use Joomla\Console\Command\AbstractCommand;
-use Akeeba\Component\AkeebaBackup\Administrator\CliCommands\MixIt\ArgumentUtilities;
-use Akeeba\Component\AkeebaBackup\Administrator\CliCommands\MixIt\ConfigureIO;
-use Akeeba\Component\AkeebaBackup\Administrator\CliCommands\MixIt\FilterRoots;
-use Akeeba\Component\AkeebaBackup\Administrator\CliCommands\MixIt\IsPro;
-use Akeeba\Component\AkeebaBackup\Administrator\CliCommands\MixIt\PrintFormattedArray;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;

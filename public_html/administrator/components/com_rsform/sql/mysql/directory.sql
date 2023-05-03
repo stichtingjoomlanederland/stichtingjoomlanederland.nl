@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS `#__rsform_directory` (
   `csvfilename` VARCHAR(255) NOT NULL DEFAULT '{alias}.csv',
   `enablepdf` tinyint(1) NOT NULL,
   `enablecsv` tinyint(1) NOT NULL,
+  `AllowCSVFullDownload` tinyint(1) NOT NULL,
   `HideEmptyValues` tinyint(1) NOT NULL,
   `ShowGoogleMap` tinyint(1) NOT NULL,
   `ViewLayout` longtext NOT NULL,
@@ -12,10 +13,12 @@ CREATE TABLE IF NOT EXISTS `#__rsform_directory` (
   `CSS` mediumtext NOT NULL,
   `JS` mediumtext NOT NULL,
   `ListScript` mediumtext NOT NULL,
+  `EditScript` mediumtext NOT NULL,
+  `SaveScript` mediumtext NOT NULL,
   `DetailsScript` mediumtext NOT NULL,
   `EmailsScript` mediumtext NOT NULL,
   `EmailsCreatedScript` mediumtext NOT NULL,
   `groups` text NOT NULL,
   `DeletionGroups` text NOT NULL,
   PRIMARY KEY (`formId`)
-) DEFAULT CHARSET=utf8;
+) DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_unicode_ci;

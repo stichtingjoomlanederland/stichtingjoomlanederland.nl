@@ -20,14 +20,14 @@ class RsformModelDirectory extends JModelLegacy
 
     public function __construct($config = array())
     {
+	    // Need to set database before calling isValid()
+	    parent::__construct($config);
+
         $this->_app     = JFactory::getApplication();
         $this->_db      = JFactory::getDbo();
         $this->params   = $this->_app->getParams('com_rsform');
         $this->itemid   = $this->getItemid();
         $this->context  = 'com_rsform.directory' . $this->itemid;
-
-        // Check for a valid form
-        $this->isValid();
 
 		// For legacy menu items
 		$userId	= $this->params->get('userId');
@@ -40,9 +40,10 @@ class RsformModelDirectory extends JModelLegacy
 			$this->params->set('show_logged_in_submissions', 1);
 		}
 
-        $this->getFields();
+	    // Check for a valid form
+	    $this->isValid();
 
-        parent::__construct($config);
+	    $this->getFields();
     }
 
     /**
@@ -66,12 +67,13 @@ class RsformModelDirectory extends JModelLegacy
         }
 
         // Check if the directory exists
-		$query = $this->_db->getQuery(true)
-			->select($this->_db->qn('formId'))
-			->from($this->_db->qn('#__rsform_directory'))
-			->where($this->_db->qn('formId') . ' = ' . $this->_db->q($formId));
+	    $db = $this->getDbo();
+		$query = $db->getQuery(true)
+			->select($db->qn('formId'))
+			->from($db->qn('#__rsform_directory'))
+			->where($db->qn('formId') . ' = ' . $db->q($formId));
 
-        if (!$this->_db->setQuery($query)->loadResult())
+        if (!$db->setQuery($query)->loadResult())
         {
 			throw new Exception(JText::_('RSFP_VIEW_DIRECTORY_NOT_SAVED_YET'));
         }
@@ -98,7 +100,7 @@ class RsformModelDirectory extends JModelLegacy
     public function getListQuery()
     {
         // Get query
-        $db = &$this->_db;
+        $db = $this->getDbo();
         $query = $db->getQuery(true);
 
         // Get headers
@@ -107,12 +109,6 @@ class RsformModelDirectory extends JModelLegacy
 
         // Check if it's a search.
         $search = $this->getSearch();
-
-        // If 'Show Only Filtering Result' is enabled, don't create a query unless the user searches for something
-        if ($this->params->get('show_filtering_result', 0) && !strlen($search))
-		{
-			return false;
-		}
 
         // Get the SubmissionId
         $query->select($db->qn('s.SubmissionId'))
@@ -166,12 +162,51 @@ class RsformModelDirectory extends JModelLegacy
 		}
 
         $needsSelect = array();
-		if ($filters = $this->params->get('filter_values', array()))
+	    $filters = $this->params->get('filter_values', array());
+		if ($dynamicFilters = $this->getDynamicFilters())
+		{
+			$operators = $this->getDynamicFiltersOperators();
+			if (!is_array($filters))
+			{
+				$filters = array();
+			}
+
+			if (!isset($filters['name']))
+			{
+				$filters['name'] = array();
+			}
+
+			if (!isset($filters['operator']))
+			{
+				$filters['operator'] = array();
+			}
+
+			if (!isset($filters['value']))
+			{
+				$filters['value'] = array();
+			}
+
+			if (!is_array($dynamicFilters))
+			{
+				$dynamicFilters = array();
+			}
+
+			foreach ($dynamicFilters as $fieldName => $fieldValue)
+			{
+				if ((is_string($fieldValue) && strlen($fieldValue)) || (is_array($fieldValue) && count($fieldValue)))
+				{
+					$filters['name'][] = $fieldName;
+					$filters['operator'][] = isset($operators[$fieldName]) ? $operators[$fieldName] : 'is';
+					$filters['value'][] = $fieldValue;
+				}
+			}
+		}
+		if ($filters)
 		{
 			$allHaving = array();
 			$glue = $this->params->get('filter_glue', 'OR');
 
-			if (is_array($filters) && isset($filters['name']) && is_array($filters['name']))
+			if (is_array($filters) && !empty($filters['name']) && is_array($filters['name']))
 			{
 				for ($i = 0; $i < count($filters['name']); $i++)
 				{
@@ -262,6 +297,12 @@ class RsformModelDirectory extends JModelLegacy
 			}
 		}
 
+	    // If 'Show Only Filtering Result' is enabled, don't create a query unless the user searches for something
+	    if ($this->params->get('show_filtering_result', 0) && !strlen($search) && !$allHaving)
+	    {
+		    return false;
+	    }
+
         // Iterate through fields to build the query
 		if ($fields)
 		{
@@ -338,7 +379,7 @@ class RsformModelDirectory extends JModelLegacy
 
     public function setGroupConcatLimit()
     {
-        $this->_db->setQuery("SET SESSION `group_concat_max_len` = 1000000")->execute();
+        $this->getDbo()->setQuery("SET SESSION `group_concat_max_len` = 1000000")->execute();
     }
 
     /**
@@ -352,8 +393,7 @@ class RsformModelDirectory extends JModelLegacy
 
         if ($query = $this->getListQuery())
         {
-            $this->_db->setQuery($query, $this->getStart(), $this->getLimit());
-            $items = $this->_db->loadObjectList();
+            $items = $this->getDbo()->setQuery($query, $this->getStart(), $this->getLimit())->loadObjectList();
         }
         else
         {
@@ -467,7 +507,7 @@ class RsformModelDirectory extends JModelLegacy
         // Submission doesn't belong to the configured form ID OR
         // can view only own submissions and not his own OR
         // can view only specified user IDs and this doesn't belong to any of the IDs
-        if (($submission->FormId != $this->params->get('formId')) || ($this->params->get('show_logged_in_submissions') && $submission->UserId != $user->get('id')) || (is_array($userId) && !in_array($user->get('id'), $userId)))
+        if (($submission->FormId != $this->params->get('formId')) || ($this->params->get('show_logged_in_submissions') && $submission->UserId != $user->get('id')) || (is_array($userId) && !in_array($submission->UserId, $userId)))
         {
             $this->_app->enqueueMessage(JText::sprintf('RSFP_SUBMISSION_NOT_ALLOWED', $cid), 'warning');
             return $this->_app->redirect(JRoute::_('index.php?option=com_rsform&view=directory', false));
@@ -526,12 +566,13 @@ class RsformModelDirectory extends JModelLegacy
 		$app        = JFactory::getApplication();
 		$db         = JFactory::getDbo();
 		$cid    	= $app->input->getInt('id');
-        $formId 	= $app->input->getInt('formId');
+		$formId     = $this->params->get('formId');
         $form       = $app->input->post->get('form', array(), 'array');
         $delete     = $app->input->post->get('delete', array(), 'array');
         $static     = $app->input->post->get('formStatic', array(), 'array');
         $files      = $app->input->files->get('form', array(), 'array');
 		$validation = RSFormProHelper::validateForm($formId, 'directory', $cid);
+		$directory  = $this->getDirectory();
 
 		$this->validation =& $validation;
 
@@ -572,7 +613,9 @@ class RsformModelDirectory extends JModelLegacy
 			return false;
 		}
 
-		list($multipleSeparator, $uploadFields, $multipleFields, $textareaFields, $secret) = RSFormProHelper::getDirectoryFormProperties($this->params->get('formId'));
+		list($multipleSeparator, $uploadFields, $multipleFields, $textareaFields, $secret) = RSFormProHelper::getDirectoryFormProperties($formId);
+
+		eval($directory->SaveScript);
 
 		// Handle file uploads first
 		if ($allowedUploadFields = array_intersect($uploadFields, $allowed))
@@ -636,6 +679,7 @@ class RsformModelDirectory extends JModelLegacy
 				{
 					$value = implode("\n", $value);
 				}
+				$value = RSFormProHelper::stripJava($value);
 
 				// Dynamic field - update value.
 				$object = (object) array(
@@ -657,7 +701,7 @@ class RsformModelDirectory extends JModelLegacy
 			}
 		}
 
-		$offset = JFactory::getConfig()->get('offset');
+		$offset = JFactory::getApplication()->get('offset');
 		if ($static && $staticFields)
 		{
 			// Static, update submission
@@ -676,8 +720,9 @@ class RsformModelDirectory extends JModelLegacy
 				{
 					$static[$field] = JFactory::getDate($static[$field], $offset)->toSql();
 				}
+				$value = RSFormProHelper::stripJava($static[$field]);
 
-				$query->set($db->qn($field) . '=' . $db->q($static[$field]));
+				$query->set($db->qn($field) . '=' . $db->q($value));
 			}
 
 			$db->setQuery($query)->execute();
@@ -691,25 +736,26 @@ class RsformModelDirectory extends JModelLegacy
 	public function sendEmails($formId, $SubmissionId)
 	{
 		$directory = $this->getDirectory();
+		$db        = $this->getDbo();
 
-		$query = $this->_db->getQuery(true)
-			->select($this->_db->qn('Lang'))
-			->from($this->_db->qn('#__rsform_submissions'))
-			->where($this->_db->qn('FormId') . ' = ' . $this->_db->q($formId))
-			->where($this->_db->qn('SubmissionId') . ' = ' . $this->_db->q($SubmissionId));
+		$query = $db->getQuery(true)
+			->select($db->qn('Lang'))
+			->from($db->qn('#__rsform_submissions'))
+			->where($db->qn('FormId') . ' = ' . $db->q($formId))
+			->where($db->qn('SubmissionId') . ' = ' . $db->q($SubmissionId));
 
-		$lang = $this->_db->setQuery($query)->loadResult();
+		$lang = $db->setQuery($query)->loadResult();
 
 		list($placeholders,$values) = RSFormProHelper::getReplacements($SubmissionId);
 
 		$query->clear()
 			->select('*')
-			->from($this->_db->qn('#__rsform_emails'))
-			->where($this->_db->qn('type') . ' = ' . $this->_db->q('directory'))
-			->where($this->_db->qn('formId') . ' = ' . $this->_db->q($formId))
-			->where($this->_db->qn('from') . ' != ' . $this->_db->q(''));
+			->from($db->qn('#__rsform_emails'))
+			->where($db->qn('type') . ' = ' . $db->q('directory'))
+			->where($db->qn('formId') . ' = ' . $db->q($formId))
+			->where($db->qn('from') . ' != ' . $db->q(''));
 
-		if ($emails = $this->_db->setQuery($query)->loadObjectList())
+		if ($emails = $db->setQuery($query)->loadObjectList())
 		{
 			$etranslations = RSFormProHelper::getTranslations('emails', $formId, $lang);
 
@@ -829,11 +875,13 @@ class RsformModelDirectory extends JModelLegacy
 				}
 			}
 
-			$totalQuery->clear('select')
-				->select($this->_db->qn('s.SubmissionId'));
+			$db = $this->getDbo();
 
-			$this->_db->setQuery($totalQuery)->execute();
-			return $this->_db->getNumRows();
+			$totalQuery->clear('select')
+				->select($db->qn('s.SubmissionId'));
+
+			$db->setQuery($totalQuery)->execute();
+			return $db->getNumRows();
 		}
 
 		return 0;
@@ -877,6 +925,27 @@ class RsformModelDirectory extends JModelLegacy
 	public function getSearch()
 	{
 		return $this->_app->getUserStateFromRequest($this->context.'.filter.search', 'filter_search', '', 'string');
+	}
+
+	public function getDynamicFiltersOperators()
+	{
+		$filters = $this->params->get('dynamic_filter_values', array());
+		$operators = array();
+
+		if ($filters)
+		{
+			if (isset($filters['name'], $filters['operator']))
+			{
+				$operators = array_combine($filters['name'], $filters['operator']);
+			}
+		}
+
+		return $operators;
+	}
+
+	public function getDynamicFilters()
+	{
+		return $this->_app->getUserStateFromRequest($this->context.'.filter.dynamicfilter', 'filter_dynamicfilter', array(), 'array');
 	}
 
 	public function getListOrder()

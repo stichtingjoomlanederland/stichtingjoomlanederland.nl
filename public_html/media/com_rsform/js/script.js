@@ -308,6 +308,9 @@ RSFormPro.initGeoLocation = function(term, id, mapid, map, marker, geocoder, typ
 	}
 };
 
+RSFormPro.initGoogleMaps = function() {
+
+}
 RSFormPro.googleMapIds = [];
 
 RSFormPro.requestLocation = function() {
@@ -370,7 +373,7 @@ RSFormPro.disableInvalidDates = function(fieldName) {
 };
 
 RSFormPro.addMoreFiles = function(button) {
-	var clone = button.previousSibling.cloneNode(true);
+	var clone = button.previousElementSibling.cloneNode(true);
 
 	var inputs = clone.getElementsByTagName('input');
 	if (inputs.length)
@@ -1720,7 +1723,7 @@ RSFormPro.Ajax = {
 
 								if (filesLength < minFiles)
 								{
-									throw new RSFormPro.validationError('VALIDATION_ERROR', RSFormProUtils.sprintf(RSFormPro.Translations.translate(formId, form.elements[i].getAttribute('id'), 'COM_RSFORM_MINFILES_REQUIRED'), minFiles));
+									throw new RSFormPro.validationError('VALIDATION_ERROR', RSFormProUtils.sprintf(RSFormPro.Translations.commonTranslate('COM_RSFORM_MINFILES_REQUIRED'), minFiles));
 								}
 							}
 
@@ -1730,7 +1733,7 @@ RSFormPro.Ajax = {
 
 								if (filesLength > maxFiles)
 								{
-									throw new RSFormPro.validationError('VALIDATION_ERROR', RSFormProUtils.sprintf(RSFormPro.Translations.translate(formId, form.elements[i].getAttribute('id'), 'COM_RSFORM_MAXFILES_REQUIRED'), maxFiles));
+									throw new RSFormPro.validationError('VALIDATION_ERROR', RSFormProUtils.sprintf(RSFormPro.Translations.commonTranslate('COM_RSFORM_MAXFILES_REQUIRED'), maxFiles));
 								}
 							}
 						}
@@ -1743,7 +1746,7 @@ RSFormPro.Ajax = {
 							{
 								if (file.size > maxSize)
 								{
-									throw new RSFormPro.validationError('VALIDATION_ERROR', RSFormProUtils.sprintf(RSFormPro.Translations.translate(formId, form.elements[i].getAttribute('id'), 'COM_RSFORM_FILE_EXCEEDS_LIMIT'), file.name, maxSize / 1024));
+									throw new RSFormPro.validationError('VALIDATION_ERROR', RSFormProUtils.sprintf(RSFormPro.Translations.commonTranslate('COM_RSFORM_FILE_EXCEEDS_LIMIT'), file.name, maxSize / 1024));
 								}
 							}
 							if ('name' in file)
@@ -1756,7 +1759,7 @@ RSFormPro.Ajax = {
 									var ext = file.name.slice((file.name.lastIndexOf(".") - 1 >>> 0) + 2);
 									if (exts.indexOf(ext.toLowerCase()) === -1)
 									{
-										throw new RSFormPro.validationError('VALIDATION_ERROR', RSFormProUtils.sprintf(RSFormPro.Translations.translate(formId, form.elements[i].getAttribute('id'), 'COM_RSFORM_FILE_EXTENSION_NOT_ALLOWED'), file.name));
+										throw new RSFormPro.validationError('VALIDATION_ERROR', RSFormProUtils.sprintf(RSFormPro.Translations.commonTranslate('COM_RSFORM_FILE_EXTENSION_NOT_ALLOWED'), file.name));
 									}
 								}
 							}
@@ -2133,6 +2136,7 @@ RSFormPro.callbacks = {
 
 RSFormPro.Translations = {
 	translations: {},
+	commonTranslations: {},
 
 	add: function(formId, name, key, translation) {
 		if (typeof this.translations[formId + '-' + name] !== 'object')
@@ -2147,6 +2151,19 @@ RSFormPro.Translations = {
 		if (typeof this.translations[formId + '-' + name][key] == 'string')
 		{
 			return this.translations[formId + '-' + name][key];
+		}
+
+		return key;
+	},
+
+	addCommonTranslation: function(key, translation) {
+		this.commonTranslations[key] = translation;
+	},
+
+	commonTranslate: function(key) {
+		if (typeof this.commonTranslations[key] == 'string')
+		{
+			return this.commonTranslations[key];
 		}
 
 		return key;

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -9,14 +9,13 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Model;
 
 defined('_JEXEC') || die;
 
-use Akeeba\Component\AkeebaBackup\Administrator\Model\Mixin\GetErrorsFromExceptions;
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\GetErrorsFromExceptionsTrait;
 use Akeeba\Engine\Archiver\Directftp;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Exception;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Factory as JoomlaFactory;
-use Joomla\CMS\Filesystem\File;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Factory\MVCFactoryAwareTrait;
 use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
@@ -25,9 +24,10 @@ use Joomla\CMS\MVC\Model\BaseModel;
 use Joomla\CMS\User\UserHelper;
 use RuntimeException;
 
+#[\AllowDynamicProperties]
 class RestoreModel extends BaseModel
 {
-	use GetErrorsFromExceptions;
+	use GetErrorsFromExceptionsTrait;
 	use MVCFactoryAwareTrait;
 
 	/** @var   string  Random password, used to secure the restoration */

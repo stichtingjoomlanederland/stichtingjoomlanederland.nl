@@ -2,7 +2,7 @@
 
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -14,13 +14,13 @@ defined('_JEXEC') || die();
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Akeeba\Engine\Platform\Base as BasePlatform;
+use Akeeba\Engine\Psr\Log\LogLevel;
 use DateTimeZone;
 use Exception;
 use JLoader;
 use Joomla\CMS\Access\Access;
 use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Component\ComponentHelper;
-use Joomla\CMS\Date\Date;
 use Joomla\CMS\Factory as JoomlaFactory;
 use Joomla\CMS\Filesystem\Folder;
 use Joomla\CMS\Language\Text;
@@ -30,7 +30,6 @@ use Joomla\CMS\User\UserFactoryInterface;
 use Joomla\CMS\Version;
 use Joomla\Database\DatabaseInterface;
 use Joomla\Session\Session;
-use Psr\Log\LogLevel;
 
 /**
  * Joomla! 4 platform class
@@ -170,7 +169,7 @@ class Joomla extends BasePlatform
 		// If there is no DBO set we will go through the legacy part of the Joomla factory
 		if (is_null(self::$dbDriver))
 		{
-			self::$dbDriver = JoomlaFactory::getDbo();
+			self::$dbDriver = JoomlaFactory::getContainer()->get('DatabaseDriver');
 		}
 
 		return self::$dbDriver;
@@ -450,7 +449,7 @@ class Joomla extends BasePlatform
 	 */
 	public function get_timestamp_database($date = 'now')
 	{
-		return (new Date($date))->toSql();
+		return (clone JoomlaFactory::getDate($date))->toSql();
 	}
 
 	/**
@@ -473,7 +472,7 @@ class Joomla extends BasePlatform
 		}
 
 		$utcTimeZone = new DateTimeZone('UTC');
-		$dateNow     = new Date('now', $utcTimeZone);
+		$dateNow     = clone JoomlaFactory::getDate('now', $utcTimeZone);
 		$timezone    = new DateTimeZone($tz);
 
 		return $dateNow->setTimezone($timezone)->format($format, true);
@@ -602,7 +601,7 @@ class Joomla extends BasePlatform
 		}
 		if (!defined('AKEEBA_DATE'))
 		{
-			$date = new Date();
+			$date = clone JoomlaFactory::getDate();
 
 			define("AKEEBA_DATE", $date->format('Y-m-d'));
 		}
@@ -640,7 +639,7 @@ class Joomla extends BasePlatform
 		// If the release is older than 3 months, issue a warning
 		if (defined('AKEEBA_DATE'))
 		{
-			$releaseDate = new Date(AKEEBA_DATE);
+			$releaseDate = clone JoomlaFactory::getDate(AKEEBA_DATE);
 
 			if (time() - $releaseDate->toUnix() > 10368000)
 			{

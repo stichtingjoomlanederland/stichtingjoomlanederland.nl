@@ -286,12 +286,13 @@ class RsformModelFormajax extends JModelLegacy
 
 		if ($componentId)
 		{
-			$query = $this->_db->getQuery(true)
-				->select($this->_db->qn('Published'))
-				->from($this->_db->qn('#__rsform_components'))
-				->where($this->_db->qn('ComponentId') . ' = ' . $this->_db->q($componentId));
+			$db = $this->getDbo();
+			$query = $db->getQuery(true)
+				->select($db->qn('Published'))
+				->from($db->qn('#__rsform_components'))
+				->where($db->qn('ComponentId') . ' = ' . $db->q($componentId));
 
-			$return->published = $this->_db->setQuery($query)->loadResult();
+			$return->published = $db->setQuery($query)->loadResult();
 		}
 
 		// required?
@@ -309,21 +310,22 @@ class RsformModelFormajax extends JModelLegacy
 		$componentId = $this->getComponentId();
 		$task 		 = strtolower(JFactory::getApplication()->input->getWord('task'));
 		$published 	 = $task == 'componentspublish' ? 1 : 0;
+		$db          = $this->getDbo();
 		
-		$query = $this->_db->getQuery(true)
-			->update($this->_db->qn('#__rsform_components'))
-			->set($this->_db->qn('Published') . ' = ' . $this->_db->q($published));
+		$query = $db->getQuery(true)
+			->update($db->qn('#__rsform_components'))
+			->set($db->qn('Published') . ' = ' . $db->q($published));
 		
 		if (is_array($componentId))
 		{
-			$query->where($this->_db->qn('ComponentId') . ' IN (' . implode(',', $componentId) . ')');
+			$query->where($db->qn('ComponentId') . ' IN (' . implode(',', $componentId) . ')');
 		}
 		else
 		{
-			$query->where($this->_db->qn('ComponentId') . ' = ' . $this->_db->q($componentId));
+			$query->where($db->qn('ComponentId') . ' = ' . $db->q($componentId));
 		}
 
-		$this->_db->setQuery($query)->execute();
+		$db->setQuery($query)->execute();
 	}
 
 	public function componentsChangeRequired()
@@ -331,22 +333,23 @@ class RsformModelFormajax extends JModelLegacy
 		$componentId = $this->getComponentId();
 		$task 		 = strtolower(JFactory::getApplication()->input->getWord('task'));
 		$required 	 = $task == 'componentssetrequired' ? 'YES' : 'NO';
+		$db          = $this->getDbo();
 		
-		$query = $this->_db->getQuery(true)
-			->update($this->_db->qn('#__rsform_properties'))
-			->set($this->_db->qn('PropertyValue') . ' = ' . $this->_db->q($required))
-			->where($this->_db->qn('PropertyName') . ' = ' . $this->_db->q('REQUIRED'));
+		$query = $db->getQuery(true)
+			->update($db->qn('#__rsform_properties'))
+			->set($db->qn('PropertyValue') . ' = ' . $db->q($required))
+			->where($db->qn('PropertyName') . ' = ' . $db->q('REQUIRED'));
 		
 		if (is_array($componentId))
 		{
-			$query->where($this->_db->qn('ComponentId') . ' IN (' . implode(',', $componentId) . ')');
+			$query->where($db->qn('ComponentId') . ' IN (' . implode(',', $componentId) . ')');
 		}
 		else
 		{
-			$query->where($this->_db->qn('ComponentId') . ' = ' . $this->_db->q($componentId));
+			$query->where($db->qn('ComponentId') . ' = ' . $db->q($componentId));
 		}
 
-		$this->_db->setQuery($query)->execute();
+		$db->setQuery($query)->execute();
 	}
 
 	public function getPublished()

@@ -1,20 +1,19 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Component\AkeebaBackup\Administrator\Model\UpgradeHandler;
 
 
-use Akeeba\Component\AkeebaBackup\Administrator\Helper\ComponentParams;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\UpgradeModel;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Exception;
 use Joomla\CMS\Component\ComponentHelper;
-use Joomla\CMS\Date\Date;
+use Joomla\CMS\Factory as JoomlaFactory;
 use Joomla\CMS\Filesystem\Folder;
 use Joomla\CMS\Utility\BufferStreamHandler;
 use Joomla\Component\Installer\Administrator\Helper\InstallerHelper;
@@ -54,10 +53,10 @@ class MigrateSettings
 	 *
 	 * @since   9.0.0
 	 */
-	public function __construct(UpgradeModel $upgradeModel)
+	public function __construct(UpgradeModel $upgradeModel, DatabaseDriver $dbo)
 	{
 		$this->upgradeModel = $upgradeModel;
-		$this->dbo          = $upgradeModel->getDbo();
+		$this->dbo          = $dbo;
 	}
 
 	/**
@@ -136,7 +135,7 @@ class MigrateSettings
 
 		try
 		{
-			$date = new Date($creationDate);
+			$date = clone JoomlaFactory::getDate($creationDate);
 		}
 		catch (Exception $e)
 		{
@@ -188,7 +187,10 @@ class MigrateSettings
 
 		$cParams->set('migrated_from_pkg_akeeba', 1);
 
-		ComponentParams::save($cParams);
+		JoomlaFactory::getApplication()
+			->bootComponent('com_akeebabackup')
+			->getComponentParametersService()
+			->save($cParams);
 	}
 
 	/**
@@ -207,10 +209,7 @@ class MigrateSettings
 			return;
 		}
 
-		if (!@copy($oldKey, $newKey))
-		{
-			// File::copy($oldKey, $newKey);
-		}
+		@copy($oldKey, $newKey);
 	}
 
 	/**
@@ -239,6 +238,11 @@ class MigrateSettings
 			$outerQuery = $this->dbo->getQuery(true)
 			                        ->select('*')
 			                        ->from($this->dbo->quoteName($oldTable));
+
+			if ($oldTable === '#__ak_profiles')
+			{
+				$outerQuery->select('1 AS ' . $this->dbo->quoteName('access'));
+			}
 
 			$innerQuery = 'INSERT INTO ' . $this->dbo->quoteName($newTable) . ' ' . ((string) $outerQuery);
 
@@ -369,7 +373,6 @@ class MigrateSettings
 			define('AKEEBA_MIGRATED_SERVERKEY', $toProcess);
 		}
 
-		/** @noinspection PhpUndefinedConstantInspection */
 		$key = @base64_decode(AKEEBA_MIGRATED_SERVERKEY);
 
 		if (empty($key))

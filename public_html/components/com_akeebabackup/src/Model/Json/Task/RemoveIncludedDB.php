@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -65,7 +65,7 @@ class RemoveIncludedDB extends AbstractTask
 		Platform::getInstance()->load_configuration($profile);
 
 		/** @var MultipledatabasesModel $model */
-		$model = $this->factory->createModel('Multipledatabases', 'Administrator');
+		$model = $this->factory->createModel('Multipledatabases', 'Administrator', ['ignore_request' => true]);
 
 		return $model->remove($name);
 	}

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -54,6 +54,9 @@ $listDirn  = $this->escape($this->state->get('list.direction'));
 							<th scope="col" class="w-1 text-center">
 								<?= Text::_('COM_AKEEBABACKUP_CONFIG_QUICKICON_LABEL') ?>
 							</th>
+                            <th scope="col" class="w-1 text-center">
+	                            <?= Text::_('JGRID_HEADING_ACCESS') ?>
+                            </th>
 						</tr>
 						</thead>
 						<tbody>
@@ -78,7 +81,7 @@ $listDirn  = $this->escape($this->state->get('list.direction'));
 									</a>
 								</td>
 
-								<th scope="row">
+								<td scope="row">
 									<div class="break-word">
 										<a href="<?= Route::_('index.php?option=com_akeebabackup&task=Profile.edit&id=' . (int) $item->id); ?>"
 										   title="<?= Text::_('JACTION_EDIT'); ?><?= $this->escape($item->description); ?>">
@@ -89,11 +92,15 @@ $listDirn  = $this->escape($this->state->get('list.direction'));
 											<strong><?= $item->id ?></strong>
 										</div>
 									</div>
-								</th>
+								</td>
 
 								<td class="text-center">
 									<?= HTMLHelper::_('jgrid.published', $item->quickicon, $i, 'Profiles.', true, 'cb'); ?>
 								</td>
+
+                                <td>
+									<?= $this->escape($item->access_level) ?>
+                                </td>
 							</tr>
 						<?php endforeach; ?>
 						</tbody>

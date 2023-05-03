@@ -89,6 +89,7 @@ class TableRSForm_Forms extends JTable
 	public $ScrollToError = 0;
 	public $Backendmenu = 0;
 	public $ConfirmSubmission = 0;
+	public $ConfirmSubmissionDefer = '';
 	public $ConfirmSubmissionUrl = '';
 	public $Access = '';
 	public $LimitSubmissions = 0;

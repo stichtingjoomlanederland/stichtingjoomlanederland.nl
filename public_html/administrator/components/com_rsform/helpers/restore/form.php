@@ -570,6 +570,7 @@ class RSFormProRestoreForm
 					'csvfilename'               => (string) $directory->csvfilename,
 					'enablepdf'                 => (string) $directory->enablepdf,
 					'enablecsv'                 => (string) $directory->enablecsv,
+					'AllowCSVFullDownload'      => (int) $directory->AllowCSVFullDownload,
 					'HideEmptyValues'           => (string) $directory->HideEmptyValues,
 					'ShowGoogleMap'             => (string) $directory->ShowGoogleMap,
 					'ViewLayout'                => (string) $directory->ViewLayout,
@@ -579,6 +580,8 @@ class RSFormProRestoreForm
 					'JS'                        => (string) $directory->JS,
 					'ListScript'                => (string) $directory->ListScript,
 					'DetailsScript'             => (string) $directory->DetailsScript,
+					'EditScript'                => (string) $directory->EditScript,
+					'SaveScript'                => (string) $directory->SaveScript,
 					'EmailsScript'              => (string) $directory->EmailsScript,
 					'EmailsCreatedScript'       => (string) $directory->EmailsCreatedScript,
 					'groups'                    => (string) $directory->groups,
@@ -689,8 +692,8 @@ class RSFormProRestoreForm
 		// Restore Mappings #__rsform_mappings
 		if (isset($this->xml->mappings))
 		{
-			$defaultDriver 	= JFactory::getConfig()->get('dbtype');
-			$prefix			= JFactory::getConfig()->get('dbprefix');
+			$defaultDriver 	= JFactory::getApplication()->get('dbtype');
+			$prefix			= JFactory::getApplication()->get('dbprefix');
 
 			foreach ($this->xml->mappings->children() as $mapping)
 			{

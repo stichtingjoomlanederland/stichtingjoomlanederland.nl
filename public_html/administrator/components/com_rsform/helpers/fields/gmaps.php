@@ -136,7 +136,7 @@ class RSFormProFieldGMaps extends RSFormProFieldTextbox
 		}
 		
 		$script .= '}'."\n";
-		$script .= 'google.maps.event.addDomListener(window, \'load\', rsfp_initialize_map'.$id.');'."\n\n";
+		$script .= 'RSFormProUtils.addEvent(window, \'load\', rsfp_initialize_map'.$id.');'."\n\n";
 
 		if ($geo) {
 			$isAdress = $address == 'ADDRESS';
@@ -149,7 +149,7 @@ class RSFormProFieldGMaps extends RSFormProFieldTextbox
 		
 		// Add the Google Maps API JS
 		if (!RSFormProFieldGMaps::$mapScript) {
-			$this->addCustomTag('<script src="https://maps.google.com/maps/api/js?key='.urlencode(RSFormProHelper::getConfig('google.api_key')).'" type="text/javascript"></script>');
+			$this->addCustomTag('<script src="https://maps.google.com/maps/api/js?key='.urlencode(RSFormProHelper::getConfig('google.api_key')).'&callback=RSFormPro.initGoogleMaps" type="text/javascript"></script>');
 			// Do not load the script for every map field
 			RSFormProFieldGMaps::$mapScript = true;
 		}

@@ -286,8 +286,9 @@ class RsformControllerComponents extends RsformController
 				} elseif (!is_writable($destination)) {
 					throw new Exception(JText::_('RSFP_ERROR_DESTINATION_WRITABLE_MSG'), 2);
 				}
-
 			}
+
+			JFactory::getApplication()->triggerEvent('onRsformBackendValidateName', array($name, $componentType, $formId, $currentComponentId));
 
 			echo json_encode(array(
 				'result' => true

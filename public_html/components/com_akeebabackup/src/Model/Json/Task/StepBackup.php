@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -53,7 +53,7 @@ class StepBackup extends AbstractTask
 		}
 
 		/** @var BackupModel $model */
-		$model = $this->factory->createModel('Backup', 'Administrator');
+		$model = $this->factory->createModel('Backup', 'Administrator', ['ignore_request' => true]);
 
 		$profile = max(1, (int) $model->getLastBackupProfile($tag, $backupid));
 		JoomlaFactory::getApplication()->getSession()->set('akeebabackup.profile', $profile);

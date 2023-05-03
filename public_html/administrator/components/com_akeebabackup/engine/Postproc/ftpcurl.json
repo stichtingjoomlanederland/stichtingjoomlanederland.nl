@@ -9,6 +9,12 @@
         "title": "COM_AKEEBA_CONFIG_POSTPROCPARTS_TITLE",
         "description": "COM_AKEEBA_CONFIG_POSTPROCPARTS_DESCRIPTION"
     },
+    "engine.postproc.common.abort_on_fail": {
+        "default": "0",
+        "type": "bool",
+        "title": "COM_AKEEBA_CONFIG_POSTPROC_ABORT_ON_FAIL_TITLE",
+        "description": "COM_AKEEBA_CONFIG_POSTPROC_ABORT_ON_FAIL_DESCRIPTION"
+    },
     "engine.postproc.common.delete_after": {
         "default": "1",
         "type": "bool",
@@ -67,7 +73,8 @@
         "default": "1",
         "type": "bool",
         "title": "COM_AKEEBA_CONFIG_ENGINE_ARCHIVER_DIRECTFTPCURL_PASVWORKAROUND_TITLE",
-        "description": "COM_AKEEBA_CONFIG_ENGINE_ARCHIVER_DIRECTFTPCURL_PASVWORKAROUND_DESCRIPTION"
+        "description": "COM_AKEEBA_CONFIG_ENGINE_ARCHIVER_DIRECTFTPCURL_PASVWORKAROUND_DESCRIPTION",
+        "showon": "engine.postproc.ftpcurl.passive_mode:1"
     },
     "engine.postproc.ftpcurl.ftp_test": {
         "default": "0",

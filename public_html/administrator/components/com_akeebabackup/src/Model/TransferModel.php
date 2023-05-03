@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -11,7 +11,6 @@ defined('_JEXEC') || die;
 
 use Akeeba\Component\AkeebaBackup\Administrator\Model\Exceptions\TransferFatalError;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\Exceptions\TransferIgnorableError;
-use Akeeba\Component\AkeebaBackup\Administrator\Model\Mixin\FetchDBO;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\StatisticsModel as Statistics;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Postproc\ProxyAware;
@@ -34,10 +33,10 @@ use Joomla\CMS\Uri\Uri;
 use Joomla\Session\SessionInterface;
 use RuntimeException;
 
+#[\AllowDynamicProperties]
 class TransferModel extends BaseDatabaseModel
 {
 	use ProxyAware;
-	use FetchDBO;
 
 	/**
 	 * Joomla session object
@@ -77,7 +76,7 @@ class TransferModel extends BaseDatabaseModel
 	public function getLatestBackupInformation(?int $profileID = null): ?array
 	{
 		// Initialise
-		$db = $this->getDB();
+		$db = $this->getDatabase();
 
 		/** @var Statistics $model */
 		$model = $this->getMVCFactory()->createModel('Statistics', 'Administrator', ['ignore_request' => 1]);

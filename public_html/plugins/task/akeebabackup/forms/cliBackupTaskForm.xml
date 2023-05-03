@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
+<!--~
+  ~ @package   akeebabackup
+  ~ @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+  ~ @license   GNU General Public License version 3, or later
+  -->
+
 <form>
 	<fieldset name="aside">
 		<field name="cli_exclusive" type="hidden" default="1" />

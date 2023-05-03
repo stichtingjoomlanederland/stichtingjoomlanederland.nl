@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -17,6 +17,7 @@ use Joomla\CMS\Factory as JoomlaFactory;
 use Joomla\CMS\MVC\Model\BaseModel;
 use LogicException;
 
+#[\AllowDynamicProperties]
 class UploadModel extends BaseModel
 {
 	/**
@@ -32,11 +33,12 @@ class UploadModel extends BaseModel
 	 */
 	public function upload(int $id, int $part, int $frag)
 	{
-		// Initialize
+        // Initialize
 		/** @var CMSApplication $app */
-		$app          = JoomlaFactory::getApplication();
-		$stat         = Platform::getInstance()->get_statistics($id);
-		$returnStatus = false;
+		$app             = JoomlaFactory::getApplication();
+		$stat            = Platform::getInstance()->get_statistics($id);
+		$returnStatus    = false;
+		$remote_filename = null;
 
 		// The number of parts must be AT LEAST 1. If it's 0 it mean no split archive, i.e. a single part.
 		$stat['multipart'] = max($stat['multipart'], 1);

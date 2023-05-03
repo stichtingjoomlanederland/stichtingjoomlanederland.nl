@@ -3,7 +3,7 @@
  * @package    JDiDEAL
  *
  * @author     Roland Dalmulder <contact@rolandd.com>
- * @copyright  Copyright (C) 2009 - 2022 RolandD Cyber Produksi. All rights reserved.
+ * @copyright  Copyright (C) 2009 - 2023 RolandD Cyber Produksi. All rights reserved.
  * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  * @link       https://rolandd.com
  */
@@ -59,7 +59,7 @@ try
 			<div class="span-12 center item">
 				<a href="https://rolandd.com/products/ro-payments" target="_blank">
 					RO Payments
-				</a> 8.0.2 | Copyright (C) 2009 -
+				</a> 8.2.0 | Copyright (C) 2009 -
 				<?php
 				echo date('Y'); ?>
 				<a href="https://rolandd.com/" target="_blank">RolandD Cyber Produksi</a>

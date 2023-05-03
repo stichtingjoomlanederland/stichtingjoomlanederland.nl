@@ -3,7 +3,7 @@
  * @package    JDiDEAL
  *
  * @author     Roland Dalmulder <contact@rolandd.com>
- * @copyright  Copyright (C) 2009 - 2022 RolandD Cyber Produksi. All rights reserved.
+ * @copyright  Copyright (C) 2009 - 2023 RolandD Cyber Produksi. All rights reserved.
  * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  * @link       https://rolandd.com
  */
@@ -17,6 +17,7 @@ use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Date\Date;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Table\Table;
 use Joomla\CMS\Uri\Uri;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\MollieApiClient;
@@ -57,9 +58,9 @@ class Mollie
 	/**
 	 * Construct the class.
 	 *
-	 * @since   5.0.0
 	 * @throws  \Exception
 	 *
+	 * @since   5.0.0
 	 */
 	public function __construct()
 	{
@@ -73,9 +74,9 @@ class Mollie
 	 *
 	 * @return  Mollie Returns itself for chaining
 	 *
-	 * @since   5.0.0
 	 * @throws  \Exception
 	 *
+	 * @since   5.0.0
 	 */
 	public function setApiKey($apiKey): Mollie
 	{
@@ -91,8 +92,8 @@ class Mollie
 	 *
 	 * @return  void
 	 *
-	 * @since   6.1.0
 	 * @throws  ApiException
+	 * @since   6.1.0
 	 */
 	public function deleteCustomer(string $customerId): void
 	{
@@ -108,11 +109,14 @@ class Mollie
 	 *
 	 * @return  string  The customer ID
 	 *
+	 * @throws ApiException
 	 * @since   5.0.0
 	 *
-	 * @throws ApiException
 	 */
-	public function createCustomer(string $name, string $email, int $profileId
+	public function createCustomer(
+		string $name,
+		string $email,
+		int $profileId
 	): string {
 		// Check if the customer already exists
 		/** @var $customer object */
@@ -171,9 +175,9 @@ class Mollie
 	 *
 	 * @return  void
 	 *
+	 * @throws  ApiException
 	 * @since   6.5.0
 	 *
-	 * @throws  ApiException
 	 */
 	public function updateCustomer(string $email, string $newEmail = '', string $name = ''): void
 	{
@@ -252,9 +256,9 @@ class Mollie
 	 *
 	 * @return  object  The payment details
 	 *
+	 * @throws  \Exception
 	 * @since   5.0.0
 	 *
-	 * @throws  \Exception
 	 */
 	public function createFirstPayment(
 		string $transactionId,
@@ -317,9 +321,9 @@ class Mollie
 	 *
 	 * @return  boolean  True if there is a valid mandate | False otherwise
 	 *
+	 * @throws  ApiException
 	 * @since   5.0.0
 	 *
-	 * @throws  ApiException
 	 */
 	public function hasValidMandate($customerId)
 	{
@@ -352,9 +356,9 @@ class Mollie
 	 *
 	 * @return  void
 	 *
-	 * @since   5.0.0
 	 * @throws  ApiException
 	 * @throws  InvalidArgumentException
+	 * @since   5.0.0
 	 */
 	public function createSubscription(
 		string $amount,
@@ -371,7 +375,8 @@ class Mollie
 		{
 			throw new InvalidArgumentException(
 				Text::sprintf(
-					'COM_ROPAYMENTS_CUSTOMER_NOT_FOUND', $customerEmail
+					'COM_ROPAYMENTS_CUSTOMER_NOT_FOUND',
+					$customerEmail
 				)
 			);
 		}
@@ -391,7 +396,7 @@ class Mollie
 			$domain = substr($domain, 0, -1);
 		}
 
-		$data   = [
+		$data = [
 			'amount'      => [
 				'currency' => $currency,
 				'value'    => $amount
@@ -424,9 +429,9 @@ class Mollie
 	 *
 	 * @return  void
 	 *
+	 * @throws  InvalidArgumentException
 	 * @since   5.0.0
 	 *
-	 * @throws  InvalidArgumentException
 	 */
 	private function storeSubscription(Subscription $subscription): void
 	{
@@ -492,7 +497,7 @@ class Mollie
 				$db->quote($subscription->status) . ',' .
 				$db->quote($subscription->amount->currency) . ',' .
 				$db->quote($subscription->amount->value) . ',' .
-				$db->quote($subscription->times) . ',' .
+				$db->quote($subscription->times ?: 0) . ',' .
 				$db->quote($subscription->interval) . ',' .
 				$db->quote($subscription->description) . ',' .
 				$db->quote($startDate) . ',' .
@@ -510,9 +515,9 @@ class Mollie
 	 *
 	 * @return  SubscriptionCollection  List of subscriptions.
 	 *
+	 * @throws  ApiException
 	 * @since   5.0.0
 	 *
-	 * @throws  ApiException
 	 */
 	public function listSubscriptions($customerEmail): SubscriptionCollection
 	{
@@ -539,14 +544,14 @@ class Mollie
 	/**
 	 * Get a single subscriptions.
 	 *
-	 * @param   string  $customerId The customer ID
+	 * @param   string  $customerId      The customer ID
 	 * @param   string  $subscriptionId  The subscription ID
 	 *
 	 * @return  Subscription  Return the requested subscription
 	 *
+	 * @throws ApiException
 	 * @since   5.0.0
 	 *
-	 * @throws ApiException
 	 */
 	public function getSubscription(string $customerId, string $subscriptionId): Subscription
 	{
@@ -569,11 +574,13 @@ class Mollie
 	 *
 	 * @return  void
 	 *
+	 * @throws  ApiException
 	 * @since   6.3.0
 	 *
-	 * @throws  ApiException
 	 */
-	public function syncAllSubscriptions($from = null, $limit = null,
+	public function syncAllSubscriptions(
+		$from = null,
+		$limit = null,
 		array $parameters = []
 	): void {
 		if (!$this->profileId)
@@ -593,7 +600,9 @@ class Mollie
 			->execute();
 
 		$subscriptions = $this->mollie->subscriptions->page(
-			$from, $limit, $parameters
+			$from,
+			$limit,
+			$parameters
 		);
 		$this->storeSubscriptions($subscriptions);
 
@@ -630,11 +639,13 @@ class Mollie
 	 *
 	 * @return  void
 	 *
+	 * @throws  ApiException
 	 * @since   6.3.0
 	 *
-	 * @throws  ApiException
 	 */
-	public function syncAllCustomers($from = null, $limit = null,
+	public function syncAllCustomers(
+		$from = null,
+		$limit = null,
 		array $parameters = []
 	): void {
 		if (!$this->profileId)
@@ -691,30 +702,22 @@ class Mollie
 	 */
 	private function storeCustomer(Customer $customer): void
 	{
-		$db      = Factory::getDbo();
+		Table::addIncludePath(JPATH_ADMINISTRATOR . '/components/com_jdidealgateway/tables');
+		/** @var TableCustomer $customerTable */
+		$customerTable = Table::getInstance('Customer', 'Table');
+		$customerTable->load(
+			[
+				'customerId' => $customer->id
+			]
+		);
+
 		$created = new Date($customer->createdAt);
-		$query   = $db->getQuery(true)
-			->insert($db->quoteName('#__jdidealgateway_customers'))
-			->columns(
-				$db->quoteName(
-					[
-						'name',
-						'email',
-						'customerId',
-						'created',
-						'profileId'
-					]
-				)
-			)
-			->values(
-				$db->quote($customer->name) . ', ' .
-				$db->quote($customer->email) . ', ' .
-				$db->quote($customer->id) . ', ' .
-				$db->quote($created->toSql()) . ', ' .
-				$db->quote($this->profileId)
-			);
-		$db->setQuery($query)
-			->execute();
+		$customerTable->set('name', $customer->name);
+		$customerTable->set('email', $customer->email);
+		$customerTable->set('customerId', $customer->id);
+		$customerTable->set('created', $created->toSql());
+		$customerTable->set('profileId', $this->profileId);
+		$customerTable->store();
 	}
 
 	/**
@@ -725,9 +728,9 @@ class Mollie
 	 *
 	 * @return  void
 	 *
+	 * @throws  ApiException
 	 * @since   5.0.0
 	 *
-	 * @throws  ApiException
 	 */
 	public function cancelSubscription($customerEmail, $subscriptionId): void
 	{
@@ -768,9 +771,9 @@ class Mollie
 	 *
 	 * @return  MandateCollection List of mandates.
 	 *
+	 * @throws  ApiException
 	 * @since   5.0.0
 	 *
-	 * @throws  ApiException
 	 */
 	public function listMandates(string $customerEmail): MandateCollection
 	{
@@ -795,10 +798,12 @@ class Mollie
 	 *
 	 * @return  void
 	 *
-	 * @since   6.4.0
 	 * @throws  ApiException
+	 * @since   6.4.0
 	 */
-	public function revokeMandate(string $customerEmail, string $mandateId
+	public function revokeMandate(
+		string $customerEmail,
+		string $mandateId
 	): void {
 		/** @var $customer object */
 		$customer = $this->getCustomerByEmail($customerEmail);
@@ -818,11 +823,14 @@ class Mollie
 	 *
 	 * @return  Mandate The mandate response
 	 *
-	 * @since   5.0.0
 	 * @throws ApiException
+	 * @since   5.0.0
 	 */
-	public function createMandate(string $customerEmail, string $consumerName,
-		string $consumerAccount, string $consumerBic = ''
+	public function createMandate(
+		string $customerEmail,
+		string $consumerName,
+		string $consumerAccount,
+		string $consumerBic = ''
 	): Mandate {
 		/** @var $customer object */
 		$customer = $this->getCustomerByEmail($customerEmail);
@@ -880,9 +888,9 @@ class Mollie
 	 *
 	 * @return  object  The payment details
 	 *
+	 * @throws  \Exception
 	 * @since   5.0.0
 	 *
-	 * @throws  \Exception
 	 */
 	private function createRecurringPayment(
 		int $transactionId,
@@ -922,8 +930,8 @@ class Mollie
 	 *
 	 * @return  Payment  The payment details.
 	 *
-	 * @since   6.4.0
 	 * @throws  ApiException
+	 * @since   6.4.0
 	 */
 	public function getPayment(string $paymentId): Payment
 	{

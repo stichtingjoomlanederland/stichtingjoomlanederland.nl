@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2022 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -15,9 +15,11 @@ use Joomla\CMS\Form\Form;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\GenericDataException;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
+use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 use Joomla\Component\Banners\Administrator\Model\BannerModel;
 
+#[\AllowDynamicProperties]
 class HtmlView extends BaseHtmlView
 {
 	/**
@@ -64,7 +66,13 @@ class HtmlView extends BaseHtmlView
 		$this->state = $model->getState();
 
 		// Check for errors.
-		if (count($errors = $this->get('Errors')))
+		$errors = $this->get('Errors');
+
+		if (
+			(is_array($errors) || $errors instanceof \Countable)
+				? count($errors)
+				: 0
+		)
 		{
 			throw new GenericDataException(implode("\n", $errors), 500);
 		}
@@ -88,13 +96,15 @@ class HtmlView extends BaseHtmlView
 
 		ToolbarHelper::title(Text::_('COM_AKEEBABACKUP_BUADMIN_LOG_EDITCOMMENT'), 'icon-akeeba');
 
+		$toolbar = Toolbar::getInstance();
+
 		// If not checked out, can save the item.
-		ToolbarHelper::apply('Statistic.apply');
-		ToolbarHelper::save('Statistic.save');
+		$toolbar->apply('statistic.apply');
+		$toolbar->save('statistic.save');
 
-		ToolbarHelper::cancel('Statistic.cancel');
+		$toolbar->cancel('statistic.cancel');
 
-		ToolbarHelper::divider();
-		ToolbarHelper::help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-joomla/adminsiter-backup-files.html');
+		$toolbar->divider();
+		$toolbar->help(null, false, 'https://www.akeeba.com/documentation/akeeba-backup-joomla/adminsiter-backup-files.html');
 	}
 }
