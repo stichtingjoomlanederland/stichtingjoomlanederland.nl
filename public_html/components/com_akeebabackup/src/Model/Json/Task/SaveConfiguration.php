@@ -10,12 +10,12 @@ namespace Akeeba\Component\AkeebaBackup\Site\Model\Json\Task;
 // Protect from unauthorized access
 defined('_JEXEC') || die();
 
-use Akeeba\Engine\Factory;
-use Akeeba\Engine\Platform;
 use RuntimeException;
 
 /**
  * Save the configuration for a given profile
+ *
+ * @deprecated
  */
 class SaveConfiguration extends AbstractTask
 {
@@ -30,44 +30,6 @@ class SaveConfiguration extends AbstractTask
 	 */
 	public function execute(array $parameters = [])
 	{
-		// Get the passed configuration values
-		$defConfig = [
-			'profile'      => -1,
-			'engineconfig' => []
-		];
-
-		$defConfig = array_merge($defConfig, $parameters);
-
-		$profile = (int)$defConfig['profile'];
-		$data    = $defConfig['engineconfig'];
-
-		if (empty($profile))
-		{
-			throw new RuntimeException('Invalid profile ID', 404);
-		}
-
-		// Forbid stupidly selecting the site's root as the output or temporary directory
-		if (array_key_exists('akeeba.basic.output_directory', $data))
-		{
-			$folder = $data['akeeba.basic.output_directory'];
-			$folder = Factory::getFilesystemTools()->translateStockDirs($folder, true, true);
-
-			$check = Factory::getFilesystemTools()->translateStockDirs('[SITEROOT]', true, true);
-
-			if ($check == $folder)
-			{
-				$data['akeeba.basic.output_directory'] = '[DEFAULT_OUTPUT]';
-			}
-		}
-
-		// Merge it
-		$config        = Factory::getConfiguration();
-		$protectedKeys = $config->getProtectedKeys();
-		$config->resetProtectedKeys();
-		$config->mergeArray($data, false, false);
-		$config->setProtectedKeys($protectedKeys);
-
-		// Save configuration
-		return Platform::getInstance()->save_configuration($profile);
+		throw new \RuntimeException('This method is no longer supported by the Akeeba Remote JSON API', 501);
 	}
 }

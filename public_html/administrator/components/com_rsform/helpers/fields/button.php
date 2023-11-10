@@ -17,22 +17,13 @@ class RSFormProFieldButton extends RSFormProField
 	public function getPreviewInput()
 	{
 		$reset		= $this->getProperty('RESET', 'NO');
-		$buttonType = $this->getProperty('BUTTONTYPE', 'TYPEINPUT') == 'TYPEBUTTON' ? 'button' : 'input';
 		$label		= $this->getProperty('LABEL', '');
 		$resetLabel	= $this->getProperty('RESETLABEL', '');
 		
 		$html = '';
-		if ($buttonType == 'button') {
-			$html .= '<button type="button" class="btn">'.$this->escape($label).'</button>';
-		} else {
-			$html .= '<input type="button" class="btn" value="'.$this->escape($label).'" />';
-		}
+		$html .= '<button type="button" class="btn btn-secondary">'.$this->escape($label).'</button>';
 		if ($reset) {
-			if ($buttonType == 'button') {
-				$html .= '&nbsp;&nbsp;<button type="reset" class="btn btn-danger">'.$this->escape($resetLabel).'</button>';
-			} else {
-				$html .= '&nbsp;&nbsp;<input type="reset" class="btn btn-danger" value="'.$this->escape($resetLabel).'"/>';
-			}
+			$html .= '&nbsp;&nbsp;<button type="reset" class="btn btn-danger">'.$this->escape($resetLabel).'</button>';
 		}
 		
 		return $html;
@@ -42,7 +33,6 @@ class RSFormProFieldButton extends RSFormProField
 	public function getFormInput() {
 		$name		= $this->getName();
 		$id			= $this->getId();
-		$buttonType = $this->getProperty('BUTTONTYPE', 'TYPEINPUT') == 'TYPEBUTTON' ? 'button' : 'input';
 		$label		= $this->getProperty('LABEL', '');
 		$reset		= $this->getProperty('RESET', 'NO');
 		$allowHtml	= $this->getProperty('ALLOWHTML', 'NO');
@@ -51,11 +41,7 @@ class RSFormProFieldButton extends RSFormProField
 		$additional = '';
 		
 		// Start building the HTML input
-		if ($buttonType == 'button') {
-			$html = '<button';
-		} else {
-			$html = '<input';
-		}
+		$html = '<button';
 		// Parse Additional Attributes
 		if ($attr) {
 			foreach ($attr as $key => $values) {
@@ -76,11 +62,7 @@ class RSFormProFieldButton extends RSFormProField
 		// Additional HTML
 		$html .= $additional;
 		// Add the label & close the tag
-		if ($buttonType == 'button') {
-			$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
-		} else {
-			$html .= ' value="'.$this->escape($label).'" />';
-		}
+		$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
 		
 		// Do we need to append a reset button?
 		if ($reset) {
@@ -97,21 +79,13 @@ class RSFormProFieldButton extends RSFormProField
 			}
 			
 			// Start building the HTML input for the reset button
-			if ($buttonType == 'button') {
-				$html .= '<button';
-			} else {
-				$html .= '<input';
-			}
+			$html .= '<button';
 			// Set the type
 			$html .= ' type="reset"';
 			// Additional HTML
 			$html .= $additional;
 			// Add the label & close the tag
-			if ($buttonType == 'button') {
-				$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
-			} else {
-				$html .= ' value="'.$this->escape($label).'" />';
-			}
+			$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
 		}
 		
 		return $html;
@@ -154,7 +128,6 @@ class RSFormProFieldButton extends RSFormProField
 			
 		$html = '';
 		if (($class == 'SubmitButton' && $pages && $last) || ($class != 'SubmitButton' && count($pages) > 1)) {
-			$buttonType = $this->getProperty('BUTTONTYPE', 'TYPEINPUT') == 'TYPEBUTTON' ? 'button' : 'input';
 			$label  	= $this->getProperty('PREVBUTTON', JText::_('JPREV'));
 			$label		= empty($label) ? JText::_('JPREV') : $label;
 			$allowHtml	= $this->getProperty('ALLOWHTML', 'NO');
@@ -177,11 +150,7 @@ class RSFormProFieldButton extends RSFormProField
 			}
 			
 			// Start building the HTML input
-			if ($buttonType == 'button') {
-				$html = '<button';
-			} else {
-				$html = '<input';
-			}
+			$html = '<button';
 			// Set the type
 			$html .= ' type="button"';
 			// Id
@@ -189,11 +158,7 @@ class RSFormProFieldButton extends RSFormProField
 			// Additional HTML
 			$html .= $additional;
 			// Add the label & close the tag
-			if ($buttonType == 'button') {
-				$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
-			} else {
-				$html .= ' value="'.$this->escape($label).'" />';
-			}
+			$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
 		}
 		
 		return $html;

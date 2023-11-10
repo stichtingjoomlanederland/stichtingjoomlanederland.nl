@@ -11,7 +11,7 @@
 defined('_JEXEC') || die();
 
 ?>
-<div class="mt-3 p-3 bg-light border-top border-4 d-flex flex-column">
+<div class="akeebabackup-cpanel-footer mt-3 p-3 bg-light border-top border-4 d-flex flex-column">
 	<p class="text-muted">
 		Copyright 2006-<?= date('Y') ?> <a href="https://www.akeeba.com">Akeeba Ltd</a>. All legal rights reserved.
 		<br/>

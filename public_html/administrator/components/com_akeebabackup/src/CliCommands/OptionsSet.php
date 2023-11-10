@@ -188,7 +188,7 @@ class OptionsSet extends AbstractCommand
 		}
 
 		$protected = $config->getProtectedKeys();
-		$force     = isset($assoc_args['force']) && $assoc_args['force'];
+		$force     = $input->getOption('force');
 
 		if (in_array($key, $protected) && !$force)
 		{

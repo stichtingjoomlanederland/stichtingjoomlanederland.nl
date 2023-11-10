@@ -17,6 +17,7 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\CMS\Router\Route;
 use Joomla\CMS\Toolbar\Toolbar;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 
@@ -51,6 +52,30 @@ class HtmlView extends BaseHtmlView
 	 */
 	public $isConsolePluginEnabled = false;
 
+	/**
+	 * URL to automatically enable the legacy frontend API (and set a Secret Key, if necessary)
+	 *
+	 * @var    string|null
+	 * @since  9.5.2
+	 */
+	private ?string $enableLegacyFrontendURL;
+
+	/**
+	 * URL to automatically enable the JSON API (and set a Secret Key, if necessary)
+	 *
+	 * @var    string|null
+	 * @since  9.5.2
+	 */
+	private ?string $enableJsonApiURL;
+
+	/**
+	 * URL to reset the secret word to something that actually works
+	 *
+	 * @var    string|null
+	 * @since  9.5.2
+	 */
+	private ?string $resetSecretWordURL;
+
 	protected function onBeforeMain()
 	{
 		$toolbar = Toolbar::getInstance();
@@ -72,5 +97,27 @@ class HtmlView extends BaseHtmlView
 		$model           = $this->getModel();
 		$this->croninfo  = $model->getPaths();
 		$this->checkinfo = $model->getCheckPaths();
+
+		$this->enableLegacyFrontendURL = Route::_(
+			sprintf(
+				'index.php?option=com_akeebabackup&task=Schedule.enableFrontend&%s=1',
+				Factory::getApplication()->getFormToken()
+			)
+		);
+
+		$this->enableJsonApiURL = Route::_(
+			sprintf(
+				'index.php?option=com_akeebabackup&task=Schedule.enableJsonApi&%s=1',
+				Factory::getApplication()->getFormToken()
+			)
+		);
+
+		$this->resetSecretWordURL = Route::_(
+			sprintf(
+				'index.php?option=com_akeebabackup&task=Schedule.resetSecretWord&%s=1',
+				Factory::getApplication()->getFormToken()
+			)
+		);
+
 	}
 }

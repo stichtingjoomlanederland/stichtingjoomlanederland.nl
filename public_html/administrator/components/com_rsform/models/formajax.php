@@ -163,7 +163,7 @@ class RsformModelFormajax extends JModelLegacy
 				case 'select':
 				case 'selectmultiple':
 				{
-					$additional = 'class="form-control form-select"';
+					$additional = 'class="form-select"';
 
 					/**
 					 * determine if we have a json in the properties.

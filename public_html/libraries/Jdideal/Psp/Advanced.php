@@ -68,7 +68,7 @@ class Advanced
 		$this->input = $input;
 
 		// Set the database
-		$this->db = \JFactory::getDbo();
+		$this->db = Factory::getDbo();
 
 		// Put the return data in an array, data is constructed as name=value
 		$this->data['transactionId'] = $input->get('trxid');

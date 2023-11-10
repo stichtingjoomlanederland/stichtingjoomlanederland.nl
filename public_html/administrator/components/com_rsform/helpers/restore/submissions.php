@@ -14,6 +14,8 @@ class RSFormProRestoreSubmissions
 
 	// Holds an array of the XML data.
 	protected $formId;
+
+	protected $xml;
 	
 	public function __construct($options = array()) {
 		$path 	  			= &$options['path'];
@@ -59,7 +61,10 @@ class RSFormProRestoreSubmissions
 		foreach ($this->xml->children() as $submission)
 		{
 			$data = array(
-				'FormId' => $this->formId
+				'FormId' => $this->formId,
+				'confirmed' => 1,
+				'ConfirmedIp' => '',
+				'ConfirmedDate' => null
 			);
 		
 			foreach ($submission as $property => $value)
@@ -79,6 +84,11 @@ class RSFormProRestoreSubmissions
 			}
 
 			$data = (object) $data;
+
+			if (empty($data->SubmissionHash))
+			{
+				$data->SubmissionHash = JApplicationHelper::getHash(JUserHelper::genRandomPassword());
+			}
 
 			$this->db->insertObject('#__rsform_submissions', $data, 'SubmissionId');
 			

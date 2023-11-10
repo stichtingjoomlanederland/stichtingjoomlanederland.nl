@@ -302,6 +302,7 @@ class RsformModelDirectory extends JModelList
 		$csvFields		  	= $input->get('dirincsv',array(),'array');
 		$cids	  		  	= $input->get('dircid',array(),'array');
 		$orderingFields	  	= $input->get('dirorder',array(),'array');
+		$sorts              = $input->get('dirsort', array(), 'array');
 
 		// empty
         $query = $db->getQuery(true)
@@ -320,7 +321,8 @@ class RsformModelDirectory extends JModelList
                 'editable'      => (int) in_array($field->FieldId, $editableFields),
                 'indetails'     => (int) in_array($field->FieldId, $detailsFields),
                 'incsv'         => (int) in_array($field->FieldId, $csvFields),
-                'ordering'      => $orderingFields[array_search($field->FieldId, $cids)]
+                'ordering'      => $orderingFields[array_search($field->FieldId, $cids)],
+                'sort'          => isset($sorts[$field->FieldId]) ? (int) $sorts[$field->FieldId] : 0,
             );
 
 			$db->insertObject('#__rsform_directory_fields', $object);
@@ -482,5 +484,14 @@ class RsformModelDirectory extends JModelList
 		}
 
 		return true;
+	}
+
+	public function getAllowedDateFields()
+	{
+		$types = array(RSFORM_FIELD_CALENDAR, RSFORM_FIELD_JQUERY_CALENDAR, RSFORM_FIELD_BIRTHDAY);
+
+		JFactory::getApplication()->triggerEvent('onRsformDefineDateFields', array(&$types));
+
+		return $types;
 	}
 }

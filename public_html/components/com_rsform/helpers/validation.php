@@ -8,7 +8,7 @@
 // no direct access
 defined( '_JEXEC' ) or die( 'Restricted access' );
 
-class RSFormProValidations
+abstract class RSFormProValidations
 {
 	public static function none($value, $extra = null, $data = null)
 	{
@@ -347,7 +347,7 @@ class RSFormProValidations
 				$newData['VALIDATIONRULE']  = $function;
 				$newData['VALIDATIONEXTRA'] = !empty($extra->{$function}) ? $extra->{$function} : null;
 
-				if (!call_user_func_array('static::'.$function, array($value, $newData['VALIDATIONEXTRA'], $newData)))
+				if (!call_user_func_array(array(static::class, $function), array($value, $newData['VALIDATIONEXTRA'], $newData)))
 				{
 					return false;
 				}
@@ -378,5 +378,21 @@ class RSFormProValidations
 
 		// Check validity.
 		return ($sum % 10 == 0) ? true : false;
+	}
+
+	public static function minlength($value, $min = null, $data = null)
+	{
+		$min = (int) $min;
+		$value = (string) $value;
+
+		return \Joomla\String\StringHelper::strlen($value) < $min ? false : true;
+	}
+
+	public static function maxlength($value, $max = null, $data = null)
+	{
+		$max = (int) $max;
+		$value = (string) $value;
+
+		return \Joomla\String\StringHelper::strlen($value) > $max ? false : true;
 	}
 }

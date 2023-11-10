@@ -119,13 +119,13 @@ if ($this->promptForBackupRestoration)
 
 							$frozenIcon  = 'akion-waterdrop';
 							$frozenTask  = 'freeze';
-							$frozenTitle = \JText::_('COM_AKEEBABACKUP_BUADMIN_LABEL_ACTION_FREEZE');
+							$frozenTitle = Text::_('COM_AKEEBABACKUP_BUADMIN_LABEL_ACTION_FREEZE');
 
 							if ($record['frozen'])
 							{
 								$frozenIcon  = 'akion-ios-snowy';
 								$frozenTask  = 'unfreeze';
-								$frozenTitle = \JText::_('COM_AKEEBABACKUP_BUADMIN_LABEL_ACTION_UNFREEZE');
+								$frozenTitle = Text::_('COM_AKEEBABACKUP_BUADMIN_LABEL_ACTION_UNFREEZE');
 							}
 							?>
 							<tr class="row<?= $i % 2; ?>">
@@ -152,7 +152,7 @@ if ($this->promptForBackupRestoration)
 											  title="<?= Text::_('COM_AKEEBABACKUP_BUADMIN_LABEL_COMMENT') ?>"
 											  data-bs-content="<?= $comment ?>"></span>
 									<?php endif ?>
-									<a href="<?= Uri::base() ?>index.php?option=com_akeebabackup&view=statistic&layout=edit&id=<?= $record['id'] ?>">
+									<a href="<?= Uri::base() ?>index.php?option=com_akeebabackup&view=Statistic&layout=edit&id=<?= $record['id'] ?>">
 										<?= empty($record['description'])
 											? Text::_('COM_AKEEBABACKUP_BUADMIN_LABEL_NODESCRIPTION')
 											: $this->escape($record['description']) ?>

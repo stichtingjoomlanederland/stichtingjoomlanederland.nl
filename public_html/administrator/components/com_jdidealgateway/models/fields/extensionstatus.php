@@ -8,11 +8,13 @@
  * @link       https://rolandd.com
  */
 
-use Joomla\CMS\Form\Field\ListField;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Form\FormHelper;
 
 defined('_JEXEC') or die;
 
-JFormHelper::loadFieldClass('list');
+JLoader::registerAlias('JFormFieldList', '\\Joomla\\CMS\\Form\\Field\\ListField', '6.0');
+FormHelper::loadFieldClass('list');
 
 /**
  * Extension Order statuses.
@@ -39,18 +41,18 @@ class JdidealFormFieldExtensionstatus extends JFormFieldList
 	 */
 	public function getOptions(): array
 	{
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
 		$query = $db->getQuery(true)
 			->select(
 				$db->quoteName(
-					array(
+					[
 						'extension',
 						'name',
-					),
-					array(
+                    ],
+					[
 						'value',
 						'text'
-					)
+                    ]
 				)
 			)
 			->from($db->quoteName('#__jdidealgateway_statuses'))

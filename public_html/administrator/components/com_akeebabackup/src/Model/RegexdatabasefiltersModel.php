@@ -114,7 +114,9 @@ class RegexdatabasefiltersModel extends \Joomla\CMS\MVC\Model\BaseModel
 		{
 			// Produce a list of regex filters
 			case 'list':
-				$ret_array = $this->get_regex_filters($action['root']);
+				$ret_array = [
+					'list' => $this->get_regex_filters($action['root'])
+				];
 				break;
 
 			// Set a filter (used by the editor)

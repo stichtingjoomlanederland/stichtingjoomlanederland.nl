@@ -7,10 +7,12 @@
 
 defined('_JEXEC') or die('Restricted access');
 
+define('RSFORM_DIR_SORT_NUMBER', 1);
+define('RSFORM_DIR_SORT_DATE', 2);
+
 class RsformModelDirectory extends JModelLegacy
 {
     protected $fields;
-    protected $_db;
     protected $_app;
 
 	/* @var $params Joomla\Registry\Registry */
@@ -24,21 +26,9 @@ class RsformModelDirectory extends JModelLegacy
 	    parent::__construct($config);
 
         $this->_app     = JFactory::getApplication();
-        $this->_db      = JFactory::getDbo();
         $this->params   = $this->_app->getParams('com_rsform');
         $this->itemid   = $this->getItemid();
         $this->context  = 'com_rsform.directory' . $this->itemid;
-
-		// For legacy menu items
-		$userId	= $this->params->get('userId');
-		if ($userId === '0')
-		{
-			$this->params->set('show_all_submissions', 1);
-		}
-		elseif ($userId == 'login')
-		{
-			$this->params->set('show_logged_in_submissions', 1);
-		}
 
 	    // Check for a valid form
 	    $this->isValid();
@@ -110,13 +100,22 @@ class RsformModelDirectory extends JModelLegacy
         // Check if it's a search.
         $search = $this->getSearch();
 
+        // If 'Show Only Filtering Result' is enabled, don't create a query unless the user searches for something
+        if ($this->params->get('show_filtering_result', 0) && !strlen($search))
+		{
+			return false;
+		}
+
+	    $order = $this->getListOrder();
+	    $sortingField = false;
+
         // Get the SubmissionId
         $query->select($db->qn('s.SubmissionId'))
             ->from($db->qn('#__rsform_submission_values', 'sv'))
             ->join('left', $db->qn('#__rsform_submissions', 's') . ' ON (' . $db->qn('sv.SubmissionId') . '=' . $db->qn('s.SubmissionId') . ')')
             ->where($db->qn('s.FormId') . '=' . $db->q($this->params->get('formId')))
             ->group($db->qn('s.SubmissionId'))
-            ->order($db->qn($this->getListOrder()) . ' ' . $db->escape($this->getListDirn()));
+            ->order($db->qn($order) . ' ' . $db->escape($this->getListDirn()));
 
         // Show only confirmed submissions?
         if ($this->params->get('show_confirmed', 0))
@@ -336,13 +335,18 @@ class RsformModelDirectory extends JModelLegacy
 					// If we're searching, add the field to the having() query.
 					if ($search && $field->searchable)
 					{
-						// DateSubmitted doesn't play well with LIKE
-						if ($field->FieldId == '-1' && preg_match('#([^0-9\-: ])#', $search))
+						// Datetime fields don't play well with LIKE
+						if (in_array($field->FieldId, array(RSFORM_STATIC_DATESUBMITTED, RSFORM_STATIC_CONFIRMEDDATE)) && preg_match('#([^0-9\-: ])#', $search))
 						{
 							continue;
 						}
 
 						$allHaving[] = $db->qn($field->FieldName) . ' LIKE ' . $db->q('%' . $db->escape($search, true) . '%', false);
+					}
+
+					if ($field->viewable && $field->componentId > 0 && $order === $field->FieldName && $field->sort > 0)
+					{
+						$sortingField = $field;
 					}
 				}
 			}
@@ -350,6 +354,76 @@ class RsformModelDirectory extends JModelLegacy
 			if ($allHaving)
 			{
 				$query->having('(' . implode(' OR ', $allHaving) . ')', 'AND');
+			}
+
+			if ($sortingField)
+			{
+				switch ($sortingField->sort)
+				{
+					case RSFORM_DIR_SORT_NUMBER:
+						$query->select('CAST(GROUP_CONCAT(IF(' . $db->qn('sv.FieldName') . '=' . $db->q($sortingField->FieldName) . ', ' . $db->qn('sv.FieldValue') . ', NULL)) AS DECIMAL(10,5)) AS ' . $db->qn($sortingField->FieldName . '_sort'))
+							->clear('order')
+							->order($db->qn($sortingField->FieldName . '_sort') . ' ' . $db->escape($this->getListDirn()));
+						break;
+
+					case RSFORM_DIR_SORT_DATE:
+						$format = '';
+						$properties = RSFormProHelper::getComponentProperties($sortingField->FieldId);
+
+						switch ($sortingField->FieldType)
+						{
+							case RSFORM_FIELD_CALENDAR:
+								$format = $this->translateDateFormat($properties['DATEFORMAT']);
+								break;
+
+							case RSFORM_FIELD_JQUERY_CALENDAR:
+								$format = $properties['DATEFORMAT'];
+								if ($properties['TIMEPICKER'] === 'YES')
+								{
+									$format .= ' ' . $properties['TIMEPICKERFORMAT'];
+								}
+								$format = $this->translateDateFormat($format);
+								break;
+
+							case RSFORM_FIELD_BIRTHDAY:
+								$format = $properties['DATEORDERING'];
+								if ($properties['SHOWDAY'] === 'NO')
+								{
+									$format = str_replace('D', '', $format);
+								}
+								if ($properties['SHOWMONTH'] === 'NO')
+								{
+									$format = str_replace('M', '', $format);
+								}
+								if ($properties['SHOWYEAR'] === 'NO')
+								{
+									$format = str_replace('Y', '', $format);
+								}
+								if ($properties['STORELEADINGZERO'] === 'YES')
+								{
+									$format = str_replace('D', 'd', $format);
+									$format = str_replace('M', 'm', $format);
+								}
+								else
+								{
+									$format = str_replace('D', 'j', $format);
+									$format = str_replace('M', 'n', $format);
+								}
+								$format = implode($properties['DATESEPARATOR'], str_split($format));
+								$format = $this->translateDateFormat($format);
+								break;
+						}
+
+						JFactory::getApplication()->triggerEvent('onRsformDirectorySortDate', array(&$format, $sortingField, $properties, $this));
+
+						if (!empty($format))
+						{
+							$query->select('STR_TO_DATE(GROUP_CONCAT(IF(' . $db->qn('sv.FieldName') . '=' . $db->q($sortingField->FieldName) . ', ' . $db->qn('sv.FieldValue') . ', NULL)), ' . $db->q($format) . ') AS ' . $db->qn($sortingField->FieldName . '_sort'))
+								->clear('order')
+								->order($db->qn($sortingField->FieldName . '_sort') . ' ' . $db->escape($this->getListDirn()));
+						}
+						break;
+				}
 			}
 		}
 
@@ -704,11 +778,10 @@ class RsformModelDirectory extends JModelLegacy
 		$offset = JFactory::getApplication()->get('offset');
 		if ($static && $staticFields)
 		{
-			// Static, update submission
-			$query = $db->getQuery(true)
-				->update('#__rsform_submissions')
-				->where($db->qn('SubmissionId').'='.$db->q($cid));
+			$object = new stdClass();
+			$object->SubmissionId = $cid;
 
+			// Static, update submission
 			foreach ($staticFields as $field)
 			{
 				if (!isset($static[$field]))
@@ -716,16 +789,40 @@ class RsformModelDirectory extends JModelLegacy
 					$static[$field] = '';
 				}
 
-				if ($field == 'DateSubmitted')
+				if (in_array($field, array('DateSubmitted', 'ConfirmedDate')))
 				{
-					$static[$field] = JFactory::getDate($static[$field], $offset)->toSql();
+					if ($static[$field])
+					{
+						try
+						{
+							$tmpDate = JFactory::getDate($static[$field], $offset)->toSql();
+							$static[$field] = $tmpDate;
+						}
+						catch (Exception $e)
+						{
+							$static[$field] = $field === 'ConfirmedDate' ? null : JFactory::getDate()->toSql();
+							$app->enqueueMessage($e->getMessage(), 'warning');
+						}
+					}
+					else
+					{
+						$static[$field] = null;
+					}
 				}
-				$value = RSFormProHelper::stripJava($static[$field]);
 
-				$query->set($db->qn($field) . '=' . $db->q($value));
+				if ($static[$field] !== null)
+				{
+					$value = RSFormProHelper::stripJava($static[$field]);
+				}
+				else
+				{
+					$value = null;
+				}
+
+				$object->{$field} = $value;
 			}
 
-			$db->setQuery($query)->execute();
+			$db->updateObject('#__rsform_submissions', $object, array('SubmissionId'), true);
 		}
 
 		// Send emails
@@ -985,6 +1082,10 @@ class RsformModelDirectory extends JModelLegacy
 		$form->MultipleSeparator = str_replace(array('\n', '\r', '\t'), array("\n", "\r", "\t"), $form->MultipleSeparator);
 
 		$submission->DateSubmitted = JHtml::_('date', $submission->DateSubmitted, 'Y-m-d H:i:s');
+		if (!in_array($submission->ConfirmedDate, array('', null, '0000-00-00 00:00:00', $db->getNullDate())))
+		{
+			$submission->ConfirmedDate = JHtml::_('date', $submission->ConfirmedDate, 'Y-m-d H:i:s');
+		}
 
 		if (is_array($this->validation))
 		{
@@ -1063,7 +1164,8 @@ class RsformModelDirectory extends JModelLegacy
 				RSFORM_DIR_INPUT        => '',
 				RSFORM_DIR_REQUIRED     => isset($data['REQUIRED']) && $data['REQUIRED'] == 'YES' ? '<strong class="formRequired">(*)</strong>' : '',
 				RSFORM_DIR_NAME         => $field->name,
-				RSFORM_DIR_DESCRIPTION  => isset($data['DESCRIPTION']) ? $data['DESCRIPTION'] : ''
+				RSFORM_DIR_DESCRIPTION  => isset($data['DESCRIPTION']) ? $data['DESCRIPTION'] : '',
+				RSFORM_DIR_ID           => 'field-' . JFilterOutput::stringURLSafe($field->name)
 			);
 
 			if ($invalid)
@@ -1103,17 +1205,18 @@ class RsformModelDirectory extends JModelLegacy
 							JHtml::_('select.option', 1, JText::_('RSFP_YES'))
 						);
 
-						$new_field[RSFORM_DIR_INPUT] = JHtml::_('select.genericlist', $options, 'formStatic[confirmed]', null, 'value', 'text', $value);
+						$new_field[RSFORM_DIR_INPUT] = JHtml::_('select.genericlist', $options, 'formStatic[confirmed]', array('class' => 'form-select'), 'value', 'text', $value);
 					}
 					else
 					{
-						$new_field[RSFORM_DIR_INPUT] = '<input class="rs_inp rs_80" type="text" name="formStatic['.$name.']" value="'.RSFormProHelper::htmlEscape($value).'" />';
+						$new_field[RSFORM_DIR_INPUT] = '<input class="rs_inp rs_80 form-control" type="text" id="' . $new_field[RSFORM_DIR_ID] . '" name="formStatic['.$name.']" value="'.RSFormProHelper::htmlEscape($value).'" />';
 					}
 					break;
 
 				// skip this field for now, no need to edit it
 				case 'freeText':
 					$new_field[RSFORM_DIR_CAPTION] = '';
+					$new_field[RSFORM_DIR_ID] = false;
 					$new_field[RSFORM_DIR_INPUT] = RSFormProHelper::isCode($data['TEXT']);
 					break;
 
@@ -1125,11 +1228,11 @@ class RsformModelDirectory extends JModelLegacy
 
 					if (strpos($value, "\n") !== false || strpos($value, "\r") !== false)
 					{
-						$new_field[RSFORM_DIR_INPUT] = '<textarea ' . $placeholder . ' style="width: 95%" class="rs_textarea'.$invalid.'" rows="10" cols="60" name="form['.$name.']">'.RSFormProHelper::htmlEscape($value).'</textarea>';
+						$new_field[RSFORM_DIR_INPUT] = '<textarea ' . $placeholder . ' style="width: 95%" class="rs_textarea'.$invalid.'" id="' . $new_field[RSFORM_DIR_ID] . '" rows="10" cols="60" name="form['.$name.']">'.RSFormProHelper::htmlEscape($value).'</textarea>';
 					}
 					else
 					{
-						$new_field[RSFORM_DIR_INPUT] = '<input class="rs_inp rs_80'.$invalid.'" type="text" name="form['.$name.']" value="'.RSFormProHelper::htmlEscape($value).'" ' . $placeholder . ' />';
+						$new_field[RSFORM_DIR_INPUT] = '<input class="rs_inp rs_80 form-control'.$invalid.'" type="text" id="' . $new_field[RSFORM_DIR_ID] . '" name="form['.$name.']" value="'.RSFormProHelper::htmlEscape($value).'" ' . $placeholder . ' />';
 					}
 					break;
 
@@ -1140,12 +1243,13 @@ class RsformModelDirectory extends JModelLegacy
 					}
 					else
 					{
-						$new_field[RSFORM_DIR_INPUT] = '<textarea ' . $placeholder . ' style="width: 95%" class="rs_textarea'.$invalid.'" rows="10" cols="60" name="form['.$name.']">'.RSFormProHelper::htmlEscape($value).'</textarea>';
+						$new_field[RSFORM_DIR_INPUT] = '<textarea ' . $placeholder . ' style="width: 95%" class="rs_textarea form-control'.$invalid.'" rows="10" cols="60" id="' . $new_field[RSFORM_DIR_ID] . '" name="form['.$name.']">'.RSFormProHelper::htmlEscape($value).'</textarea>';
 					}
 					break;
 
 				case 'checkboxGroup':
 				case 'radioGroup':
+					$new_field[RSFORM_DIR_ID] = false;
 					$options = array();
 					$value = !empty($values) ? $value : RSFormProHelper::explode($value);
 					$value = (array) $value;
@@ -1259,12 +1363,15 @@ class RsformModelDirectory extends JModelLegacy
 
 					if ($invalid)
 					{
-						$attribs[] = 'class="' . $invalid . '"';
+						$attribs[] = 'class="form-select' . $invalid . '"';
 					}
-
+					else
+					{
+						$attribs[] = 'class="form-select"';
+					}
 					$attribs = implode(' ', $attribs);
 
-					$new_field[RSFORM_DIR_INPUT] = JHtml::_('select.genericlist', $options, 'form['.$name.'][]', $attribs, 'value', 'text', $value);
+					$new_field[RSFORM_DIR_INPUT] = JHtml::_('select.genericlist', $options, 'form['.$name.'][]', $attribs, 'value', 'text', $value, $new_field[RSFORM_DIR_ID]);
 					break;
 
 				case 'fileUpload':
@@ -1288,7 +1395,7 @@ class RsformModelDirectory extends JModelLegacy
 
 					$multiple =  !empty($data['MULTIPLE']) && $data['MULTIPLE'] == 'YES';
 
-					$new_field[RSFORM_DIR_INPUT] .= '<input size="45" type="file" name="form['.$name.']' . ($multiple ? '[]' : '') . '" ' . ($multiple ? 'multiple' : '') . ' />';
+					$new_field[RSFORM_DIR_INPUT] .= '<input size="45" class="form-control" id="' . $new_field[RSFORM_DIR_ID] .'" type="file" name="form['.$name.']' . ($multiple ? '[]' : '') . '" ' . ($multiple ? 'multiple' : '') . ' />';
 					break;
 
 				case 'jQueryCalendar':
@@ -1358,6 +1465,15 @@ class RsformModelDirectory extends JModelLegacy
 
 					$new_field[RSFORM_DIR_INPUT] = $out;
 
+					if ($field->type === 'jQueryCalendar')
+					{
+						$new_field[RSFORM_DIR_ID] = 'txtjQcal' . $fieldClass->customId;
+					}
+					elseif ($field->type === 'calendar')
+					{
+						$new_field[RSFORM_DIR_ID] = 'txtcal' . $fieldClass->customId;
+					}
+
 					break;
 			}
 
@@ -1396,5 +1512,63 @@ class RsformModelDirectory extends JModelLegacy
 		}
 
 		return 0;
+	}
+
+	public function translateDateFormat($format)
+	{
+		$translationTable = array(
+			'%a' => "D", // Abbreviated weekday name (Sun..Sat)
+			'%b' => "M", // Abbreviated month name (Jan..Dec)
+			'%c' => "n", // Month, numeric (0..12)
+			'%D' => "jS", // Day of the month with English suffix (0th, 1st, 2nd, 3rd, …)
+			'%d' => "d", // Day of the month, numeric (00..31)
+			'%e' => "j", // Day of the month, numeric (0..31)
+			'%f' => "u", // Microseconds (000000..999999)
+			'%H' => "H", // Hour (00..23)
+			'%h' => "h", // Hour (01..12)
+			'%I' => "h", // Hour (01..12)
+			'%i' => "i", // Minutes, numeric (00..59)
+			'%j' => "z", // Day of year (001..366)
+			'%k' => "G", // Hour (0..23)
+			'%l' => "g", // Hour (1..12)
+			'%M' => "F", // Month name (January..December)
+			'%m' => "m", // Month, numeric (00..12)
+			'%p' => "A", // AM or PM
+			'%r' => "H:i:s A", // Time, 12-hour (hh:mm:ss followed by AM or PM)
+			'%S' => "s", // Seconds (00..59)
+			'%s' => "s", // Seconds (00..59)
+			'%T' => "H:i:s", // Time, 24-hour (hh:mm:ss)
+			'%W' => "l", // Weekday name (Sunday..Saturday)
+			'%w' => "w", // Day of the week (0=Sunday..6=Saturday)
+			'%Y' => "Y", // Year, numeric, four digits
+			'%y' => "y" // Year, numeric (two digits)
+		);
+
+		$newFormat = '';
+
+		for ($i = 0; $i < strlen($format); $i++)
+		{
+			$current = $format[$i];
+
+			// get previous char to see if is the dash
+			$previous = isset($format[($i-1)]) ? $format[($i-1)] : '';
+
+			if ($current == "\\" || $previous == "\\")
+			{
+				$newFormat .= $current;
+				continue;
+			}
+
+			if (($pos = array_search($current, $translationTable)) !== false)
+			{
+				$newFormat .= $pos;
+			}
+			else
+			{
+				$newFormat .= $current;
+			}
+		}
+
+		return $newFormat;
 	}
 }

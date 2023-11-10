@@ -9,6 +9,7 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Model;
 
 defined('_JEXEC') or die;
 
+use Akeeba\Component\AkeebaBackup\Administrator\Helper\JoomlaPublicFolder;
 use Akeeba\Component\AkeebaBackup\Administrator\Mixin\TriggerEventTrait;
 use Akeeba\Engine\Base\Part;
 use Akeeba\Engine\Core\Timer;
@@ -757,7 +758,7 @@ class BackupModel extends BaseDatabaseModel
 
 		if (!class_exists(WebPush::class))
 		{
-			\JLoader::registerNamespace('Akeeba\\WebPush', JPATH_ADMINISTRATOR . '/components/com_akeebabackup/webpush');
+			require_once JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/autoload.php';
 		}
 
 	}

@@ -9,7 +9,6 @@ defined('_JEXEC') or die('Restricted access');
 
 class RsformControllerSubmissions extends RsformController
 {
-    public $_db;
 
 	public function __construct($config = array())
 	{
@@ -21,8 +20,6 @@ class RsformControllerSubmissions extends RsformController
 		$this->registerTask('exportExcel', 		'export');
 		$this->registerTask('exportExcelXML', 	'export');
 		$this->registerTask('exportXML', 		'export');
-		
-		$this->_db = JFactory::getDbo();
 	}
 
 	public function manage()
@@ -111,7 +108,7 @@ class RsformControllerSubmissions extends RsformController
 		$cid 	= array_map('intval', $cid);
 		$model 	= $this->getModel('submissions');
 
-		$model->confirm($cid);
+		$model->confirm($formId, $cid);
 
 		$this->setRedirect('index.php?option=com_rsform&view=submissions&formId=' . $formId, JText::_('COM_RSFORM_SUBMISSIONS_CONFIRMED'));
 	}
@@ -324,6 +321,8 @@ class RsformControllerSubmissions extends RsformController
                     $submission->Lang           = $defaultLang;
                     $submission->UserId			= 0;
                     $submission->confirmed		= 1;
+                    $submission->ConfirmedDate  = null;
+                    $submission->ConfirmedIp    = '';
                     $submission->SubmissionHash	= JApplicationHelper::getHash(JUserHelper::genRandomPassword());
                     foreach ($staticHeaders as $staticHeader)
                     {
@@ -334,16 +333,16 @@ class RsformControllerSubmissions extends RsformController
                             unset($tmpHeaders[$position]);
                             unset($data[$position]);
 
-							if ($staticHeader === 'DateSubmitted')
+							if ($staticHeader === 'DateSubmitted' || $staticHeader === 'ConfirmedDate')
 							{
 								try
 								{
-									$submission->DateSubmitted = JFactory::getDate($submission->DateSubmitted, $app->get('offset'))->toSql();
+									$tmpDate = JFactory::getDate($submission->{$staticHeader}, $app->get('offset'))->toSql();
+									$submission->{$staticHeader} = $tmpDate;
 								}
 								catch (Exception $e)
 								{
-									// Revert
-									$submission->DateSubmitted = $defaultDate;
+									// Reverts automatically because getDate() throws an exception
 								}
 							}
 							elseif ($staticHeader === 'confirmed')
@@ -854,7 +853,7 @@ class RsformControllerSubmissions extends RsformController
 	public function viewFile()
 	{
 		$app	= JFactory::getApplication();
-		$db		= &$this->_db;
+		$db		= JFactory::getDbo();
 		$id 	= $app->input->getInt('id');
 		$file   = $app->input->getCmd('file');
 		

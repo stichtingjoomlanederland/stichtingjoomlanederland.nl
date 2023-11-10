@@ -5,7 +5,7 @@
  * @license   GNU General Public License version 3, or later
  */
 
-namespace Joomla\Plugin\Quickicon\AkeebaBackup\Extension;
+namespace Akeeba\Plugin\QuickIcon\AkeebaBackup\Extension;
 
 defined('_JEXEC') || die;
 
@@ -110,9 +110,12 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface, DatabaseAwa
 		// Load the Akeeba Engine, if required
 		if (!defined('AKEEBAENGINE'))
 		{
+			// Load Composer dependencies
+			$autoloader = require_once JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/autoload.php';
+
 			// Necessary defines for Akeeba Engine
 			define('AKEEBAENGINE', 1);
-			define('AKEEBAROOT', JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine');
+			define('AKEEBAROOT', JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/engine');
 
 			// Make sure we have a profile set throughout the component's lifetime
 			$profile_id = $this->getApplication()->getSession()->get('akeebebackup.profile');
@@ -139,6 +142,9 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface, DatabaseAwa
 			}
 
 			Platform::addPlatform('joomla', JPATH_ADMINISTRATOR . '/components/com_akeebabackup/platform/Joomla');
+
+			// Apply a custom path for the encrypted settings key file
+			Factory::getSecureSettings()->setKeyFilename(JPATH_ADMINISTRATOR . '/components/com_akeebabackup/serverkey.php');
 
 			// !!! IMPORTANT !!! DO NOT REMOVE! This triggers Akeeba Engine's autoloader. Without it the next line fails!
 			$DO_NOT_REMOVE = Platform::getInstance();
@@ -170,7 +176,7 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface, DatabaseAwa
 		];
 
 		// Do I need to parse backup warnings?
-		if ($this->params->get('enablewarning', 0) == 0)
+		if ($this->params->get('enablewarning', 0) == 1)
 		{
 			// Do not remove; required to load the Akeeba Engine configuration
 			$engineConfig = Factory::getConfiguration();
@@ -203,7 +209,7 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface, DatabaseAwa
 			$warning = is_null($record);
 
 			// Process "failed backup" warnings, if specified
-			if ((!is_null($record) && $this->params->get('warnfailed', 0) == 0))
+			if ((!is_null($record) && $this->params->get('warnfailed', 0) == 1))
 			{
 				$warning = (($record->status == 'fail') || ($record->status == 'run'));
 			}

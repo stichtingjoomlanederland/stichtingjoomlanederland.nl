@@ -224,9 +224,9 @@ class RSFormProXLSX
 	{
 		// https://www.accountingweb.com/technology/excel/seven-characters-you-cant-use-in-worksheet-names
 		$string = str_replace(array('\\', '/', '*', '[', ']', ':', '?'), '', $string);
-		if (strlen(utf8_decode($string)) > 31)
+		if (\Joomla\String\StringHelper::strlen($string) > 31)
 		{
-			$string = substr($string, 0, 31);
+			$string = \Joomla\String\StringHelper::substr($string, 0, 31);
 		}
 
 		return $this->escape($string);

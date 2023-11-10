@@ -8,6 +8,9 @@
  * @link       https://rolandd.com
  */
 
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+
 defined('_JEXEC') or die;
 
 $jdideal = $displayData['jdideal'];
@@ -16,7 +19,7 @@ $root = $displayData['root'];
 $output = $displayData['output'];
 
 // Load the stylesheet
-JHtml::stylesheet('com_jdidealgateway/payment.css', null, true);
+HTMLHelper::stylesheet('com_jdidealgateway/payment.css', null, true);
 
 ?>
 <div id="paybox">
@@ -38,9 +41,9 @@ JHtml::stylesheet('com_jdidealgateway/payment.css', null, true);
 			<div class="clr"></div>
 			<div id="paybox_button">
 				<?php
-				echo JHtml::link(
+				echo HTMLHelper::link(
 					$root,
-					JText::_('COM_ROPAYMENTS_GO_TO_CASH_REGISTER'),
+					Text::_('COM_ROPAYMENTS_GO_TO_CASH_REGISTER'),
 					'onclick="document.idealform' . $data->logid . '.submit(); return false;"'
 				);
 				?>
@@ -62,8 +65,8 @@ switch ($data->redirect)
 		break;
 	case 'timer':
 		/* show timer before going to bank */
-		$payment_info = '<div id="showtimer">' . JText::_('COM_ROPAYMENTS_REDIRECT_5_SECS');
-		$payment_info .= ' ' . JHtml::_('link', '', JText::_('COM_ROPAYMENTS_DO_NOT_REDIRECT'), array('onclick' => 'clearTimeout(timeout);return false;')) . '</div>';
+		$payment_info = '<div id="showtimer">' . Text::_('COM_ROPAYMENTS_REDIRECT_5_SECS');
+		$payment_info .= ' ' . HTMLHelper::_('link', '', Text::_('COM_ROPAYMENTS_DO_NOT_REDIRECT'), array('onclick' => 'clearTimeout(timeout);return false;')) . '</div>';
 		$payment_info .= '<script type="text/javascript">';
 		$payment_info .= '	var timeout = setTimeout("document.idealform' . $data->logid . '.submit()", 5000);';
 		$payment_info .= '</script>';

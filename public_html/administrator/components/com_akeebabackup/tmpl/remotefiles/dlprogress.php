@@ -8,6 +8,7 @@
 // Protect from unauthorized access
 defined('_JEXEC') || die();
 
+use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
 
@@ -21,8 +22,9 @@ use Joomla\CMS\Router\Route;
     <?= Text::sprintf('COM_AKEEBABACKUP_REMOTEFILES_LBL_DOWNLOADEDSOFAR', $this->done, $this->total, $this->percent) ?>
 </div>
 
-<form action="<?= Route::_('index.php?option=com_akeebabackup&view=Remotefiles&task=dltoserver&tmpl=component') ?>" method="post" name="adminForm" id="adminForm">
+<form action="<?= Route::_('index.php?option=com_akeebabackup&task=Remotefiles.dltoserver&tmpl=component') ?>" method="post" name="adminForm" id="adminForm">
     <input type="hidden" name="id" value="<?= (int)$this->id ?>" />
     <input type="hidden" name="part" value="<?= (int)$this->part ?>" />
     <input type="hidden" name="frag" value="<?= (int)$this->frag ?>" />
+	<?= HTMLHelper::_('form.token') ?>
 </form>

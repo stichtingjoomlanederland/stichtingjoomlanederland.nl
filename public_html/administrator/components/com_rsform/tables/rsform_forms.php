@@ -48,10 +48,10 @@ class TableRSForm_Forms extends JTable
 	public $AdminEmailTo = '';
 	public $AdminEmailCC = '';
 	public $AdminEmailBCC = '';
-	public $AdminEmailFrom = '';
+	public $AdminEmailFrom = '{global:mailfrom}';
 	public $AdminEmailReplyTo = '';
 	public $AdminEmailReplyToName = '';
-	public $AdminEmailFromName = '';
+	public $AdminEmailFromName = '{global:fromname}';
 	public $AdminEmailSubject = '';
 	public $AdminEmailMode = 1;
 	public $AdminEmailGenerate = 0;

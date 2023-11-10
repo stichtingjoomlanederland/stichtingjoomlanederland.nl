@@ -14,8 +14,10 @@ namespace Jdideal\Psp;
 defined('_JEXEC') or die;
 
 use Jdideal\Gateway;
+use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Uri\Uri;
 use Joomla\Input\Input;
 
 /**
@@ -58,13 +60,13 @@ class Targetpay
 	 *
 	 * @since   4.0.0
 	 */
-	public function __construct(Input $jinput)
+	public function __construct($jinput)
 	{
 		// Set the input
 		$this->jinput = $jinput;
 
 		// Set the database
-		$this->db = \JFactory::getDbo();
+		$this->db = Factory::getDbo();
 
 		// Put the return data in an array, data is constructed as name=value
 		$this->data['transaction_id'] = $jinput->get('trxid');
@@ -281,7 +283,7 @@ class Targetpay
 	 */
 	public function sendPayment(Gateway $jdideal): void
 	{
-		$app   = \JFactory::getApplication();
+		$app   = Factory::getApplication();
 		$logId = $this->jinput->get('logid', 0, 'int');
 
 		// Load the stored data
@@ -291,7 +293,7 @@ class Targetpay
 		{
 			$jdideal->log('No details found for this transaction', $logId);
 
-			throw new \RuntimeException(\JText::sprintf('COM_ROPAYMENTS_NO_TRANSACTION_DETAILS', 'Targetpay', $logId));
+			throw new \RuntimeException(Text::sprintf('COM_ROPAYMENTS_NO_TRANSACTION_DETAILS', 'Targetpay', $logId));
 		}
 
 		// Replace some predefined values
@@ -311,8 +313,8 @@ class Targetpay
 		$targetPay->country     = $jdideal->get('country');
 		$targetPay->language    = $jdideal->get('lang');
 		$targetPay->type        = $jdideal->get('type');
-		$targetPay->returnurl   = \JUri::root() . 'cli/notify.php?output=customer';
-		$targetPay->reporturl   = \JUri::root() . 'cli/notify.php';
+		$targetPay->returnurl   = Uri::root() . 'cli/notify.php?output=customer';
+		$targetPay->reporturl   = Uri::root() . 'cli/notify.php';
 		$targetPay->testmode    = $jdideal->get('testmode', 0);
 
 		$jdideal->setCurrency('EUR', $logId);

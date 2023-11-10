@@ -14,6 +14,7 @@ use Jdideal\Gateway;
 use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Http\HttpFactory;
+use Joomla\CMS\Uri\Uri;
 use Joomla\Registry\Registry;
 
 /**
@@ -446,7 +447,7 @@ class TargetPay
 		$aParams           = [];
 		$aParams['action'] = 'start';
 		$aParams['ip']     = $_SERVER['REMOTE_ADDR'];
-		$aParams['domain'] = JUri::root();
+		$aParams['domain'] = Uri::root();
 		$aParams['rtlo']   = $this->rtlo;
 
 		return $aParams;

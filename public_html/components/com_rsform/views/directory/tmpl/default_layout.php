@@ -18,7 +18,7 @@ JHtml::_('stylesheet', 'com_rsform/rsicons.css', array('relative' => true, 'vers
 	<thead>
 		<tr>
 			<?php if ($this->directory->enablecsv) { ?>
-				<th align="center" class="center" width="1%"><input type="checkbox" name="toggle" value="" onclick="Joomla.checkAll(this);" /></th>
+				<th align="center" class="center" width="1%"><?php echo JHtml::_('grid.checkall'); ?></th>
 			<?php } ?>
 			<?php foreach ($this->viewableFields as $field) { ?>
 				<th align="center" class="center directoryHead directoryHead<?php echo $this->getFilteredName($field->FieldName); ?>"><?php echo JHtml::_('grid.sort', $field->FieldCaption, $field->FieldName, $listDirn, $listOrder); ?></th>

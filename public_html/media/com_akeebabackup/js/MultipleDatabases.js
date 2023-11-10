@@ -309,7 +309,7 @@ akeebabackup.Multidb.addRow = function (root, def, append_to_here)
 
             akeebabackup.System.doAjax(query, function (response)
             {
-                if (response != true)
+                if ((response?.success ?? false) !== true)
                 {
                     document.getElementById("ak_editor_notifier_content").textContent =
                         Joomla.Text._("COM_AKEEBABACKUP_MULTIDB_GUI_LBL_SAVEFAIL");

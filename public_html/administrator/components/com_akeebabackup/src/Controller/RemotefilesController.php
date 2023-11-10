@@ -114,6 +114,8 @@ class RemotefilesController extends BaseController
 	 */
 	public function dltoserver()
 	{
+		$this->checkToken($this->input->getMethod());
+
 		// Get the parameters
 		$id   = $this->getAndCheckId();
 		$part = $this->input->get('part', -1, 'int');

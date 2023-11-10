@@ -760,11 +760,9 @@ akeebabackup.Fsfilters.renderTab = function (data)
     var tbody       = document.getElementById("ak_list_contents");
     tbody.innerHTML = "";
 
-    for (var counter = 0; counter < data.length; counter++)
+    if (data?.list?.length)
     {
-        var def = data[counter];
-
-        akeebabackup.Fsfilters.addRow(def, tbody);
+        data.list.forEach(def => akeebabackup.Fsfilters.addRow(def, tbody));
     }
 };
 

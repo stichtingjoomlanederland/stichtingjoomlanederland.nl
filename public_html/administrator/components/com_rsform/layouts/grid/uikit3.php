@@ -13,18 +13,18 @@ require_once __DIR__ . '/grid.php';
 class RSFormProGridUikit3 extends RSFormProGrid
 {
 	protected $sizes = array(
-		1 => 'uk-width-1-12',
-		2 => 'uk-width-2-12',
-		3 => 'uk-width-3-12',
-		4 => 'uk-width-4-12',
-		5 => 'uk-width-5-12',
-		6 => 'uk-width-6-12',
-		7 => 'uk-width-7-12',
-		8 => 'uk-width-8-12',
-		9 => 'uk-width-9-12',
-		10 => 'uk-width-10-12',
-		11 => 'uk-width-11-12',
-		12 => 'uk-width-12-12',
+		1 => 'uk-width-1-12', // no replacement
+		2 => 'uk-width-1-6@m',
+		3 => 'uk-width-1-4@m',
+		4 => 'uk-width-1-3@m',
+		5 => 'uk-width-5-12', // no replacement
+		6 => 'uk-width-1-2@m',
+		7 => 'uk-width-7-12', // no replacement
+		8 => 'uk-width-2-3@m',
+		9 => 'uk-width-3-4@m',
+		10 => 'uk-width-5-6@m',
+		11 => 'uk-width-11-12', // no replacement
+		12 => 'uk-width-1-1',
 	);
 	
 	public function generate()
@@ -152,8 +152,7 @@ class RSFormProGridUikit3 extends RSFormProGrid
 				$label .= "\t"."\t"."\t"."\t".'<label class="uk-form-label formControlLabel"';
 				$label .= $this->generateFor($data);
 				$label .= '{if ' . $placeholders['description'] . '}';
-				$label .= ' data-uk-tooltip="{pos:\'top-left\'}"';
-				$label .= ' title="' . $placeholders['description'] . '"';
+				$label .= ' uk-tooltip="title: ' . $placeholders['description'] . '; pos: top-left"';
 				$label .= '{/if}';
 				$label .= '>';
 				$label .= $placeholders['caption'];

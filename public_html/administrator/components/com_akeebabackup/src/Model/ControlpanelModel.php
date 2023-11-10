@@ -230,7 +230,7 @@ class ControlpanelModel extends BaseDatabaseModel
 		$params = ComponentHelper::getParams('com_akeebabackup');
 
 		// Do we have a key file?
-		$filename = AKEEBAROOT . '/serverkey.php';
+		$filename = JPATH_ADMINISTRATOR . '/components/com_akeebabackup/serverkey.php';
 
 		if (@file_exists($filename) && is_file($filename))
 		{
@@ -303,6 +303,12 @@ class ControlpanelModel extends BaseDatabaseModel
 			->order($db->qn('id') . " ASC");
 		$db->setQuery($query);
 		$profiles = $db->loadColumn();
+
+		// If there is only one profile it's the default, it's a new installation, and we want you to see the Configuration Wizard
+		if (count($profiles) === 1)
+		{
+			return;
+		}
 
 		// Save the current profile number
 		$oldProfile = JoomlaFactory::getApplication()->getSession()->get('akeebabackup.profile', 1);
@@ -837,7 +843,7 @@ class ControlpanelModel extends BaseDatabaseModel
 	{
 		// Load the server key file if necessary
 
-		$filename = AKEEBAROOT . '/serverkey.php';
+		$filename = JPATH_ADMINISTRATOR . '/components/com_akeebabackup/serverkey.php';
 		$key      = Factory::getSecureSettings()->getKey();
 
 		// Get the profiles information
@@ -928,7 +934,7 @@ class ControlpanelModel extends BaseDatabaseModel
 		$key    = base64_encode($rawKey);
 
 		$filecontents = "<?php defined('AKEEBAENGINE') or die(); define('AKEEBA_SERVERKEY', '$key'); ?>";
-		$filename     = AKEEBAROOT . '/serverkey.php';
+		$filename     = JPATH_ADMINISTRATOR . '/components/com_akeebabackup/serverkey.php';
 
 		$result = @file_put_contents($filename, $filecontents);
 

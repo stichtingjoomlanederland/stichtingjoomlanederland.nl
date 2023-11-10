@@ -34,15 +34,6 @@ class RSFormProRangeSlider
 		} else {
 			$values = str_replace(array("\r\n", "\r"), "\n", $values);
 			$values = explode("\n", $values);
-			$parsedValues = array();
-			foreach ($values as $key => $value) {
-				if (strpos($value, ';') !== false) {
-					$tmpValues = explode(';', $value);
-					$parsedValues = array_merge($parsedValues, $tmpValues);
-				} else {
-					$parsedValues[] = $value;
-				}
-			}
 			$this->sliderOptions[$formId][$customId]['values'] = $values;
 		}
 		

@@ -24,11 +24,21 @@ use Joomla\CMS\Language\Text;
 				<p>
 					<?= Text::_('COM_AKEEBABACKUP_SCHEDULE_LBL_LEGACYAPI_DISABLED') ?>
 				</p>
+				<p>
+					<a href="<?= $this->enableLegacyFrontendURL ?>" class="btn btn-primary">
+						<?= Text::_('COM_AKEEBABACKUP_SCHEDULE_BTN_ENABLE_LEGACYAPI') ?>
+					</a>
+				</p>
 			</div>
 		<?php elseif(!trim($this->checkinfo->info->secret)): ?>
 			<div class="alert alert-danger">
 				<p>
 					<?= Text::_('COM_AKEEBABACKUP_SCHEDULE_LBL_FRONTEND_SECRET') ?>
+				</p>
+				<p>
+					<a href="<?= $this->resetSecretWordURL ?>" class="btn btn-primary">
+						<?= Text::_('COM_AKEEBABACKUP_SCHEDULE_BTN_RESET_SECRETWORD') ?>
+					</a>
 				</p>
 			</div>
 		<?php else: ?>

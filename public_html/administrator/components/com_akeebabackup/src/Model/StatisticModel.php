@@ -75,7 +75,7 @@ class StatisticModel extends AdminModel
 
 		if (empty($data))
 		{
-			$data = $this->getItem();
+			$data = (object) $this->getItem()->getProperties();
 		}
 
 		$this->preprocessData('com_akeebabackup.statistic', $data);
@@ -132,16 +132,7 @@ class StatisticModel extends AdminModel
 			$context = $this->option . '.' . $this->name;
 
 			// Trigger the before delete event.
-			$dispatcher  =
-				class_exists(DispatcherAwareInterface::class) && ($this instanceof DispatcherAwareInterface)
-					? $this->getDispatcher()
-					: \Joomla\CMS\Factory::getApplication()->getDispatcher();
-			$className   = self::getEventClassByEventName($this->event_before_delete);
-			$eventObject = new $className($this->event_before_delete, [$context, $table]);
-			$result      = $dispatcher
-				->dispatch($this->event_before_delete, $eventObject)
-				->getArgument('result') ?: [];
-			$result      = is_array($result) ? $result : [];
+			$result = $this->triggerPluginEvent($this->event_before_delete, [$context, $table]);
 
 			if (\in_array(false, $result, true))
 			{
@@ -165,14 +156,7 @@ class StatisticModel extends AdminModel
 			}
 
 			// Trigger the after event.
-			$dispatcher  =
-				class_exists(DispatcherAwareInterface::class) && ($this instanceof DispatcherAwareInterface)
-					? $this->getDispatcher()
-					: \Joomla\CMS\Factory::getApplication()->getDispatcher();
-			$className   = self::getEventClassByEventName($this->event_after_delete);
-			$eventObject = new $className($this->event_after_delete, [$context, $table]);
-
-			$dispatcher->dispatch($this->event_after_delete, $eventObject);
+			$this->triggerPluginEvent($this->event_after_delete, [$context, $table]);
 		}
 
 		// Clear the component's cache

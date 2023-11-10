@@ -221,6 +221,13 @@ class RsformRouter extends JComponentRouterBase
 			}
 		}
 
+		$total = count($segments);
+
+		for ($i = 0; $i < $total; $i++)
+		{
+			$segments[$i] = str_replace(':', '-', $segments[$i]);
+		}
+
 		$app->triggerEvent('onRsformAfterFormBuildRoute', array(&$segments, &$query));
 
 		return $segments;
@@ -244,8 +251,17 @@ class RsformRouter extends JComponentRouterBase
 			case JText::_('COM_RSFORM_SEF_FORM'):
 				if (isset($segments[1]))
 				{
-					$exp = explode(':', $segments[1], 2);
+					if (strpos($segments[1], ':') !== false)
+					{
+						$exp = explode(':', $segments[1], 2);
+					}
+					else
+					{
+						$exp = explode('-', $segments[1], 2);
+					}
+
 					$query['formId'] = (int) $exp[0];
+					$query['view'] = 'rsform';
 				}
 				break;
 

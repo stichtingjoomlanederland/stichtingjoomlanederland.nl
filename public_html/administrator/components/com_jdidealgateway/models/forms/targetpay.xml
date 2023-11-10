@@ -57,6 +57,20 @@
             <option value="premiumsms">COM_JDIDEALGATEWAY_PAYMENT_METHOD_PREMIUMSMS</option>
         </field>
 
+        <field name="status-spacer" type="spacer" label="COM_ROPAYMENTS_SPACER_STATUS"/>
+
+        <field name="checkOrderStatus"
+               type="radio"
+               label="COM_ROPAYMENTS_CHECK_ORDER_STATUS_LABEL"
+               description="COM_ROPAYMENTS_CHECK_ORDER_STATUS_DESC"
+               required="true"
+               default="1"
+               class="btn-group btn-group-yesno"
+               labelclass="config">
+            <option value="0">JNO</option>
+            <option value="1">JYES</option>
+        </field>
+
         <field name="pendingStatus"
                type="jdideal.status"
                label="COM_ROPAYMENTS_STATUS_PENDING_LABEL"

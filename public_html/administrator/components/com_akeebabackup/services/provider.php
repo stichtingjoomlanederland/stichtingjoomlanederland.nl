@@ -8,6 +8,7 @@
 defined('_JEXEC') || die;
 
 use Akeeba\Component\AkeebaBackup\Administrator\Extension\AkeebaBackupComponent;
+use Akeeba\Component\AkeebaBackup\Administrator\Helper\JoomlaPublicFolder;
 use Akeeba\Component\AkeebaBackup\Administrator\Provider\CacheCleaner;
 use Akeeba\Component\AkeebaBackup\Administrator\Provider\ComponentParameters;
 use Joomla\CMS\Component\Router\RouterFactoryInterface;
@@ -47,6 +48,8 @@ return new class implements ServiceProviderInterface {
 		$container->set(
 			ComponentInterface::class,
 			function (Container $container) {
+				JoomlaPublicFolder::init();
+
 				$component = new AkeebaBackupComponent($container->get(ComponentDispatcherFactoryInterface::class));
 
 				$component->setRegistry($container->get(Registry::class));

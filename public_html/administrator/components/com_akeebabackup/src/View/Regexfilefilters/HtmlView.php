@@ -99,7 +99,9 @@ class HtmlView extends BaseHtmlView
 		// Add script options
 		$this->document
 			->addScriptOptions('akeebabackup.System.params.AjaxURL', Route::_('index.php?option=com_akeebabackup&view=Regexfilefilters&task=ajax', false))
-			->addScriptOptions('akeebabackup.Regexfilefilters.guiData', $model->get_regex_filters($siteRoot));
+			->addScriptOptions('akeebabackup.Regexfilefilters.guiData', [
+				'list' => $model->get_regex_filters($siteRoot)
+			]);
 
 		// Translations
 		Text::script('COM_AKEEBABACKUP_FILEFILTERS_LABEL_UIROOT');

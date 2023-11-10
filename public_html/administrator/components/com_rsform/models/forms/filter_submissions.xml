@@ -59,16 +59,18 @@
         <field
                 name="dateFrom"
                 type="calendar"
+                translateformat="true"
                 showtime="true"
                 todaybutton="true"
                 hint="RSFP_FROM"
                 format="%Y-%m-%d %H:%M:%S"
 				filter="USER_UTC"
-            />
+        />
 
         <field
                 name="dateTo"
                 type="calendar"
+                translateformat="true"
                 showtime="true"
                 todaybutton="true"
                 hint="RSFP_TO"

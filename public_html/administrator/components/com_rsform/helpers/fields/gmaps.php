@@ -149,11 +149,11 @@ class RSFormProFieldGMaps extends RSFormProFieldTextbox
 		
 		// Add the Google Maps API JS
 		if (!RSFormProFieldGMaps::$mapScript) {
-			$this->addCustomTag('<script src="https://maps.google.com/maps/api/js?key='.urlencode(RSFormProHelper::getConfig('google.api_key')).'&callback=RSFormPro.initGoogleMaps" type="text/javascript"></script>');
+			$this->addScript('https://maps.googleapis.com/maps/api/js?key='.urlencode(RSFormProHelper::getConfig('google.api_key')).'&callback=RSFormPro.initGoogleMaps');
 			// Do not load the script for every map field
 			RSFormProFieldGMaps::$mapScript = true;
 		}
 		// Add the custom script after the maps.js is loaded in the dom
-		$this->addCustomTag('<script type="text/javascript">'.$script.'</script>');
+		$this->addScriptDeclaration($script);
 	}
 }

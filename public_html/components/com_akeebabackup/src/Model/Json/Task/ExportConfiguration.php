@@ -57,7 +57,7 @@ class ExportConfiguration extends AbstractTask
 			// Load the server key file if necessary
 			if (!defined('AKEEBA_SERVERKEY'))
 			{
-				$filename = JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/serverkey.php';
+				$filename = JPATH_ADMINISTRATOR . '/components/com_akeebabackup/serverkey.php';
 
 				include_once $filename;
 			}

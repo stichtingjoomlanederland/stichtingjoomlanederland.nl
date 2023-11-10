@@ -9,6 +9,7 @@ INSERT IGNORE INTO `#__rsform_config` (`SettingName`, `SettingValue`) VALUES
 ('global.default_load_layout_framework', '1'),
 ('global.grid_show_previews', '1'),
 ('global.grid_show_caption', '0'),
+('global.preview_itemid', ''),
 ('calculations.thousands', ','),
 ('calculations.decimal', '.'),
 ('calculations.nodecimals', '2'),

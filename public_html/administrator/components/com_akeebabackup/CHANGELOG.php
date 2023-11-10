@@ -1,3 +1,73 @@
+Akeeba Backup 9.8.3
+================================================================================
+~ Identical to 9.8.2. Re-released as 9.8.3 because of an issue with the update server serving stale information.
+
+Akeeba Backup 9.8.2
+================================================================================
+# [MEDIUM] Using WebPush leads to PHP error under Joomla! 5
+# [LOW] The --force flag in akeeba:option:set was not working
+
+Akeeba Backup 9.8.1
+================================================================================
+~ Joomla 5 Dark Mode workarounds
++ Support for Joomla 5 custom public folder
++ Restoration: Support Joomla 5 custom public folder
++ Restoration: Use transactions to speed up large table restoration
+# [HIGH] The Quick Icon plugin does not show anything in the Joomla! control panel
+# [HIGH] The (deprecated) JSON API command to export the configuration fails when the configuration is encrypted
+# [HIGH] The akeeba:backup:delete CLI command threw an error due to a typo
+
+Akeeba Backup 9.8.0
+================================================================================
++ Use Composer to load all internal dependencies (backup engine, S3 library, WebPush library)
+# [LOW] Joomla 5: Manage Backups page does not work when the b/c plugin is disabled.
+
+Akeeba Backup 9.7.1
+================================================================================
+# [LOW] Possible PHP error when updating this along other extensions using the same post-installation script
+
+Akeeba Backup 9.7.0
+================================================================================
++ Notice about Joomla 4 End of Service
++ Workaround for Wasabi S3v4 signatures
++ Support for uploading to Shared With Me folders in Google Drive
+- Remove the non-functional “Hide toolbar” option from the Backup Now backend menu item
+~ Changed the plugins' namespace
+~ Joomla 5 preparation: Use DatabaseInterface instead of DatabaseDriver
+~ Joomla 5 preparation: Work around backwards incompatible changes in core plugin events
+~ Joomla 5 preparation: Normalise plugin event calling
+~ Joomla 5 preparation: Loading form data MUST NOT return a Table anymore
+~ Improved error reporting, removing the unhelpful "(HTML containing script tags)" message
+~ Improved mixed– and upper–case database prefix support at backup time
+~ Normalised view names
+# [MEDIUM] Upload to S3 would always use v2 signatures with a custom endpoint.
+# [MEDIUM] Visiting the Control Panel page would always try to save the Output Directory, replacing most variables
+# [MEDIUM] Resetting corrupt backups can cause a crash of the Control Panel page
+# [LOW] Trying to delete a profile which cannot be deleted results in error page instead of an above-the-table error message
+# [LOW] Cannot save an edited backup record leaving the comment blank
+# [LOW] Users are not prompted to run the Configuration Wizard on new installation
+
+Akeeba Backup 9.6.2
+================================================================================
+~ Block uninstallation of child extensions
+# [LOW] CLI backups no longer record an end date and time due to a change in Joomla's behavior
+# [LOW] Backup On Update: Would always use profile 1
+# [LOW] Backup On Update: Inversion of logic of the switches in its options page
+
+Akeeba Backup 9.6.1
+================================================================================
+# [MEDIUM] HTTP PUT might fail on some servers
+# [LOW] opcache_invalidate may not invalidate a file
+# [LOW] Would not work on 32-bit versions of PHP
+
+Akeeba Backup 9.6.0
+================================================================================
++ Support for files and archives over 2GiB (JPA file format 1.3)
++ New JSON API endpoint, using the Joomla API Application
+~ Disabled deprecated API methods
+~ Improve the Schedule Automatic Backups page
+# [MEDIUM] JSON API: deleteFiles method throws an exception due to a typo
+
 Akeeba Backup 9.5.1
 ================================================================================
 + Restoration: handle Joomla 4.2+ MFA options

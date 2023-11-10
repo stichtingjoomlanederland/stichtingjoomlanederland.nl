@@ -7,6 +7,8 @@
 
 defined('_JEXEC') or die('Restricted access');
 
+use Joomla\CMS\Version;
+
 class RsformViewRsform extends JViewLegacy
 {
 	protected $buttons;
@@ -21,8 +23,7 @@ class RsformViewRsform extends JViewLegacy
 		$this->buttons  = $this->get('Buttons');
 		$this->code		= $this->get('code');
 		$this->version	= (string) new RSFormProVersion();
-
-        JHtml::_('stylesheet', 'com_rsform/admin/dashboard.css', array('relative' => true, 'version' => 'auto'));
+		$this->jversion = new Version();
 		
 		parent::display($tpl);
 	}

@@ -14,6 +14,11 @@ class com_rsformInstallerScript
 	protected static $legacy = array('inline', '2lines', '2colsinline', '2cols2lines', 'inline-xhtml', '2lines-xhtml');
 
 	protected $warnPlugins = false;
+
+	protected $migrateResponsiveLayoutFramework = false;
+
+	private static $minJoomla = '3.9.0';
+    private static $minPHP = '5.5';
 	
 	public function update($parent) {
 		$db = JFactory::getDbo();
@@ -447,6 +452,20 @@ class com_rsformInstallerScript
 			$db->setQuery("ALTER TABLE `#__rsform_submissions` ADD `confirmed` TINYINT( 1 ) NOT NULL");
 			$db->execute();
 		}
+		if (!isset($columns['ConfirmedIp']))
+		{
+			$db->setQuery("ALTER TABLE `#__rsform_submissions` ADD `ConfirmedIp` varchar(255) NOT NULL default ''");
+			$db->execute();
+			$db->setQuery("UPDATE #__rsform_submissions SET ConfirmedIp = UserIp WHERE confirmed = 1;");
+			$db->execute();
+		}
+		if (!isset($columns['ConfirmedDate']))
+		{
+			$db->setQuery("ALTER TABLE `#__rsform_submissions` ADD `ConfirmedDate` datetime");
+			$db->execute();
+			$db->setQuery("UPDATE #__rsform_submissions SET ConfirmedDate = DateSubmitted WHERE confirmed = 1;");
+			$db->execute();
+		}
         if (!isset($columns['SubmissionHash'])) {
             $db->setQuery("ALTER TABLE `#__rsform_submissions` ADD `SubmissionHash` VARCHAR( 32 ) NOT NULL," .
                 "ADD KEY `SubmissionId` (`SubmissionId`,`FormId`,`DateSubmitted`)," .
@@ -636,9 +655,6 @@ class com_rsformInstallerScript
 						switch ($submitProperty) {
 							case 'DISPLAYPROGRESS':
 								$value = 'NO';
-							break;
-							case 'BUTTONTYPE':
-								$value = 'TYPEINPUT';
 							break;
 							case 'DISPLAYPROGRESSMSG':
 								$value = '<div>'."\r\n".' <p><em>Page <strong>{page}</strong> of {total}</em></p>'."\r\n".' <div class="rsformProgressContainer">'."\r\n".'  <div class="rsformProgressBar" style="width: {percent}%;"></div>'."\r\n".' </div>'."\r\n".'</div>';
@@ -864,6 +880,13 @@ class com_rsformInstallerScript
 			$db->setQuery('ALTER TABLE `#__rsform_calculations` ADD INDEX(`formId`), ADD INDEX (`ordering`), ADD INDEX (`formId`, `ordering`)')->execute();
 		}
 
+		$columns = $db->getTableColumns('#__rsform_directory_fields');
+        if (!isset($columns['sort']))
+        {
+	        $db->setQuery("ALTER TABLE `#__rsform_directory_fields` ADD `sort` tinyint(1) NOT NULL DEFAULT '0' AFTER `incsv`");
+	        $db->execute();
+        }
+
 		if (!empty($this->migrateResponsiveLayoutFramework)) {
 			$query = $db->getQuery(true);
 			$query->update($db->qn('#__rsform_forms'))
@@ -886,6 +909,47 @@ class com_rsformInstallerScript
 				->set($db->qn('GridLayout') . ' = ' . $db->q(''))
 				->where($db->qn('FormId') . ' IN (' . implode(',', $db->q($forms)) . ')');
 			$db->setQuery($query)->execute();
+		}
+
+		// Update legacy params
+		$query = $db->getQuery(true)
+			->select('*')
+			->from($db->qn('#__menu'))
+			->where($db->qn('client_id') . ' = ' . $db->q(0))
+			->where($db->qn('link') . ' IN (' . implode(',', $db->q(array('index.php?option=com_rsform&view=directory', 'index.php?option=com_rsform&view=submissions'))) . ')');
+		if ($items = $db->setQuery($query)->loadObjectList())
+		{
+			foreach ($items as $item)
+			{
+				if ($item->params)
+				{
+					$params = new JRegistry($item->params);
+					$userId	= $params->get('userId');
+					if ($userId === '0')
+					{
+						$params->set('show_all_submissions', 1);
+						$params->set('show_logged_in_submissions', 0);
+						$params->set('userId', '');
+					}
+					elseif ($userId == 'login')
+					{
+						$params->set('show_all_submissions', 0);
+						$params->set('show_logged_in_submissions', 1);
+						$params->set('userId', '');
+					}
+					else
+					{
+						continue;
+					}
+
+					$updateObject = (object) array(
+						'id' => $item->id,
+						'params' => $params->toString()
+					);
+
+					$db->updateObject('#__menu', $updateObject, array('id'));
+				}
+			}
 		}
 	}
 	
@@ -939,30 +1003,81 @@ class com_rsformInstallerScript
 			$installer = new JInstaller();
 			$installer->uninstall('plugin', $plg_installer_id);
 		}
+
+		// Uninstall the Page Cache - RSForm! Pro Plugin
+		$query = $db->getQuery(true);
+		$query->select($db->qn('extension_id'))
+			->from($db->qn('#__extensions'))
+			->where($db->qn('element').'='.$db->q('rsform'))
+			->where($db->qn('type').'='.$db->q('plugin'))
+			->where($db->qn('folder').'='.$db->q('pagecache'));
+		$db->setQuery($query);
+		$plg_installer_id = (int) $db->loadResult();
+
+		if (!empty($plg_installer_id)) {
+			// Get a new installer
+			$installer = new JInstaller();
+			$installer->uninstall('plugin', $plg_installer_id);
+		}
 	}
 	
 	public function preflight($type, $parent) {
-		$app 		= JFactory::getApplication();
-		$jversion 	= new JVersion();
-		
-		// Running 3.x
-		if (!$jversion->isCompatible('3.9.0'))
-		{
-			$app->enqueueMessage('Please upgrade to at least Joomla! 3.9.0 before continuing!', 'error');
-			return false;
-		}
+        try
+        {
+            if (!class_exists('\\Joomla\\CMS\\Version'))
+            {
+	            throw new Exception(sprintf('Please upgrade to at least Joomla! %s before continuing!', static::$minJoomla));
+            }
 
-		// Flag to check if we should set 'Load Layout Framework' to 'Yes' for 'Responsive' layout forms now that front.css is missing responsive declarations
-		if ($type == 'update' && !file_exists(JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/formlayouts/responsive.php'))
-		{
-			$this->migrateResponsiveLayoutFramework = true;
-		}
+	        $jversion = new \Joomla\CMS\Version;
+	        if (!$jversion->isCompatible(static::$minJoomla))
+	        {
+		        throw new Exception(sprintf('Please upgrade to at least Joomla! %s before continuing!', static::$minJoomla));
+	        }
 
-		// This has been added in 3.0.0, so it's an update from an older version
-		if ($type == 'update' && !is_dir(JPATH_ADMINISTRATOR . '/components/com_rsform/views/calculation'))
-		{
-			$this->warnPlugins = true;
-		}
+	        if (version_compare(PHP_VERSION, static::$minPHP, '<'))
+	        {
+		        throw new Exception('Please upgrade PHP to at least version ' . static::$minPHP . ' before continuing!');
+            }
+
+            if ($jversion->isCompatible('5.0'))
+            {
+	            if (!\Joomla\CMS\Plugin\PluginHelper::isEnabled('behaviour', 'compat'))
+	            {
+		            throw new Exception('To install RSForm! Pro in Joomla! 5 you need to enable the Behaviour - Backward Compatibility plugin. Keep this plugin enabled at all times!');
+                }
+            }
+
+	        // Flag to check if we should set 'Load Layout Framework' to 'Yes' for 'Responsive' layout forms now that front.css is missing responsive declarations
+	        if ($type == 'update' && !file_exists(JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/formlayouts/responsive.php'))
+	        {
+		        $this->migrateResponsiveLayoutFramework = true;
+	        }
+
+	        // This has been added in 3.0.0, so it's an update from an older version
+	        if ($type == 'update' && !is_dir(JPATH_ADMINISTRATOR . '/components/com_rsform/views/calculation'))
+	        {
+		        $this->warnPlugins = true;
+	        }
+        }
+        catch (Exception $e)
+        {
+            if (class_exists('\Joomla\CMS\Factory'))
+            {
+                $app = \Joomla\CMS\Factory::getApplication();
+            }
+            elseif (class_exists('JFactory'))
+            {
+	            $app = JFactory::getApplication();
+            }
+
+            if (!empty($app))
+            {
+	            $app->enqueueMessage($e->getMessage(), 'error');
+            }
+
+            return false;
+        }
 		
 		return true;
 	}
@@ -979,6 +1094,7 @@ class com_rsformInstallerScript
 		$messages = array(
 			'plg_installer' 				=> false,
 			'plg_rsformdeletesubmissions' 	=> false,
+            'plg_pagecache'                 => false,
 			'plugins' 						=> array(),
 			'modules' 						=> array()
 		);
@@ -1016,7 +1132,22 @@ class com_rsformInstallerScript
 
 		// Get a new installer
 		$installer = new JInstaller();
+		if ($installer->install($this->source.'/other/plg_pagecache')) {
+			$query = $db->getQuery(true);
+			$query->update('#__extensions')
+				->set($db->qn('enabled').'='.$db->q(1))
+				->where($db->qn('element').'='.$db->q('rsform'))
+				->where($db->qn('type').'='.$db->q('plugin'))
+				->where($db->qn('folder').'='.$db->q('pagecache'));
+			$db->setQuery($query);
+			$db->execute();
+
+			$messages['plg_pagecache'] = true;
+		}
+
+		// Get a new installer
 		if (version_compare(JVERSION, '4.0', '>=')) {
+			$installer = new JInstaller();
 			if ($installer->install($this->source.'/other/plg_console'))
 			{
 				$messages['plg_console'] = true;
@@ -1056,6 +1187,12 @@ class com_rsformInstallerScript
                     ->where($db->qn('SettingName') . ' = ' . $db->q('global.default_layout'));
 
                 $db->setQuery($query)->execute();
+
+	            $query = $db->getQuery(true)
+		            ->update('#__rsform_forms')
+		            ->set($db->qn('FormLayoutName') . ' = ' . $db->q('bootstrap5'))
+		            ->where($db->qn('FormLayoutName') . ' = ' . $db->q('responsive'));
+	            $db->setQuery($query)->execute();
             }
         }
 		
@@ -1100,8 +1237,6 @@ class com_rsformInstallerScript
 	}
 	
 	protected function showInstallMessage($messages=array()) {
-		$app			= JFactory::getApplication();
-		$isUpdateScreen = $app->input->get('option') == 'com_installer' && $app->input->get('view') == 'update';
 ?>
 <style type="text/css">
 .version-history {
@@ -1214,6 +1349,13 @@ class com_rsformInstallerScript
 			<b class="install-not-ok">Error installing!</b>
 			<?php } ?>
 		</p>
+        <p>Page Cache - RSForm! Pro Plugin ...
+			<?php if ($messages['plg_pagecache']) { ?>
+                <b class="install-ok">Installed</b>
+			<?php } else { ?>
+                <b class="install-not-ok">Error installing!</b>
+			<?php } ?>
+        </p>
         <?php
         if (isset($messages['plg_console']))
         {
@@ -1240,11 +1382,17 @@ class com_rsformInstallerScript
 				<p>This is an upgrade - please make sure you update all of your RSForm! Pro Plugins as well, since they have changed to support Joomla! 4 and this version of RSForm! Pro.</p>
 			</div>
 		<?php } ?>
-		<h2>Changelog v3.1.9</h2>
+		<h2>Changelog v3.2.2</h2>
 		<ul class="version-history">
-            <li><span class="version-fixed">Fix</span> PHP Code could not be saved in the 'Submissions - Directory' menu item's 'Dynamic Filtering Values' area.</li>
-            <li><span class="version-fixed">Fix</span> 'Show Only Filtering Results' now works with 'Dynamic Filtering Values'.</li>
-            <li><span class="version-fixed">Fix</span> Importing submissions from a CSV would throw an error if the 'Confirmed' column did not contain numeric values.</li>
+            <li><span class="version-new">New</span> 'Date and Time Picker' has the following validation rules available: 'Regex', 'Same Value as Other Field', 'Unique Field' and 'Unique Field per User'</li>
+            <li><span class="version-upgraded">Upg</span> Dark Mode in Joomla! 5 was unreadable.</li>
+            <li><span class="version-upgraded">Upg</span> Some Joomla! 5 code improvements.</li>
+            <li><span class="version-upgraded">Upg</span> Using Uikit3 @m classes for column sizing.</li>
+            <li><span class="version-upgraded">Upg</span> Bumped minimum requirements to use PHP 5.5</li>
+            <li><span class="version-fixed">Fix</span> Reply-To could be missing entirely when specifying multiple 'Reply-To' emails.</li>
+            <li><span class="version-fixed">Fix</span> Tooltips were not showing up in Joomla! 5 when editing a form field.</li>
+            <li><span class="version-fixed">Fix</span> In some cases restoring a backup from an old version of RSForm! Pro would throw an error.</li>
+            <li><span class="version-fixed">Fix</span> In some cases the 'Save Data To Database' option would not work correctly.</li>
 		</ul>
 		<a class="btn btn-large btn-lg btn-primary" href="index.php?option=com_rsform">Start using RSForm! Pro</a>
 		<a class="btn btn-secondary" href="https://www.rsjoomla.com/support/documentation/rsform-pro.html" target="_blank">Read the RSForm! Pro User Guide</a>

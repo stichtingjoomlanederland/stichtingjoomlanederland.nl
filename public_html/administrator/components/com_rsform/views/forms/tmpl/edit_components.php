@@ -6,8 +6,23 @@
 */
 
 defined('_JEXEC') or die('Restricted access');
+
+if (version_compare(JVERSION, '4.0', '>=')) {
+	JHtml::_('bootstrap.offcanvas');
+	JHtml::_('bootstrap.loadCss');
+}
+JHtml::_('bootstrap.dropdown');
 ?>
-	<ul class="rsform_leftnav" id="rsform_firstleftnav">
+<a class="btn btn-primary btn-lg btn-large" id="addFieldButton" onclick="RSFormPro.offcanvas.open();" href="#offcanvasFields" role="button" aria-controls="offcanvasFields">
+    <i class="icon-plus"></i> <?php echo JText::_('COM_RSFORM_ADD_FIELD'); ?>
+</a>
+<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasFields" aria-labelledby="offcanvasFieldsLabel">
+	<div class="offcanvas-header">
+		<h5 class="offcanvas-title" id="offcanvasFieldsLabel"><?php echo JText::_('COM_RSFORM_CHOOSE_A_FIELD'); ?></h5>
+		<button type="button" class="btn-close" onclick="RSFormPro.offcanvas.hide();" aria-label="<?php echo JText::_('RSFP_CLOSE'); ?>"></button>
+	</div>
+	<div class="offcanvas-body">
+		<ul class="rsform_leftnav w-100 mb-5">
 		<?php
 		$this->triggerEvent('onRsformBeforeShowComponents');
 
@@ -17,21 +32,21 @@ defined('_JEXEC') or die('Restricted access');
 			{
 				?>
 				<li class="rsform_navtitle"><?php echo $this->escape($fieldGroup->name); ?></li>
-				<?php
-				foreach ($fieldGroup->fields as $field)
-				{
-					if (!empty($field->exists))
-					{
-						$displayTemplate = sprintf('displayTemplate(%d, %d);', $field->id, $field->exists);
-					}
-					else
-					{
-						$displayTemplate = sprintf('displayTemplate(%d);', $field->id);
-					}
-					?>
-					<li><a href="javascript: void(0);" onclick="<?php echo $displayTemplate; ?>" id="rsfpc<?php echo $this->escape($field->id); ?>"><span class="<?php echo $this->escape($field->icon); ?>"></span><span class="inner-text"><?php echo $this->escape($field->name); ?></span></a></li>
 					<?php
-				}
+					foreach ($fieldGroup->fields as $field)
+					{
+						if (!empty($field->exists))
+						{
+							$displayTemplate = sprintf('displayTemplate(%d, %d);', $field->id, $field->exists);
+						}
+						else
+						{
+							$displayTemplate = sprintf('displayTemplate(%d);', $field->id);
+						}
+						?>
+						<li><a href="javascript: void(0);" onclick="<?php echo $displayTemplate; ?>" id="rsfpc<?php echo $this->escape($field->id); ?>"><span class="<?php echo $this->escape($field->icon); ?>"></span><span class="inner-text"><?php echo $this->escape($field->name); ?></span></a></li>
+						<?php
+					}
 			}
 
 			if ($fieldGroupName === 'standard')
@@ -41,7 +56,9 @@ defined('_JEXEC') or die('Restricted access');
 		}
 		?>
 		<?php $this->triggerEvent('onRsformBackendAfterShowComponents'); ?>
-	</ul>
+		</ul>
+	</div>
+</div>
 	
 	<input type="hidden" name="componentIdToEdit" id="componentIdToEdit" value="-1" />
 

@@ -391,43 +391,75 @@ function number_format(number, decimals, dec_point, thousands_sep) {
 	return s;
 }
 
-function changeValidation(elem) {
-	if (elem == null) return;
-	if (elem.id == 'VALIDATIONRULE') {
-		if (document.getElementById('idVALIDATIONEXTRA')) {
-			if (elem.value == 'regex') {
-                theText = Joomla.JText._('RSFP_COMP_FIELD_VALIDATIONEXTRAREGEX');
-			} else if (elem.value == 'sameas') {
-                theText = Joomla.JText._('RSFP_COMP_FIELD_VALIDATIONEXTRASAMEAS');
-			} else {
-				theText = Joomla.JText._('RSFP_COMP_FIELD_VALIDATIONEXTRA');
-			}
-			document.getElementById('captionVALIDATIONEXTRA').innerHTML = theText;
+function getValidationExtraText(value)
+{
+	var theText;
 
-			if (elem.value == 'custom' || elem.value == 'numeric' || elem.value == 'alphanumeric' || elem.value == 'alpha' || elem.value == 'regex' || elem.value == 'sameas')
-				document.getElementById('idVALIDATIONEXTRA').className = 'showVALIDATIONEXTRA control-group';
-			else
-				document.getElementById('idVALIDATIONEXTRA').className = 'hideVALIDATIONEXTRA control-group';
-		}
-		
+	switch (value)
+	{
+		case 'regex':
+			theText = Joomla.JText._('RSFP_COMP_FIELD_VALIDATIONEXTRAREGEX');
+			break;
+
+		case 'sameas':
+			theText = Joomla.JText._('RSFP_COMP_FIELD_VALIDATIONEXTRASAMEAS');
+			break;
+
+		case 'minlength':
+		case 'maxlength':
+			theText = Joomla.JText._('RSFP_COMP_FIELD_VALIDATIONEXTRALENGTH');
+			break;
+
+		default:
+			theText = Joomla.JText._('RSFP_COMP_FIELD_VALIDATIONEXTRA');
+			break;
+	}
+
+	return theText;
+}
+
+function changeValidation(elem) {
+	if (elem == null) {
+		return;
+	}
+
+	var theText;
+
+	if (elem.id === 'VALIDATIONRULE') {
+		var extraId = document.getElementById('idVALIDATIONEXTRA');
 		var multipleRulesField = document.getElementById('idVALIDATIONMULTIPLE');
-		if (elem.value == 'multiplerules') {
-			multipleRulesField.style.display = 'block';
+		if (extraId) {
+			document.getElementById('captionVALIDATIONEXTRA').innerHTML = getValidationExtraText(elem.value);
+			extraId.classList.add('control-group');
+
+			if (['custom', 'numeric', 'alphanumeric', 'alpha', 'regex', 'sameas', 'minlength', 'maxlength'].indexOf(elem.value) > -1) {
+				extraId.classList.remove('hideVALIDATIONEXTRA');
+			} else {
+				extraId.classList.add('hideVALIDATIONEXTRA');
+			}
+		}
+
+		if (elem.value === 'multiplerules') {
+			multipleRulesField.classList.remove('hideVALIDATIONMULTIPLE');
 			changeValidation(document.getElementById('VALIDATIONMULTIPLE'));
 		} else {
-			multipleRulesField.style.display = 'none';
-			document.getElementById('VALIDATIONEXTRA').name='param[VALIDATIONEXTRA]';
+			multipleRulesField.classList.add('hideVALIDATIONMULTIPLE');
+			document.getElementById('VALIDATIONEXTRA').name = 'param[VALIDATIONEXTRA]';
 			
 			// if the saved extra value of the multiple rule exist in the current rule selection keep it, if no leave it as it is
 			var savedExtra = document.getElementById('VALIDATIONEXTRA').value;
+			var hasOldConfig = false;
 			try {
-				eval('var savedExtraObject='+savedExtra);
+				var savedExtraObject = JSON.parse(savedExtra);
+				hasOldConfig = true;
 			} catch(e) {
 				var savedExtraObject = {};
 			}
 			
 			if (typeof savedExtraObject == 'object' && typeof savedExtraObject[elem.value] != 'undefined') {
 				document.getElementById('VALIDATIONEXTRA').value = savedExtraObject[elem.value];
+			} else if (hasOldConfig) {
+				document.getElementById('VALIDATIONEXTRA').value = '';
 			}
 			
 			// remove previous created extra validations for the multiple validation
@@ -436,10 +468,10 @@ function changeValidation(elem) {
 				previousExtras[i].parentNode.removeChild(previousExtras[i]);
 			} 
 		}
-	} else if (elem.id == 'VALIDATIONMULTIPLE') {
+	} else if (elem.id === 'VALIDATIONMULTIPLE') {
 		var selectedValues = [];
 		for (i = 0; i < elem.length; i++) {
-			if (elem[i].selected && (elem[i].value == 'custom' || elem[i].value == 'numeric' || elem[i].value == 'alphanumeric' || elem[i].value == 'alpha' || elem[i].value == 'regex' || elem[i].value == 'sameas')) {
+			if (elem[i].selected && ['custom', 'numeric', 'alphanumeric', 'alpha', 'regex', 'sameas', 'minlength', 'maxlength'].indexOf(elem[i].value) > -1) {
 				selectedValues.push(elem[i].value);
 			}
 		}
@@ -456,7 +488,7 @@ function changeValidation(elem) {
 		// the default validation extra value if already saved
 		var savedExtra = document.getElementById('VALIDATIONEXTRA').value;
 		try {
-			eval('var savedExtraObject='+savedExtra);
+			var savedExtraObject = JSON.parse(savedExtra);
 		} catch(e) {
 			var savedExtraObject = {};
 		}
@@ -466,43 +498,40 @@ function changeValidation(elem) {
 		jQuery(clonedElement).removeClass('hideVALIDATIONEXTRA');
 		
 		var afterElement = document.getElementById('idVALIDATIONMULTIPLE');
-		
-		for (var i = 0; i < selectedValues.length; i++) {
-			var newclonedElement = clonedElement.cloneNode(true);
-			jQuery(newclonedElement).addClass('mValidation '+selectedValues[i]);
+		var newclonedElement;
+
+		for (var i = selectedValues.length - 1; i > -1; i--) {
+			newclonedElement = clonedElement.cloneNode(true);
+			newclonedElement.classList.add('mValidation');
+			newclonedElement.classList.add(selectedValues[i]);
 			
 			var captionElement = newclonedElement.querySelector('#captionVALIDATIONEXTRA');
 			var validationElement = newclonedElement.querySelector('#VALIDATIONEXTRA');
 			
-			captionElement.id='captionValidation'+selectedValues[i];
-			validationElement.id='Validation'+selectedValues[i];
-			validationElement.name="param[VALIDATIONEXTRA]["+selectedValues[i]+"]";
+			captionElement.id = 'captionValidation'+selectedValues[i];
+			validationElement.id = 'Validation'+selectedValues[i];
+			validationElement.name = "param[VALIDATIONEXTRA]["+selectedValues[i]+"]";
 			if (typeof savedExtraObject[selectedValues[i]] != 'undefined') {
 				validationElement.value = savedExtraObject[selectedValues[i]];
 			} else {
 				validationElement.value = '';
 			}
-			
-			if (selectedValues[i] == 'regex') {
-                theText = Joomla.JText._('RSFP_COMP_FIELD_VALIDATIONEXTRAREGEX');
-			} else if (selectedValues[i] == 'sameas') {
-                theText = Joomla.JText._('RSFP_COMP_FIELD_VALIDATIONEXTRASAMEAS');
-			} else {
-				theText = Joomla.JText._('RSFP_COMP_FIELD_VALIDATIONEXTRA');
+
+			theText = getValidationExtraText(selectedValues[i]);
+
+			var options = document.getElementById('VALIDATIONRULE').options;
+			for (var o = 0; o < options.length; o++)
+			{
+				if (options[o].value === selectedValues[i])
+				{
+					theText = options[o].text + ' - ' + theText;
+				}
 			}
 			
-			jQuery(document.getElementById('VALIDATIONRULE').options).each(function(){
-				if (this.value == selectedValues[i])
-				{
-					theText = this.text + ' - ' + theText;
-				}
-			});
-			
 			captionElement.innerHTML = theText;
-			
+
 			afterElement.parentNode.insertBefore(newclonedElement, afterElement.nextSibling);
 		}
-		
 	}
 }
 

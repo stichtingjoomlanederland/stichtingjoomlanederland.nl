@@ -97,7 +97,7 @@ class BackupFetch extends AbstractCommand
 
 		// Set the correct profile ID
 		/** @var SessionInterface $session */
-		$session   = JoomlaFactory::getApplication()->getSession();
+		$session   = $this->getApplication()->getSession();
 		$profileId = $record['profile_id'];
 
 		$session->set('akeebabackup.profile', $profileId);

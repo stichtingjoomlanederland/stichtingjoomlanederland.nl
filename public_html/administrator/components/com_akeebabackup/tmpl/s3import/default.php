@@ -18,9 +18,9 @@ use Joomla\CMS\Router\Route;
 
 	<input type="hidden" id="ak_s3import_folder" name="folder" value="<?= $this->escape($this->root) ?>" />
 
-    <div class="border bg-light mb-3">
+    <div class="akeebabackup-s3import-head card card-body p-3 bg-light mb-3">
 		<div class="row row-cols-lg-auto g-3 align-items-center">
-			<div class="col-12">
+			<div class="col">
 				<label class="visually-hidden" for="s3access">
 					<?= Text::_('COM_AKEEBABACKUP_CONFIG_S3ACCESSKEY_TITLE') ?>
 				</label>
@@ -30,7 +30,7 @@ use Joomla\CMS\Router\Route;
 					   placeholder="<?= Text::_('COM_AKEEBABACKUP_CONFIG_S3ACCESSKEY_TITLE') ?>" />
 			</div>
 
-			<div class="col-12">
+			<div class="col">
 				<label class="visually-hidden" for="s3secret">
 					<?= Text::_('COM_AKEEBABACKUP_CONFIG_S3SECRETKEY_TITLE') ?>
 				</label>
@@ -41,18 +41,18 @@ use Joomla\CMS\Router\Route;
 			</div>
 
 			<?php if(empty($this->buckets)): ?>
-			<div class="col-12">
+			<div class="col">
 				<button class="btn btn-primary" id="akeebaS3importResetRoot" type="submit">
 					<span class="fa fa-wifi"></span>
 					<?= Text::_('COM_AKEEBABACKUP_S3IMPORT_LABEL_CONNECT') ?>
 				</button>
 			</div>
 			<?php else: ?>
-			<div class="col-12">
+			<div class="col">
 				<?= $this->bucketSelect ?>
 			</div>
 
-			<div class="col-12">
+			<div class="col">
 				<button class="btn btn-primary" id="akeebaS3importResetRoot" type="submit">
 					<span class="fa fa-folder-open"></span>
 					<?= Text::_('COM_AKEEBABACKUP_S3IMPORT_LABEL_CHANGEBUCKET') ?>

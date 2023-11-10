@@ -15,7 +15,7 @@ use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
 use Joomla\Event\DispatcherInterface;
-use Joomla\Plugin\Task\AkeebaBackup\Extension\AkeebaBackup;
+use Akeeba\Plugin\Task\AkeebaBackup\Extension\AkeebaBackup;
 
 return new class implements ServiceProviderInterface {
 	/**
@@ -48,7 +48,7 @@ return new class implements ServiceProviderInterface {
 				);
 
 				$plugin->setApplication(Factory::getApplication());
-				$plugin->setDatabase($container->get('DatabaseDriver'));
+				$plugin->setDatabase($container->get(\Joomla\Database\DatabaseInterface::class));
 
 				return $plugin;
 			}

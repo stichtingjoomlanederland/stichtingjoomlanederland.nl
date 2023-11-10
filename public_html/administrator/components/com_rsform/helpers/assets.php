@@ -83,6 +83,27 @@ class RSFormProAssets
 		if (self::$replace) {
 			$body 		= self::getBody();
 			$newHead 	= '';
+			$nonce      = false;
+
+			if (JPluginHelper::isEnabled('system', 'httpheaders'))
+			{
+				$app    = JFactory::getApplication();
+				$plugin = JPluginHelper::getPlugin('system', 'httpheaders');
+				$params = new JRegistry();
+				$params->loadString($plugin->params);
+
+				$cspEnabled          = (int) $params->get('contentsecuritypolicy', 0);
+				$cspClient           = (string) $params->get('contentsecuritypolicy_client', 'site');
+				$nonceEnabled        = (int) $params->get('nonce_enabled', 0);
+
+				if ($cspEnabled && ($app->isClient($cspClient) || $cspClient === 'both'))
+				{
+					if ($nonceEnabled)
+					{
+						$nonce = JFactory::getApplication()->get('csp_nonce');
+					}
+				}
+			}
 			
 			if (self::$scripts) {
 				foreach (self::$scripts as $src => $tmp) {
@@ -91,7 +112,7 @@ class RSFormProAssets
 
 						if (strpos($body, $test) === false)
 						{
-							$script = self::createScript($src);
+							$script = self::createScript($src, false, $nonce);
 							$newHead .= $script;
 						}
 					}
@@ -107,7 +128,7 @@ class RSFormProAssets
 
 						if (strpos($body, $test) === false)
 						{
-							$style = self::createStyleSheet($src);
+							$style = self::createStyleSheet($src, false, $nonce);
 							$newHead .= $style;
 						}
 					}
@@ -117,7 +138,7 @@ class RSFormProAssets
 			}
 			
 			if (self::$inlineStyles) {
-				$inlineStyle = self::createStyleDeclaration(self::$inlineStyles);
+				$inlineStyle = self::createStyleDeclaration(self::$inlineStyles, $nonce);
 				if (strpos($body, $inlineStyle) === false)
 				{
 					$newHead .= $inlineStyle;
@@ -127,7 +148,7 @@ class RSFormProAssets
 			}
 			
 			if (self::$inlineScripts) {
-				$inlineScript = self::createScriptDeclaration(self::$inlineScripts);
+				$inlineScript = self::createScriptDeclaration(self::$inlineScripts, $nonce);
 				if (strpos($body, $inlineScript) === false)
 				{
 					$newHead .= $inlineScript;
@@ -174,7 +195,7 @@ class RSFormProAssets
 		return $result;
 	}
 
-	protected static function createScript($src, $test = false)
+	protected static function createScript($src, $test = false, $nonce = false)
 	{
 		$srcLine = ' src="' . $src;
 
@@ -188,7 +209,12 @@ class RSFormProAssets
 			}
 
 			$html .= $srcLine;
-			$html .= '"></script>' . "\n";
+			$html .= '"';
+			if ($nonce)
+			{
+				$html .= ' nonce="' . $nonce . '"';
+			}
+			$html .= '></script>' . "\n";
 		}
 		else
 		{
@@ -198,17 +224,21 @@ class RSFormProAssets
 		return $html;
 	}
 
-	protected static function createScriptDeclaration($inlineScripts) {
+	protected static function createScriptDeclaration($inlineScripts, $nonce = false) {
 		$html = '<script';
 		if (!self::isHTML5()) {
 			$html .= ' type="text/javascript"';
+		}
+		if ($nonce)
+		{
+			$html .= ' nonce="' . $nonce . '"';
 		}
 		$html .= '>'. "\n". $inlineScripts. "\n". '</script>'. "\n";
 
 		return $html;
 	}
 
-	protected static function createStyleSheet($src, $test = false)
+	protected static function createStyleSheet($src, $test = false, $nonce = false)
 	{
 		$srcLine = ' href="' . $src;
 
@@ -222,7 +252,12 @@ class RSFormProAssets
 			}
 
 			$html .= $srcLine;
-			$html .= '" />' . "\n";
+			$html .= '"';
+			if ($nonce)
+			{
+				$html .= ' nonce="' . $nonce . '"';
+			}
+			$html .= ' />' . "\n";
 		}
 		else
 		{
@@ -232,10 +267,14 @@ class RSFormProAssets
 		return $html;
 	}
 
-	protected static function createStyleDeclaration($inlineStyles) {
+	protected static function createStyleDeclaration($inlineStyles, $nonce = false) {
 		$html = '<style';
 		if (!self::isHTML5()) {
 			$html .= ' type="text/css"';
+		}
+		if ($nonce)
+		{
+			$html .= ' nonce="' . $nonce . '"';
 		}
 		$html .= '>'. "\n". $inlineStyles. "\n". '</style>'. "\n";
 

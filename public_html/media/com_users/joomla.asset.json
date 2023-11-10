@@ -6,6 +6,18 @@
   "license": "GPL-2.0-or-later",
   "assets": [
     {
+      "name": "com_users.admin-users-groups",
+      "type": "script",
+      "uri": "com_users/admin-users-groups.min.js",
+      "dependencies": [
+        "core"
+      ],
+      "attributes": {
+        "type": "module"
+      },
+      "version": "dd07390f9260824d16e37c950218d69c3627f48e"
+    },
+    {
       "name": "com_users.admin-users-groups.es5",
       "type": "script",
       "uri": "com_users/admin-users-groups-es5.min.js",
@@ -17,18 +29,6 @@
         "defer": true
       },
       "version": "499a9068558e5a85a56f8b4cc3149b2ab3b4dd01"
-    },
-    {
-      "name": "com_users.admin-users-groups",
-      "type": "script",
-      "uri": "com_users/admin-users-groups.min.js",
-      "dependencies": [
-        "core"
-      ],
-      "attributes": {
-        "type": "module"
-      },
-      "version": "dd07390f9260824d16e37c950218d69c3627f48e"
     },
     {
       "name": "com_users.admin-users-mail.es5",
@@ -66,7 +66,7 @@
         "nomodule": true,
         "defer": true
       },
-      "version": "2cb6c3394dd729c5aea10efff909b2150810d5b8"
+      "version": "8beb8519cfa9cac4e7c13e74007f5d529ac72b02"
     },
     {
       "name": "com_users.two-factor-focus",
@@ -78,7 +78,7 @@
       "attributes": {
         "type": "module"
       },
-      "version": "1c9dcb20d1c3f3b1a4ec4cde31bec609011baf34"
+      "version": "534e5caf2f94621e257b100d63ccca2ab0ac72e7"
     },
     {
       "name": "com_users.two-factor-list.es5",

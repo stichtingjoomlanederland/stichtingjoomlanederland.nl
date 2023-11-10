@@ -24,14 +24,14 @@ $cParams = ComponentHelper::getParams('com_akeebabackup');
 ?>
 
 <form name="adminForm" id="adminForm"
-	  action="<?= Route::_('index.php?option=com_akeebabackup&view=Restore&task=start') ?>"
+	  action="<?= Route::_('index.php?option=com_akeebabackup&task=Restore.start') ?>"
 	  method="post">
     <input type="hidden" name="id" value="<?= (int) $this->id ?>" />
 	<?= HTMLHelper::_('form.token') ?>
 
-	<input id="ftp_passive_mode" type="checkbox" checked autocomplete="off" style="display: none">
-	<input id="ftp_ftps" type="checkbox" autocomplete="off" style="display: none">
-	<input id="ftp_passive_mode_workaround" type="checkbox" autocomplete="off" style="display: none">
+	<input id="ftp_passive_mode" type="checkbox" checked autocomplete="off" aria-hidden="true" class="visually-hidden">
+	<input id="ftp_ftps" type="checkbox" autocomplete="off" aria-hidden="true" class="visually-hidden">
+	<input id="ftp_passive_mode_workaround" type="checkbox" autocomplete="off" aria-hidden="true" class="visually-hidden">
 
 	<div class="alert alert-warning">
 		<span class="fa fa-exclamation-triangle"></span>

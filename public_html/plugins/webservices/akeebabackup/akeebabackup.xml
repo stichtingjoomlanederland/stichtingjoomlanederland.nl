@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--~
+  ~ @package   akeebabackup
+  ~ @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
+  ~ @license   GNU General Public License version 3, or later
+  -->
+
+<extension type="plugin" group="webservices" method="upgrade">
+    <name>PLG_WEBSERVICES_AKEEBABACKUP</name>
+    <version>9.8.3</version>
+    <creationDate>2023-11-07</creationDate>
+    <author>Nicholas K. Dionysopoulos</author>
+    <authorEmail>nicholas@dionysopoulos.me</authorEmail>
+    <authorUrl>https://www.akeeba.com</authorUrl>
+    <copyright>Copyright (c)2006-2023 Nicholas K. Dionysopoulos</copyright>
+    <license>GNU General Public License version 3, or later</license>
+    <description>PLG_WEBSERVICES_AKEEBABACKUP_XML_DESCRIPTION</description>
+    <namespace path="src">Akeeba\Plugin\WebServices\AkeebaBackup</namespace>
+
+    <files>
+        <folder>services</folder>
+        <folder plugin="akeebabackup">src</folder>
+    </files>
+
+    <languages folder="language">
+        <language tag="en-GB">en-GB/plg_webservices_akeebabackup.ini</language>
+        <language tag="en-GB">en-GB/plg_webservices_akeebabackup.sys.ini</language>
+    </languages>
+</extension>

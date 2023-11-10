@@ -10,14 +10,12 @@ namespace Akeeba\Component\AkeebaBackup\Site\Model\Json\Task;
 // Protect from unauthorized access
 defined('_JEXEC') || die();
 
-use Akeeba\Component\AkeebaBackup\Administrator\Model\IncludefoldersModel;
-use Akeeba\Engine\Platform;
-use Joomla\CMS\Factory;
-use Joomla\CMS\Filter\InputFilter;
 use RuntimeException;
 
 /**
  * Remove an extra directory definition
+ *
+ * @deprecated
  */
 class RemoveIncludedDirectory extends AbstractTask
 {
@@ -32,40 +30,6 @@ class RemoveIncludedDirectory extends AbstractTask
 	 */
 	public function execute(array $parameters = [])
 	{
-		$filter = InputFilter::getInstance();
-
-		// Get the passed configuration values
-		$defConfig = [
-			'profile' => 0,
-			'uuid'    => '',
-		];
-
-		$defConfig = array_merge($defConfig, $parameters);
-
-		$profile = $filter->clean($defConfig['profile'], 'int');
-		$uuid    = $filter->clean($defConfig['uuid'], 'string');
-
-		// We need a valid profile ID
-		if ($profile <= 0)
-		{
-			$profile = 1;
-		}
-
-		// We need a uuid
-		if (empty($uuid))
-		{
-			throw new RuntimeException('UUID is required', 500);
-		}
-
-		// Set the active profile
-		Factory::getApplication()->getSession()->set('akeebabackup.profile', $profile);
-
-		// Load the configuration
-		Platform::getInstance()->load_configuration($profile);
-
-		/** @var IncludefoldersModel $model */
-		$model = $this->factory->createModel('Includefolders', 'Administrator', ['ignore_request' => true]);
-
-		return $model->remove($uuid);
+		throw new \RuntimeException('This method is no longer supported by the Akeeba Remote JSON API', 501);
 	}
 }

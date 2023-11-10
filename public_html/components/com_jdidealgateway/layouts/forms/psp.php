@@ -192,11 +192,11 @@ if (isset($output['redirect']))
 			break;
 		case 'timer':
 			/* show timer before going to bank */
-			$payment_info = '<div id="showtimer">' . JText::_('COM_ROPAYMENTS_REDIRECT_5_SECS');
-			$payment_info .= ' ' . JHtml::link(
+			$payment_info = '<div id="showtimer">' . Text::_('COM_ROPAYMENTS_REDIRECT_5_SECS');
+			$payment_info .= ' ' . HTMLHelper::link(
 					'',
-					JText::_('COM_ROPAYMENTS_DO_NOT_REDIRECT'),
-					array('onclick' => 'clearTimeout(timeout);return false;')
+					Text::_('COM_ROPAYMENTS_DO_NOT_REDIRECT'),
+					['onclick' => 'clearTimeout(timeout);return false;']
 				) . '</div>';
 			$payment_info .= '<script type="text/javascript">';
 			$payment_info .= '	var timeout = setTimeout("document.idealform' . $data->logid . '.submit()", 5000);';

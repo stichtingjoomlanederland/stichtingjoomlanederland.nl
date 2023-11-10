@@ -54,7 +54,7 @@ class RSFormProBackupXML
 	// Write to the file.
 	public function write($value) {
 		if (!fwrite($this->fp, $value)) {
-			throw new Exception(sprintf('Could not write %d bytes to "%s"!', strlen(utf8_decode($value)), $this->path));
+			throw new Exception(sprintf('Could not write %d bytes to "%s"!', strlen($value), $this->path));
 		}
 		
 		// Allow chaining

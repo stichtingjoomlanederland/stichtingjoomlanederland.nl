@@ -102,7 +102,9 @@ class HtmlView extends BaseHtmlView
 			case 'tabular':
 				// Get the filter data for tabular display
 				$this->document
-					->addScriptOptions('akeebabackup.Databasefilters.guiData', $model->getFilters($siteRoot))
+					->addScriptOptions('akeebabackup.Databasefilters.guiData', [
+						'list' => $model->getFilters($siteRoot)
+					])
 					->addScriptOptions('akeebabackup.Databasefilters.viewType', 'tabular');
 
 				break;

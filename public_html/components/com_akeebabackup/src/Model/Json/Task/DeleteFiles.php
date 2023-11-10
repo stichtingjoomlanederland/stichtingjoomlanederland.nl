@@ -39,7 +39,7 @@ class DeleteFiles extends AbstractTask
 		$backup_id = (int) $defConfig['backup_id'];
 
 		/** @var StatisticModel $model */
-		$model = $this->factory->createModel('Statistic', 'Adminstrator', ['ignore_request' => true]);
+		$model = $this->factory->createModel('Statistic', 'Administrator', ['ignore_request' => true]);
 		$model->setState('id', $backup_id);
 
 		$ids = [$backup_id];

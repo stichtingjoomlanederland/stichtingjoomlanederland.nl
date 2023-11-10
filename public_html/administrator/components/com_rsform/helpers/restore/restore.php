@@ -126,6 +126,7 @@ class RSFormProRestore
 				
 					$chunk	 = 1024*1024;
 					$left	 = $meta['filesize'];
+					clearstatcache();
 					$fHandle = @fopen($this->path.'/'.$meta['filename'], 'wb');
 					
 					if (!$fHandle) {

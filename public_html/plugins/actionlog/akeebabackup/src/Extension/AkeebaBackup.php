@@ -5,7 +5,7 @@
  * @license   GNU General Public License version 3, or later
  */
 
-namespace Joomla\Plugin\Actionlog\AkeebaBackup\Extension;
+namespace Akeeba\Plugin\ActionLog\AkeebaBackup\Extension;
 
 defined('_JEXEC') || die;
 
@@ -65,7 +65,7 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 
 	public function onContentAfterSave(Event $event)
 	{
-		$arguments = $event->getArguments();
+		$arguments = array_values($event->getArguments());
 		$context   = $arguments[0] ?? '';
 		$table     = $arguments[1] ?? null;
 		$isNew     = $arguments[2] ?? false;
@@ -102,7 +102,7 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 
 	public function onContentChangeState(Event $event)
 	{
-		$arguments = $event->getArguments();
+		$arguments = array_values($event->getArguments());
 		$context   = $arguments[0] ?? '';
 		$pks       = $arguments[1] ?? [];
 		$value     = $arguments[2] ?? 1;
@@ -127,7 +127,7 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 
 	public function onContentAfterDelete(Event $event)
 	{
-		$arguments = $event->getArguments();
+		$arguments = array_values($event->getArguments());
 		$context   = $arguments[0] ?? '';
 		$table     = $arguments[1] ?? null;
 
@@ -151,7 +151,7 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 
 	public function onComAkeebabackupProfileControllerBeforeExport(Event $event)
 	{
-		$arguments = $event->getArguments();
+		$arguments = array_values($event->getArguments());
 		$id        = $arguments[1] ?? null;
 
 		$this->logUserAction([
@@ -161,7 +161,7 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 
 	public function onComAkeebabackupProfileControllerAfterImport(Event $event)
 	{
-		$arguments = $event->getArguments();
+		$arguments = array_values($event->getArguments());
 		$id        = $arguments[1] ?? null;
 
 		$this->logUserAction([
@@ -171,7 +171,7 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 
 	public function onComAkeebabackupModelStatisticAfterDeleteFiles(Event $event)
 	{
-		$arguments = $event->getArguments();
+		$arguments = array_values($event->getArguments());
 		$id        = $arguments[1] ?? null;
 
 		$this->logUserAction([
@@ -181,7 +181,7 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 
 	public function onComAkeebabackupManageControllerBeforeDownload(Event $event)
 	{
-		$arguments = $event->getArguments();
+		$arguments = array_values($event->getArguments());
 		$id        = $arguments[1] ?? null;
 		$part      = $arguments[2] ?? null;
 
@@ -193,7 +193,7 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 
 	public function onComAkeebabackupConfigurationControllerAfterApply(Event $event)
 	{
-		$arguments = $event->getArguments();
+		$arguments = array_values($event->getArguments());
 		$id        = $arguments[1] ?? null;
 
 		$this->logUserAction([
@@ -203,7 +203,7 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 
 	public function onComAkeebabackupModelBackupStart(Event $event)
 	{
-		$arguments = $event->getArguments();
+		$arguments = array_values($event->getArguments());
 		$id        = $arguments[1] ?? null;
 		$profile   = $arguments[2] ?? null;
 		$this->logUserAction([
@@ -214,7 +214,7 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 
 	public function onComAkeebabackupLogControllerDownload(Event $event)
 	{
-		$arguments = $event->getArguments();
+		$arguments = array_values($event->getArguments());
 		$tag       = $arguments[1] ?? null;
 
 		if (is_null($tag))
@@ -240,7 +240,7 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 
 	public function onComAkeebabackupRemoteFilesControllerFetch(Event $event)
 	{
-		$arguments = $event->getArguments();
+		$arguments = array_values($event->getArguments());
 		$id        = $arguments[1] ?? null;
 
 		$this->logUserAction([
@@ -250,7 +250,7 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 
 	public function onComAkeebabackupRemoteFilesControllerDownload(Event $event)
 	{
-		$arguments = $event->getArguments();
+		$arguments = array_values($event->getArguments());
 		$id        = $arguments[1] ?? null;
 		$part      = $arguments[2] ?? null;
 
@@ -262,7 +262,7 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 
 	public function onComAkeebabackupRemoteFilesControllerDelete(Event $event)
 	{
-		$arguments = $event->getArguments();
+		$arguments = array_values($event->getArguments());
 		$id        = $arguments[1] ?? null;
 
 		$this->logUserAction([
@@ -272,7 +272,7 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 
 	public function onComAkeebabackupUploadControllerStart(Event $event)
 	{
-		$arguments = $event->getArguments();
+		$arguments = array_values($event->getArguments());
 		$id        = $arguments[1] ?? null;
 
 		$this->logUserAction([
@@ -282,7 +282,7 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 
 	public function onComAkeebabackupUploadControllerSuccessfulImport(Event $event)
 	{
-		$arguments = $event->getArguments();
+		$arguments = array_values($event->getArguments());
 		$id        = $arguments[1] ?? null;
 
 		$this->logUserAction([
@@ -292,7 +292,7 @@ class AkeebaBackup extends ActionLogPlugin implements SubscriberInterface
 
 	public function onComAkeebabackupS3importControllerSuccessfulImport(Event $event)
 	{
-		$arguments = $event->getArguments();
+		$arguments = array_values($event->getArguments());
 		$bucket    = $arguments[1] ?? null;
 		$folder    = $arguments[2] ?? null;
 		$file      = $arguments[3] ?? null;

@@ -52,7 +52,8 @@ class Settings
 			'adminEmail',
 			'additionalEmails',
 			'profileAlias',
-			'confirmationEmail'
+			'confirmationEmail',
+			'alwaysUpdate'
 		];
 
 		foreach ($noSettings as $setting)

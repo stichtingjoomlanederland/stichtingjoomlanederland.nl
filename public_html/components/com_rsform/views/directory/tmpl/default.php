@@ -28,9 +28,9 @@ if ($this->directory->AllowCSVFullDownload)
 	<?php if ($this->hasSearchFields || $this->directory->enablecsv) { ?>
 	<div class="rsfp-directory-search">
 		<?php if ($this->hasSearchFields) { ?>
-		<?php echo JText::_('RSFP_SEARCH'); ?> <input type="text" id="rsfilter" name="filter_search" value="<?php echo $this->escape($this->filter_search); ?>" onchange="RSFormProDirectory.submit();" />
-		<button type="button" class="btn btn-primary" onclick="RSFormProDirectory.submit();"><?php echo JText::_('RSFP_GO'); ?></button>
-		<button type="button" class="btn btn-secondary" onclick="RSFormProDirectory.reset();"><?php echo JText::_('RSFP_RESET'); ?></button>
+		<?php echo JText::_('RSFP_SEARCH'); ?> <input type="text" id="rsfilter" name="filter_search" value="<?php echo $this->escape($this->filter_search); ?>" data-directory-change="submit" />
+		<button type="button" class="btn btn-primary" data-directory-click="submit"><?php echo JText::_('RSFP_GO'); ?></button>
+		<button type="button" class="btn btn-secondary" data-directory-click="reset"><?php echo JText::_('RSFP_RESET'); ?></button>
 		<?php } ?>
 		<?php
         if ($this->directory->enablecsv)
@@ -38,13 +38,13 @@ if ($this->directory->AllowCSVFullDownload)
             if (!$this->directory->AllowCSVFullDownload)
             {
                 ?>
-                <button onclick="RSFormProDirectory.downloadCSV();" type="button" class="btn btn-secondary"><?php echo JText::_('RSFP_SUBM_DIR_DOWNLOAD_CSV'); ?></button>
+                <button data-directory-click="downloadCSV" type="button" class="btn btn-secondary"><?php echo JText::_('RSFP_SUBM_DIR_DOWNLOAD_CSV'); ?></button>
                 <?php
             }
             else
             {
                 ?>
-                <button onclick="RSFormProDirectory.downloadFullCSV(<?php echo sprintf('%d, %d', $this->limit, $this->total); ?>);" type="button" class="btn btn-secondary"><?php echo JText::_('COM_RSFORM_DOWNLOAD_ALL_AS_CSV'); ?></button>
+                <button data-directory-click="downloadFullCSV" data-directory-params="[<?php echo $this->limit; ?>,<?php echo $this->total; ?>]" onclick="RSFormProDirectory.downloadFullCSV(<?php echo sprintf('%d, %d', $this->limit, $this->total); ?>);" type="button" class="btn btn-secondary"><?php echo JText::_('COM_RSFORM_DOWNLOAD_ALL_AS_CSV'); ?></button>
                 <?php
             }
             ?>
@@ -126,16 +126,3 @@ if ($this->directory->AllowCSVFullDownload)
 	<input type="hidden" name="filter_order" value="<?php echo $listOrder; ?>" />
 	<input type="hidden" name="filter_order_Dir" value="<?php echo $listDirn; ?>" />
 </form>
-
-<script type="text/javascript">
-Joomla.tableOrdering = function(order, dir, task, form) {
-	if (typeof(form) === 'undefined') {
-		form = document.getElementById('adminForm');
-	}
-
-	form.filter_order.value = order;
-	form.filter_order_Dir.value = dir;
-	form.task.value = task;
-	Joomla.submitform(task, form);
-};
-</script>

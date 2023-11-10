@@ -8,13 +8,16 @@
  * @link       https://rolandd.com
  */
 
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+
 defined('_JEXEC') or die;
 
 $data = $displayData['data'];
 $root = $displayData['root'];
 
 // Load the stylesheet
-JHtml::stylesheet('com_jdidealgateway/payment.css', null, true);
+HTMLHelper::stylesheet('com_jdidealgateway/payment.css', null, true);
 
 // Show custom HTML
 echo $data->custom_html;
@@ -27,16 +30,16 @@ echo $data->custom_html;
 		<input type="hidden" name="trxid" value="<?php echo $data->trxid; ?>">
 		<input type="hidden" name="output" value="customer">
 
-		<?php echo JText::sprintf('COM_ROPAYMENTS_PINCODE_MESSAGE', $data->keyword, $data->numbertosms, $data->costs); ?>
+		<?php echo Text::sprintf('COM_ROPAYMENTS_PINCODE_MESSAGE', $data->keyword, $data->numbertosms, $data->costs); ?>
 
 		<br /><br />
 
 		<div id="paybox_button">
 			<input type="text" name="paycode" value="" size="10" />
 			<?php
-			echo JHtml::link(
+			echo HTMLHelper::link(
 				$root,
-				JText::_('COM_ROPAYMENTS_CHECK_SMSPINCODE'),
+				Text::_('COM_ROPAYMENTS_CHECK_SMSPINCODE'),
 				'onclick="document.idealform' . $data->logid . '.submit(); return false;"'
 			);
 			?>

@@ -16,6 +16,7 @@ class TableRSForm_Directory_Fields extends JTable
 	public $editable = 0;
 	public $indetails = 0;
 	public $incsv = 0;
+	public $sort = 0;
 	public $ordering;
 
 	/**

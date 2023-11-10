@@ -898,9 +898,6 @@ if (typeof akeebabackup.Configuration === "undefined")
                     // Construct the query
                     akeebabackup.System.params.AjaxURL = akeebabackup.Configuration.URLs.testFtp;
 
-                    // console.log(data);
-                    // console.log(akeebabackup.System.params.AjaxURL);
-
                     akeebabackup.System.doAjax(
                         data,
                         function (res)
@@ -915,7 +912,7 @@ if (typeof akeebabackup.Configuration === "undefined")
                             elTestFTPBodyOK.style.display   = "none";
                             elTestFTPBodyFail.style.display = "none";
 
-                            if (res === true)
+                            if (res?.status === true)
                             {
                                 elTestFTPLabel.textContent      =
                                     Joomla.Text._("COM_AKEEBABACKUP_CONFIG_DIRECTFTP_TEST_OK");
@@ -928,7 +925,7 @@ if (typeof akeebabackup.Configuration === "undefined")
                             {
                                 elTestFTPLabel.textContent      =
                                     Joomla.Text._("COM_AKEEBABACKUP_CONFIG_DIRECTFTP_TEST_FAIL");
-                                elTestFTPBodyFail.textContent   = res;
+                                elTestFTPBodyFail.textContent   = res?.status ?? '???';
                                 elTestFTPBodyOK.style.display   = "none";
                                 elTestFTPBodyFail.style.display = "block";
                             }
@@ -981,7 +978,7 @@ if (typeof akeebabackup.Configuration === "undefined")
                             elTestFTPBodyOK.style.display   = "none";
                             elTestFTPBodyFail.style.display = "none";
 
-                            if (res === true)
+                            if (res?.status === true)
                             {
                                 elTestFTPLabel.textContent      =
                                     Joomla.Text._("COM_AKEEBABACKUP_CONFIG_DIRECTSFTP_TEST_OK");
@@ -994,7 +991,7 @@ if (typeof akeebabackup.Configuration === "undefined")
                             {
                                 elTestFTPLabel.textContent      =
                                     Joomla.Text._("COM_AKEEBABACKUP_CONFIG_DIRECTSFTP_TEST_FAIL");
-                                elTestFTPBodyFail.textContent   = res;
+                                elTestFTPBodyFail.textContent   = res?.status ?? '???';
                                 elTestFTPBodyOK.style.display   = "none";
                                 elTestFTPBodyFail.style.display = "block";
                             }
@@ -1498,8 +1495,6 @@ function akeeba_onedrivebusiness_refreshdrives(params)
 
     params = params || {};
 
-    console.log(params);
-
     if (typeof params["engine.postproc.onedrivebusiness.drive"] === "undefined")
     {
         params["engine.postproc.onedrivebusiness.drive"] = {
@@ -1524,29 +1519,28 @@ function akeeba_onedrivebusiness_refreshdrives(params)
         data,
         function (res)
         {
-            if (res.length === 0)
+            if (!res?.list?.length)
             {
                 alert("ERROR: Could not retrieve list of OneDrive Drives.");
-            }
-            else
-            {
-                var dropDown       = document.getElementById("var[engine.postproc.onedrivebusiness.drive]");
-                dropDown.innerHTML = "";
 
-                for (var i = 0; i < res.length; i++)
+                return;
+            }
+
+            var dropDown       = document.getElementById("var[engine.postproc.onedrivebusiness.drive]");
+            dropDown.innerHTML = "";
+
+            res.list.forEach(item => {
+                var elOption   = document.createElement("option");
+                elOption.value = item[0];
+                elOption.text  = item[1];
+
+                if (params["engine.postproc.onedrivebusiness.drive"]["default"] === elOption.value)
                 {
-                    var elOption   = document.createElement("option");
-                    elOption.value = res[i][0];
-                    elOption.text  = res[i][1];
-
-                    if (params["engine.postproc.onedrivebusiness.drive"]["default"] === elOption.value)
-                    {
-                        elOption.selected = true;
-                    }
-
-                    dropDown.appendChild(elOption);
+                    elOption.selected = true;
                 }
-            }
+
+                dropDown.appendChild(elOption);
+            })
         }, function (errorMessage)
         {
             alert("ERROR: Could not retrieve list of OneDrive Drives. Error: " + "\n" + errorMessage);
@@ -1593,8 +1587,6 @@ function akeeba_googledrive_refreshdrives(params)
 
     params = params || {};
 
-    console.log(params);
-
     if (typeof params["engine.postproc.googledrive.team_drive"] === "undefined")
     {
         params["engine.postproc.googledrive.team_drive"] = {
@@ -1619,29 +1611,30 @@ function akeeba_googledrive_refreshdrives(params)
         data,
         function (res)
         {
-            if (res.length === 0)
+            console.log(res)
+
+            if (!res?.list?.length)
             {
                 alert("ERROR: Could not retrieve list of Google Drives.");
-            }
-            else
-            {
-                var dropDown       = document.getElementById("var[engine.postproc.googledrive.team_drive]");
-                dropDown.innerHTML = "";
 
-                for (var i = 0; i < res.length; i++)
+                return;
+            }
+
+            var dropDown       = document.getElementById("var[engine.postproc.googledrive.team_drive]");
+            dropDown.innerHTML = "";
+
+            res.list.forEach(item => {
+                var elOption   = document.createElement("option");
+                elOption.value = item[0];
+                elOption.text  = item[1];
+
+                if (params["engine.postproc.googledrive.team_drive"]["default"] === elOption.value)
                 {
-                    var elOption   = document.createElement("option");
-                    elOption.value = res[i][0];
-                    elOption.text  = res[i][1];
-
-                    if (params["engine.postproc.googledrive.team_drive"]["default"] === elOption.value)
-                    {
-                        elOption.selected = true;
-                    }
-
-                    dropDown.appendChild(elOption);
+                    elOption.selected = true;
                 }
-            }
+
+                dropDown.appendChild(elOption);
+            })
         }, function (errorMessage)
         {
             alert("ERROR: Could not retrieve list of Google Drives. Error: " + "\n" + errorMessage);

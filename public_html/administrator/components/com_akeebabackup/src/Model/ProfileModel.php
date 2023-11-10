@@ -91,7 +91,7 @@ class ProfileModel extends AdminModel
 
 		if (empty($data))
 		{
-			$data = $this->getItem();
+			$data = (object) $this->getItem()->getProperties();
 		}
 
 		$this->preprocessData('com_akeebabackup.profile', $data);

@@ -12,6 +12,7 @@ defined('_JEXEC') || die;
 use Akeeba\Engine\Platform;
 use Joomla\CMS\Factory;
 use Joomla\Database\DatabaseDriver;
+use Joomla\Database\DatabaseInterface;
 use Joomla\Database\ParameterType;
 
 trait ViewProfileIdAndNameTrait
@@ -45,7 +46,7 @@ trait ViewProfileIdAndNameTrait
 		$profileId     = (int) Platform::getInstance()->get_active_profile();
 
 		/** @var DatabaseDriver $db */
-		$db = Factory::getContainer()->get('DatabaseDriver');
+		$db = Factory::getContainer()->get(DatabaseInterface::class);
 
 		$query = $db->getQuery(true)
 			->select([

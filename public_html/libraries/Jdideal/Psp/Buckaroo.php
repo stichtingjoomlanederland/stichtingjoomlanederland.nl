@@ -14,6 +14,7 @@ namespace Jdideal\Psp;
 use Buckaroo\BuckarooClient;
 use Buckaroo\PaymentMethods\iDeal\iDeal;
 use Jdideal\Gateway;
+use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Http\HttpFactory;
 use Joomla\CMS\Language\Text;
@@ -85,13 +86,10 @@ class Buckaroo
 	 *
 	 * @since   4.0
 	 */
-	public function __construct(\JInput $jinput)
+	public function __construct($jinput)
 	{
-		// Set the input
 		$this->jinput = $jinput;
-
-		// Set the database
-		$this->db = \JFactory::getDbo();
+		$this->db = Factory::getDbo();
 	}
 
 	/**
@@ -508,7 +506,7 @@ class Buckaroo
 	 */
 	public function sendPayment(Gateway $jdideal)
 	{
-		$app   = \JFactory::getApplication();
+		$app   = Factory::getApplication();
 		$logId = $this->getLogId();
 
 		// Array of fields to send out
@@ -618,7 +616,7 @@ class Buckaroo
 		// We don't need to redirect for SEPA Direct Debit
 		elseif ($payment === 'sepadirectdebit')
 		{
-			\JFactory::getApplication()->enqueueMessage(
+			Factory::getApplication()->enqueueMessage(
 				urldecode($request['BRQ_CONSUMERMESSAGE_TITLE']) . '<br />'
 				. urldecode($request['BRQ_CONSUMERMESSAGE_HTMLTEXT'])
 			);

@@ -10,13 +10,13 @@ namespace Akeeba\Component\AkeebaBackup\Site\Model\Json\Task;
 // Protect from unauthorized access
 defined('_JEXEC') || die();
 
-use Akeeba\Component\AkeebaBackup\Administrator\Model\MultipledatabasesModel;
 use Exception;
-use Joomla\CMS\Filter\InputFilter;
 use RuntimeException;
 
 /**
  * Test an extra database definition
+ *
+ * @deprecated
  */
 class TestDBConnection extends AbstractTask
 {
@@ -31,29 +31,6 @@ class TestDBConnection extends AbstractTask
 	 */
 	public function execute(array $parameters = [])
 	{
-		$filter = InputFilter::getInstance();
-
-		// Get the passed configuration values
-		$defConfig = [
-			'connection' => [],
-		];
-
-		$defConfig = array_merge($defConfig, $parameters);
-
-		$connection = $filter->clean($defConfig['connection'], 'array');
-
-		if (
-			empty($connection) || !isset($connection['host']) || !isset($connection['driver'])
-			|| !isset($connection['database']) || !isset($connection['user'])
-			|| !isset($connection['password'])
-		)
-		{
-			throw new RuntimeException('Connection information missing or incomplete', 500);
-		}
-
-		/** @var MultipledatabasesModel $model */
-		$model = $this->factory->createModel('Multipledatabases', 'Administrator', ['ignore_request' => true]);
-
-		return $model->test($connection);
+		throw new \RuntimeException('This method is no longer supported by the Akeeba Remote JSON API', 501);
 	}
 }

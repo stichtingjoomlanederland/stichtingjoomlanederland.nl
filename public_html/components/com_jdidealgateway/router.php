@@ -12,6 +12,7 @@ defined('_JEXEC') or die;
 
 use Joomla\CMS\Component\Router\RouterBase;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Uri\Uri;
 
 /**
  * Routing class.
@@ -21,7 +22,81 @@ use Joomla\CMS\Factory;
  */
 class JdidealgatewayRouter extends RouterBase
 {
-	/**
+    /**
+     * Generic method to preprocess a URL
+     *
+     * @param   array  $query  An associative array of URL arguments
+     *
+     * @return  array  The URL arguments to use to assemble the subsequent URL.
+     *
+     * @since   2.0.0
+     * @throws  Exception
+     */
+    public function preprocess($query)
+    {
+        if (!isset($query['view']) && isset($query['task']) && strpos($query['task'], '.'))
+        {
+            [$query['view'], $query['task']] = explode('.', $query['task']);
+        }
+
+        if (!isset($query['view']) && !isset($query['Itemid']))
+        {
+            return $query;
+        }
+
+        if (!isset($query['view']))
+        {
+            // Get the view from the Itemid.
+            $menuItem = Factory::getApplication()->getMenu()->getItem($query['Itemid']);
+
+            $link = $menuItem->link;
+
+            if ($menuItem->language !== '*')
+            {
+                $link .= '&lang=' . $menuItem->language;
+            }
+
+            $matches = [];
+            preg_match("/view=([a-z,A-z,0-9]*)/", $link, $matches);
+
+            $view  = count($matches) ? $matches[1] : null;
+            $url   = Uri::getInstance($link);
+            $query = $url->getQuery(true);
+        }
+        else
+        {
+            $view = $query['view'];
+        }
+
+        $languageTag = Factory::getApplication()->getLanguage()->getTag();
+
+        if (isset($query['lang']))
+        {
+            $languageTag = $query['lang'];
+        }
+
+        $id = $query['id'] ?? null;
+
+        $profileId = $query['profile_id'] ?? null;
+        $layout = $query['layout'] ?? ($query['task'] ?? null);
+
+        $menuItem = $this->getMenuItem(
+            $view,
+            $languageTag,
+            $id,
+            $profileId,
+            $layout
+        );
+
+        if (isset($menuItem->id))
+        {
+            $query['Itemid'] = $menuItem->id;
+        }
+
+        return $query;
+    }
+
+    /**
 	 * Build the route for the com_jdidealgateway component.
 	 *
 	 * @param   array  &$query  An array of URL arguments.
@@ -61,11 +136,8 @@ class JdidealgatewayRouter extends RouterBase
 			unset($query['view']);
 		}
 
-		$language = Factory::getLanguage()->getTag();
-
 		if (isset($query['lang']))
 		{
-			$language = $query['lang'];
 			unset($query['lang']);
 		}
 
@@ -85,24 +157,6 @@ class JdidealgatewayRouter extends RouterBase
 					}
 
 					unset($query['task']);
-				}
-
-				$profileId = $query['profile_id'] ?? null;
-				unset($query['profile_id']);
-
-				if (isset($query['Itemid']))
-				{
-					break;
-				}
-
-				$query['Itemid'] = $this->getItemid(
-					$view, $language, null, $profileId
-				);
-
-				// If no menu item is found, re-set the original view
-				if (!$query['Itemid'])
-				{
-					$query['view'] = $view;
 				}
 
 				$payFields = [
@@ -134,106 +188,125 @@ class JdidealgatewayRouter extends RouterBase
 				break;
 			case 'checkout':
 			case 'status':
-				$query['Itemid'] = $this->getItemid($view, $language);
-
-				// If no menu item is found, re-set the original view
-				if (!$query['Itemid'])
-				{
-					$query['view'] = $view;
-				}
 				break;
 		}
 
 		return $segments;
 	}
 
-	/**
-	 * Find the item ID for a given view.
-	 *
-	 * @param   string  $view       The name of the view to find the item ID for
-	 * @param   string  $language   The language to use for finding menu items
-	 * @param   null    $id         The id of an item
-	 * @param   null    $profileId  The profile ID linked to a menu item
-	 *
-	 * @return  mixed  The item ID or null if not found.
-	 *
-	 * @since   4.3.1
-	 */
-	private function getItemid(string $view, string $language, $id = null,
-		$profileId = null
-	) {
-		$items = $this->menu->getItems(
-			[
-				'component',
-				'language',
-			],
-			[
-				'com_jdidealgateway',
-				$language,
-			]
-		);
+    /**
+     * Find the item ID for a given view.
+     *
+     * @param   string       $view      The name of the view to find the item ID for
+     * @param   string       $language  The language to use for finding menu items
+     * @param   int|null     $id        The id of an item
+     * @param   string|null  $layout
+     *
+     * @return  mixed  The item ID or null if not found.
+     *
+     * @since   1.0.0
+     */
+    private function getMenuItem(
+        string $view,
+        string $language,
+        int $id = null,
+        int $profileId = null,
+        string $layout = null
+    ) {
+        // Get all relevant menu items for the given language.
+        $items = $this->menu->getItems(
+            ['component', 'language'],
+            ['com_jdidealgateway', $language]
+        );
 
-		if ($language !== '*')
-		{
-			$items = array_merge(
-				$items, $this->menu->getItems(
-				[
-					'component',
-					'language',
-				],
-				[
-					'com_jdidealgateway',
-					'*',
-				]
-			)
-			);
-		}
+        // Get the items not assigned to a language
+        if ($language !== '*')
+        {
+            $items = array_merge(
+                $items,
+                $this->menu->getItems(
+                    ['component', 'language'],
+                    ['com_jdidealgateway', '*']
+                )
+            );
+        }
 
-		$itemId = null;
+        $menuItem = null;
 
-		if ($id)
-		{
-			foreach ($items as $item)
-			{
-				if (isset($item->query['view'], $item->query['id'])
-					&& $item->query['view'] === $view
-					&& (int) $item->query['id'] === (int) $id)
-				{
-					$itemId = $item->id;
-					break;
-				}
-			}
-		}
+        if ($id)
+        {
+            foreach ($items as $item)
+            {
+                if (isset($item->query['view'], $item->query['id'])
+                    && $item->query['view'] === $view
+                    && (int) $item->query['id'] === $id)
+                {
+                    $menuItem = $item;
+                    break;
+                }
+            }
+        }
 
-		if ($profileId)
-		{
-			foreach ($items as $item)
-			{
-				if (isset($item->query['view'], $item->query['profile_id'])
-					&& $item->query['view'] === $view
-					&& (int) $item->query['profile_id'] === (int) $profileId)
-				{
-					$itemId = $item->id;
-					break;
-				}
-			}
-		}
+        if ($layout)
+        {
+            foreach ($items as $item)
+            {
+                if (isset($item->query['view'], $item->query['layout'])
+                    && $item->query['view'] === $view
+                    && $item->query['layout'] === $layout)
+                {
+                    $menuItem = $item;
+                    break;
+                }
+            }
+        }
 
-		if (!$itemId)
-		{
-			foreach ($items as $item)
-			{
-				if (isset($item->query['view'])
-					&& $item->query['view'] === $view)
-				{
-					$itemId = $query['Itemid'] = $item->id;
-					break;
-				}
-			}
-		}
+        if (!$menuItem)
+        {
+            foreach ($items as $item)
+            {
+                if (isset($item->query['view'], $item->query['profile_id'])
+                    && $item->query['view'] === $view
+                    && (int) $item->query['profile_id'] === (int) $profileId
+                    && !isset($item->query['layout']))
+                {
+                    $menuItem = $item;
+                    break;
+                }
+            }
+        }
 
-		return $itemId;
-	}
+        if (!$menuItem && $layout)
+        {
+            foreach ($items as $item)
+            {
+                if (isset($item->query['view'], $item->query['layout'], $item->query['profile_id'])
+                    && $item->query['view'] === $view
+                    && (int) $item->query['profile_id'] === (int) $profileId
+                    && (string) $item->query['layout'] === $layout)
+                {
+                    $menuItem = $item;
+                    break;
+                }
+            }
+        }
+
+        if (!$menuItem)
+        {
+            foreach ($items as $item)
+            {
+                if (isset($item->query['view'])
+                    && $item->query['view'] === $view
+                    && !isset($item->query['layout']))
+                {
+                    $menuItem = $item;
+                    break;
+                }
+            }
+        }
+
+        return $menuItem;
+    }
 
 	/**
 	 * Parse the segments of a URL.
@@ -272,7 +345,7 @@ class JdidealgatewayRouter extends RouterBase
 						$vars['task'] = 'pay.result';
 						break;
 					case 'send':
-						$vars['task'] = 'pay.sendmoney';
+						$vars['task'] = 'sendmoney';
 						break;
 				}
 
@@ -289,6 +362,8 @@ class JdidealgatewayRouter extends RouterBase
 				$vars['view'] = 'pay';
 				break;
 		}
+
+        $segments = [];
 
 		return $vars;
 	}

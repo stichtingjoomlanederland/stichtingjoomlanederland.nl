@@ -20,18 +20,16 @@ defined('_JEXEC') || die();
 
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Router\Route;
 
 $this->document->getWebAssetManager()
 	->usePreset('choicesjs')
 	->useScript('webcomponent.field-fancy-select');
 ?>
 <div class="akeeba-panel">
-	<form action="index.php" method="post"
+	<form action="<?= Route::_('index.php?option=com_akeebabackup&task=Controlpanel.Switchprofile') ?>" method="post"
 		  name="switchActiveProfileForm" id="switchActiveProfileForm"
-		  class="d-md-flex flex-md-row justify-content-md-evenly align-items-center border border-1 bg-light border-rounded rounded-2 mt-1 mb-2 p-2">
-		<input type="hidden" name="option" value=com_akeebabackup" />
-		<input type="hidden" name="view" value="Controlpanel" />
-		<input type="hidden" name="task" value="SwitchProfile" />
+		  class="akeebabackup-profile-switch-container d-md-flex flex-md-row justify-content-md-evenly align-items-center border border-1 bg-light border-rounded rounded-2 mt-1 mb-2 p-2">
 		<?php if(isset($returnURL)): ?>
 		<input type="hidden" name="returnurl" value="<?= $this->escape($returnURL) ?>" />
 		<?php endif ?>

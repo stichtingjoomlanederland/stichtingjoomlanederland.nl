@@ -7,14 +7,20 @@
 
 /** @var $this \Akeeba\Component\AkeebaBackup\Administrator\View\Controlpanel\HtmlView */
 
+// Protect from unauthorized access
+defined('_JEXEC') || die();
+
 use Joomla\CMS\Application\ApplicationHelper;
 use Joomla\CMS\Factory;
+use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Uri\Uri;
 
-// Protect from unauthorized access
-defined('_JEXEC') || die();
+if (version_compare(JVERSION, '4.999.999', 'lt'))
+{
+	$this->loadAnyTemplate('Controlpanel/joomla_eol');
+}
 
 $cloudFlareTestFile = 'CLOUDFLARE::' . Uri::base() . 'media/com_akeebabackup/ControlPanel.min.js';
 $cloudFlareTestFile .= '?' . ApplicationHelper::getHash(AKEEBABACKUP_VERSION . AKEEBABACKUP_DATE);
@@ -79,10 +85,8 @@ get involved with and better at web development. Stay curious!
 		<?= Text::_('COM_AKEEBABACKUP_CPANEL_LBL_OUTDIR_FIX_SECURITYFILES') ?>
 	</p>
 
-	<form action="index.php" method="POST" class="akeeba-form--inline">
+	<form action="<?= Route::_('index.php?option=com_akeebabackup&task=Controlpanel.fixOutputDirectory') ?>" method="POST">
 		<input type="hidden" name="option" value="com_akeebabackup">
-		<input type="hidden" name="view" value="Controlpanel">
-		<input type="hidden" name="task" value="fixOutputDirectory">
 		<input type="hidden" name="<?= $token ?>" value="1">
 
 		<button type="submit" class="btn btn-success w-100">
@@ -113,11 +117,8 @@ get involved with and better at web development. Stay curious!
 		<?= Text::_('COM_AKEEBABACKUP_CPANEL_LBL_OUTDIR_FIX_RANDOM') ?>
 	</p>
 
-	<form action="index.php" method="POST" class="akeeba-form--inline">
-		<input type="hidden" name="option" value="com_akeebabackup">
-		<input type="hidden" name="view" value="Controlpanel">
-		<input type="hidden" name="task" value="addRandomToFilename">
-		<input type="hidden" name="<?= $token ?>" value="1">
+	<form action="<?= Route::_('index.php?option=com_akeebabackup&task=Controlpanel.addRandomToFilename') ?>" method="POST" class="akeeba-form--inline">
+		<?= HTMLHelper::_('form.token') ?>
 
 		<button type="submit" class="btn btn-success w-100">
 			<span class="fa fa-hammer"></span>
@@ -239,7 +240,7 @@ get involved with and better at web development. Stay curious!
 		</p>
 		<p>
 			<a class="btn btn-primary btn-lg"
-			   href="<?= Uri::base() ?>index.php?option=com_installer&view=manage&filter[search]=id:<?= $this->akeebaBackup8PackageId ?>"
+			   href="<?= Uri::base() ?>index.php?option=com_installer&view=Manage&filter[search]=id:<?= $this->akeebaBackup8PackageId ?>"
 			>
 				<span class="fa fa-trash"></span>
 				<?= Text::_('COM_AKEEBABACKUP_LBL_CPANEL_UPGRADED_FROM_AKEEBABACKUP8_BTN') ?>

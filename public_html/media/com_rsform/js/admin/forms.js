@@ -262,6 +262,95 @@ jQuery.fn.extend({
 	formTabs: jQuery.formTabs.build
 });
 
+RSFormPro.offcanvas = {
+	element: null,
+	selector: 'offcanvasFields',
+	open: function (element) {
+		if (typeof document.adminForm.rowIndex !== 'undefined')
+		{
+			document.adminForm.removeChild(document.adminForm.rowIndex);
+		}
+		if (typeof document.adminForm.columnIndex !== 'undefined')
+		{
+			document.adminForm.removeChild(document.adminForm.columnIndex);
+		}
+		if (element)
+		{
+			var $element = jQuery(element);
+			var $column = $element.parents('.rsfp-grid-column');
+			var $row = $element.parents('.rsfp-grid-row');
+
+			var rowIndex = jQuery('.rsfp-grid-row').index($row);
+			var columnIndex = $row.children('.rsfp-grid-column').index($column);
+
+			var rowIndexInput = document.createElement('input');
+			rowIndexInput.type = 'hidden';
+			rowIndexInput.name = 'rowIndex';
+			rowIndexInput.value = rowIndex;
+
+			var columnIndexInput = document.createElement('input');
+			columnIndexInput.type = 'hidden';
+			columnIndexInput.name = 'columnIndex';
+			columnIndexInput.value = columnIndex;
+
+			document.adminForm.appendChild(rowIndexInput);
+			document.adminForm.appendChild(columnIndexInput);
+		}
+		if (RSFormPro.isJ4)
+		{
+			if (!RSFormPro.offcanvas.element)
+			{
+				RSFormPro.offcanvas.element = new bootstrap.Offcanvas('#' + RSFormPro.offcanvas.selector);
+			}
+
+			RSFormPro.offcanvas.element.show();
+		}
+		else
+		{
+			document.getElementById(RSFormPro.offcanvas.selector).classList.remove('hiding');
+			document.getElementById(RSFormPro.offcanvas.selector).classList.add('showing');
+
+			var backdrop = document.querySelector('.offcanvas-backdrop');
+			if (!backdrop)
+			{
+				backdrop = document.createElement('div');
+				backdrop.classList.add('offcanvas-backdrop');
+				backdrop.classList.add('fade');
+
+				backdrop.onclick = function() { RSFormPro.offcanvas.hide(); }
+
+				document.body.appendChild(backdrop);
+			}
+
+			backdrop.classList.add('show');
+		}
+	},
+
+	hide: function() {
+		if (RSFormPro.isJ4)
+		{
+			if (!RSFormPro.offcanvas.element)
+			{
+				RSFormPro.offcanvas.element = new bootstrap.Offcanvas('#' + RSFormPro.offcanvas.selector);
+			}
+
+			RSFormPro.offcanvas.element.hide();
+		}
+		else
+		{
+			document.getElementById(RSFormPro.offcanvas.selector).classList.remove('showing');
+			document.getElementById(RSFormPro.offcanvas.selector).classList.add('hiding');
+
+			var backdrop = document.querySelector('.offcanvas-backdrop');
+			if (backdrop)
+			{
+				backdrop.classList.remove('show');
+			}
+			backdrop.parentNode.removeChild(backdrop);
+		}
+	}
+};
+
 /* gridModal functions */
 RSFormPro.gridModal = {
 	selector: '#gridModal',
@@ -334,7 +423,7 @@ RSFormPro.gridModal = {
 					columns.last().after('<div class="rsfp-grid-column rsfp-grid-column' + size + '"><h3>' + size + '/12</h3></div>');
 				}
 			}
-			// We've selected a layout with less columns, must move fields inside closest column
+			// We've selected a layout with fewer columns, must move fields inside closest column
 			else if (columns.length > new_columns.length)
 			{
 				diff = columns.length - new_columns.length;
@@ -352,9 +441,16 @@ RSFormPro.gridModal = {
 					columns.last().remove();
 				}
 			}
+
+			// Refresh number of columns
+			columns = row.children('.rsfp-grid-column');
+
+			// Remove 'Add Field' button to re-create it in each column
+			columns.find('.rsfp-grid-add-field').remove();
+			columns.find('h3').after('<div class="rsfp-grid-add-field"><button type="button" class="btn btn-secondary" onclick="RSFormPro.offcanvas.open(this);"><i class="icon-plus"></i> ' + Joomla.JText._('COM_RSFORM_ADD_FIELD') + '</button></div>');
 			
 			// Last one must be unresizable
-			row.children('.rsfp-grid-column').last().addClass('rsfp-grid-column-unresizable');
+			columns.last().addClass('rsfp-grid-column-unresizable');
 		}
 		
 		RSFormPro.Grid.initialize();
@@ -502,7 +598,7 @@ RSFormPro.Grid = {
 				el.css('width', ''); // remove width, our class already has it
 				el.css('height', ''); // remove inline height
 				el.removeClass(function(index, className) {
-					return (className.match(/(^|\s)rsfp-grid-column\S+/g) || []).join(' ');
+					return (className.match(/(^|\s)rsfp-grid-column[0-9]+/g) || []).join(' ');
 				}).addClass('rsfp-grid-column' + col);
 			};
 
@@ -544,6 +640,8 @@ RSFormPro.Grid = {
 			  var eqSize = 12 / target.parent().children('.rsfp-grid-column').length;
 			  
 			  target.parent().children('.rsfp-grid-column').addClass('rsfp-grid-column' + eqSize);
+
+			  totalCol = 12;
 		  }
 		  
 		  target.resizable('option', 'minWidth', columnWidth);
@@ -1100,8 +1198,14 @@ Joomla.submitbutton = function(pressbutton)
 	{
 		var paths = Joomla.getOptions('system.paths');
 		var formId = document.getElementById('formId').value;
+		var url = paths.root + '/index.php?option=com_rsform&view=rsform&formId=' + formId;
 
-		window.open(paths.root + '/index.php?option=com_rsform&view=rsform&formId=' + formId);
+		if (typeof RSFormPro.PreviewItemid !== 'undefined' && parseInt(RSFormPro.PreviewItemid) > 0)
+		{
+			url += '&Itemid=' + RSFormPro.PreviewItemid;
+		}
+
+		window.open(url);
 	}
 	else
 	{

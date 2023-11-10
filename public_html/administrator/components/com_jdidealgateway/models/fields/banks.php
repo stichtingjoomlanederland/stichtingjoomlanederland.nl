@@ -8,11 +8,13 @@
  * @link       https://rolandd.com
  */
 
+use Joomla\CMS\Form\FormHelper;
 use Joomla\CMS\HTML\HTMLHelper;
 
 defined('_JEXEC') or die;
 
-JFormHelper::loadFieldClass('list');
+JLoader::registerAlias('JFormFieldList', '\\Joomla\\CMS\\Form\\Field\\ListField', '6.0');
+FormHelper::loadFieldClass('list');
 
 /**
  * List of available banks.

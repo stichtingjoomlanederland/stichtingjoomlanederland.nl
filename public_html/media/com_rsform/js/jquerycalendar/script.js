@@ -260,7 +260,7 @@ RSFormPro.jQueryCalendar = {
 			var defaultSelectValue = config.inline ? false : true;
 
 			// set yearStart if minDate is available
-			var yearStart = 1950;
+			var yearStart = 1920;
 			var startDateForce = false;
 			if (minDate) {
 				var minDateObject = new Date.parseDate(minDate, 'MM/DD/YYYY');

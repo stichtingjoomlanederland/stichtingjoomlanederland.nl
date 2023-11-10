@@ -16,8 +16,6 @@ class RsformControllerForms extends RsformController
 		$this->registerTask('apply', 'save');
 		$this->registerTask('publish', 'changestatus');
 		$this->registerTask('unpublish', 'changestatus');
-		
-		$this->_db = JFactory::getDbo();
 	}
 
 	public function changeLanguage()

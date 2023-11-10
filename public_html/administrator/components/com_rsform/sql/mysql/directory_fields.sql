@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS `#__rsform_directory_fields` (
   `editable` tinyint(1) NOT NULL,
   `indetails` tinyint(1) NOT NULL,
   `incsv` tinyint(1) NOT NULL,
+  `sort` tinyint(1) NOT NULL DEFAULT 0,
   `ordering` int(11) NOT NULL,
   UNIQUE KEY `formId` (`formId`,`componentId`)
 ) DEFAULT CHARSET=utf8;

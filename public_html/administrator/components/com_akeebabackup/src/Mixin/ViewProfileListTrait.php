@@ -13,6 +13,7 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Factory as JoomlaFactory;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\Database\DatabaseDriver;
+use Joomla\Database\DatabaseInterface;
 
 trait ViewProfileListTrait
 {
@@ -33,7 +34,7 @@ trait ViewProfileListTrait
 	protected function getProfileList($includeId = true)
 	{
 		/** @var DatabaseDriver $db */
-		$db = Factory::getContainer()->get('DatabaseDriver');
+		$db = Factory::getContainer()->get(DatabaseInterface::class);
 		$access_levels = JoomlaFactory::getApplication()->getIdentity()->getAuthorisedViewLevels();
 
 		$query = $db->getQuery(true)

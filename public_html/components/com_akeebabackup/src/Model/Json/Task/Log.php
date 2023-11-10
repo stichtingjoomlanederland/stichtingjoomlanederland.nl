@@ -10,11 +10,11 @@ namespace Akeeba\Component\AkeebaBackup\Site\Model\Json\Task;
 // Protect from unauthorized access
 defined('_JEXEC') || die();
 
-use Akeeba\Component\AkeebaBackup\Administrator\Model\LogModel;
-
 
 /**
  * Get the log contents
+ *
+ * @deprecated
  */
 class Log extends AbstractTask
 {
@@ -29,21 +29,6 @@ class Log extends AbstractTask
 	 */
 	public function execute(array $parameters = [])
 	{
-		// Get the passed configuration values
-		$defConfig = [
-			'tag' => 'remote',
-		];
-
-		$defConfig = array_merge($defConfig, $parameters);
-		$tag       = (int) $defConfig['tag'];
-
-		/** @var LogModel $model */
-		$model = $this->factory->createModel('Log', 'Administrator', ['ignore_request' => true]);
-		$model->setState('tag', $tag);
-
-		@ob_start();
-		$model->echoRawLog(false);
-
-		return @ob_get_clean();
+		throw new \RuntimeException('This method is no longer supported by the Akeeba Remote JSON API', 501);
 	}
 }

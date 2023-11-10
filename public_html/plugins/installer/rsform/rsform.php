@@ -7,7 +7,9 @@
 
 defined('_JEXEC') or die;
 
-class plgInstallerRSForm extends JPlugin
+use Joomla\CMS\Plugin\CMSPlugin;
+
+class plgInstallerRSForm extends CMSPlugin
 {
 	public function onInstallerBeforePackageDownload(&$url, &$headers)
 	{

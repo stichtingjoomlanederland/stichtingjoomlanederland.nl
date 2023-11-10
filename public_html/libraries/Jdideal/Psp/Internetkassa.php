@@ -13,6 +13,7 @@ namespace Jdideal\Psp;
 
 use Jdideal\Gateway;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Input\Input;
 use Joomla\CMS\Language\Text;
 
 defined('_JEXEC') or die;
@@ -77,17 +78,17 @@ class Internetkassa
 	/**
 	 * Contruct the payment reference.
 	 *
-	 * @param   \Jinput  $jinput  The input object.
+	 * @param   Input  $jinput  The input object.
 	 *
 	 * @since   4.0
 	 */
-	public function __construct(\JInput $jinput)
+	public function __construct($jinput)
 	{
 		// Set the input
 		$this->jinput = $jinput;
 
 		// Set the database
-		$this->db = \JFactory::getDbo();
+		$this->db = Factory::getDbo();
 
 		// Put the return data in an array, data is constructed as name=value
 		$this->data['transaction_id'] = $jinput->post->get('PAYID');

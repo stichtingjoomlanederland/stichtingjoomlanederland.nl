@@ -81,6 +81,7 @@ class RSFormProQuickFields
 								$componentPlaceholders['display'][] = '{' . $properties['NAME'] . ':filename}';
 								$componentPlaceholders['display'][] = '{' . $properties['NAME'] . ':image}';
 								$componentPlaceholders['display'][] = '{' . $properties['NAME'] . ':localimage}';
+								$componentPlaceholders['display'][] = '{' . $properties['NAME'] . ':count}';
 							}
 
 							if ($component->ComponentTypeId == RSFORM_FIELD_GMAPS) {

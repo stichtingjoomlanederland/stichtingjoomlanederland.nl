@@ -30,7 +30,7 @@
                 rows="10"
                 label="COM_AKEEBABACKUP_BUADMIN_LABEL_COMMENT"
                 size="40"
-                required="true"
+                required="false"
         />
 
         <field

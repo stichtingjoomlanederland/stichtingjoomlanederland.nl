@@ -9,7 +9,9 @@
 defined('_JEXEC') || die();
 
 use Joomla\CMS\Factory;
+use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Router\Route;
 use Joomla\CMS\Uri\Uri;
 
 /** @var \Akeeba\Component\AkeebaBackup\Administrator\View\Browser\HtmlView $this */
@@ -18,11 +20,8 @@ Text::script('COM_AKEEBABACKUP_CONFIG_UI_ROOTDIR', true);
 
 ?>
 <?php if(empty($this->folder)): ?>
-<form action="index.php" method="post" name="adminForm" id="adminForm">
-	<input type="hidden" name="option" value="com_akeebabackup" />
-	<input type="hidden" name="view" value="Browser" />
-	<input type="hidden" name="format" value="html" />
-	<input type="hidden" name="tmpl" value="component" />
+<form action="<?= Route::_('index.php?option=com_akeebabackup&view=Browser&format=html&tmpl=component') ?>"
+	  method="post" name="adminForm" id="adminForm">
 	<input type="hidden" name="folder" id="folder" value="" />
 	<input type="hidden" name="processfolder" id="processfolder" value="0" />
 	<input type="hidden" name="<?= Factory::getApplication()->getFormToken() ?>" value="1" />
@@ -31,7 +30,7 @@ Text::script('COM_AKEEBABACKUP_CONFIG_UI_ROOTDIR', true);
 
 <?php if(!(empty($this->folder))): ?>
 <div class="border border-1 border-primary p-2 pt-3 m-1 mb-3">
-	<form action="index.php" method="get" name="adminForm" id="adminForm"
+	<form action="<?= Route::_('index.php?option=com_akeebabackup&view=Browser&tmpl=component') ?>" method="get" name="adminForm" id="adminForm"
 	      class="d-flex flex-row align-items-center">
 
 		<div class="me-2 mb-1">
@@ -69,10 +68,7 @@ Text::script('COM_AKEEBABACKUP_CONFIG_UI_ROOTDIR', true);
 
 		<input type="hidden" name="folderraw" id="folderraw"
 		       value="<?= $this->escape($this->folder_raw) ?>" />
-		<input type="hidden" name="<?= Factory::getApplication()->getFormToken() ?>" value="1" />
-		<input type="hidden" name="option" value="com_akeebabackup" />
-		<input type="hidden" name="view" value="Browser" />
-		<input type="hidden" name="tmpl" value="component" />
+		<?= HTMLHelper::_('form.token') ?>
 	</form>
 </div>
 

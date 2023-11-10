@@ -31,6 +31,6 @@ class JdidealgatewayModelCheckout extends BaseDatabaseModel
 	 */
 	public function getVariables(): array
 	{
-		return json_decode(base64_decode(Factory::getApplication()->input->post->getBase64('vars', '')), true);
+		return json_decode(base64_decode(Factory::getApplication()->input->post->getBase64('vars', '')), true) ?? [];
 	}
 }

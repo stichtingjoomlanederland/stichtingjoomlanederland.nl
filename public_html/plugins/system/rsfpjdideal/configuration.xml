@@ -31,6 +31,17 @@
                 <option value="0">JNO</option>
             </field>
 
+            <field name="alwaysUpdate"
+                   type="radio"
+                   class="btn-group btn-group-yesno"
+                   description="PLG_RSFP_ROPAYMENTS_ORDER_ALWAYS_UPDATE_DESC"
+                   label="PLG_RSFP_ROPAYMENTS_ORDER_ALWAYS_UPDATE_LABEL"
+                   default="0"
+            >
+                <option value="1">JYES</option>
+                <option value="0">JNO</option>
+            </field>
+
             <field name="currency"
                    type="text"
                    description="PLG_RSFP_JDIDEAL_CURRENCY_DESCRIPTION"

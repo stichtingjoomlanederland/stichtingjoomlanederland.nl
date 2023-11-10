@@ -67,7 +67,7 @@ $allRemoteFilesGone = $downloadToFileNotAvailable && $deleteNotAvailable;
 			<?php else: ?>
 				<?php if($this->actions['downloadToFile']): ?>
 					<a class="btn btn-primary text-decoration-none akeebaRemoteFilesShowWait"
-					   href="index.php?option=com_akeebabackup&view=Remotefiles&task=dltoserver&tmpl=component&id=<?= $this->id ?>&part=-1"
+					   href="index.php?option=com_akeebabackup&view=Remotefiles&task=dltoserver&tmpl=component&id=<?= $this->id ?>&part=-1&<?= \Joomla\CMS\Factory::getApplication()->getFormToken() ?>=1"
 					>
 						<span class="fa fa-cloud-download-alt"></span>
 						<span><?= JText::_('COM_AKEEBABACKUP_REMOTEFILES_FETCH')?></span>

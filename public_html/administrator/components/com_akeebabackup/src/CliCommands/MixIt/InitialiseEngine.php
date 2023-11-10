@@ -59,14 +59,14 @@ trait InitialiseEngine
 
 
 		// Load the Akeeba Backup language files
-		$lang = JoomlaFactory::getApplication()->getLanguage();
+		$lang = $this->getApplication()->getLanguage();
 		$lang->load('com_akeebabackup', JPATH_SITE, 'en-GB', true, true);
 		$lang->load('com_akeebabackup', JPATH_SITE, null, true, false);
 		$lang->load('com_akeebabackup', JPATH_ADMINISTRATOR, 'en-GB', true, true);
 		$lang->load('com_akeebabackup', JPATH_ADMINISTRATOR, null, true, false);
 
 		$componentObject = $this->getComponentObject($this->getApplication());
-		$dbo = $componentObject->getContainer()->get('DatabaseDriver');
+		$dbo = $componentObject->getContainer()->get(DatabaseInterface::class);
 
 		// Load Akeeba Engine
 		$this->loadAkeebaEngine($app, $dbo);
@@ -113,11 +113,14 @@ trait InitialiseEngine
 	 */
 	private function loadAkeebaEngine(ApplicationInterface $app, DatabaseInterface $dbo): void
 	{
+		// Load Composer dependencies
+		$autoloader = require_once JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/autoload.php';
+
 		// Necessary defines for Akeeba Engine
 		if (!defined('AKEEBAENGINE'))
 		{
 			define('AKEEBAENGINE', 1);
-			define('AKEEBAROOT', JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine');
+			define('AKEEBAROOT', JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/engine');
 		}
 
 		if (!defined('AKEEBA_BACKUP_ORIGIN'))
@@ -147,6 +150,9 @@ trait InitialiseEngine
 
 		// Tell the Akeeba Engine where to load the platform from
 		Platform::addPlatform('joomla', JPATH_ADMINISTRATOR . '/components/com_akeebabackup/platform/Joomla');
+
+		// Apply a custom path for the encrypted settings key file
+		Factory::getSecureSettings()->setKeyFilename(JPATH_ADMINISTRATOR . '/components/com_akeebabackup/serverkey.php');
 
 		// Add our custom push notifications handler
 		Factory::setPushClass(PushMessages::class);

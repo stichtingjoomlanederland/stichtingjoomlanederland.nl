@@ -2,6 +2,20 @@ if (typeof RSFormProDirectory != 'object') {
     var RSFormProDirectory = {};
 }
 
+if (typeof Joomla === 'object')
+{
+    Joomla.tableOrdering = function(order, dir, task, form) {
+        if (typeof(form) === 'undefined') {
+            form = document.getElementById('adminForm');
+        }
+
+        form.filter_order.value = order;
+        form.filter_order_Dir.value = dir;
+        form.task.value = task;
+        Joomla.submitform(task, form);
+    };
+}
+
 RSFormProDirectory.clearUpload = function(name, button, hash) {
     var parent = button.parentNode.parentNode;
 
@@ -155,3 +169,31 @@ RSFormProDirectory.exportProcess = function (start, limit, total) {
 var directorySubmit = RSFormProDirectory.submit;
 var directoryReset = RSFormProDirectory.reset;
 var directoryDownloadCSV = RSFormProDirectory.downloadCSV;
+
+window.addEventListener('DOMContentLoaded', function(){
+    var buttons, i;
+
+    buttons = document.querySelectorAll('[data-directory-click]');
+    if (buttons.length > 0) {
+        for (i = 0; i < buttons.length; i++) {
+            buttons[i].addEventListener('click', function(){
+                var params = this.getAttribute('data-directory-params');
+                params = params ? JSON.parse(params) : [];
+                var self = this;
+                RSFormProDirectory[this.getAttribute('data-directory-click')].apply(self, params);
+            })
+        }
+    }
+
+    buttons = document.querySelectorAll('[data-directory-change]');
+    if (buttons.length > 0) {
+        for (i = 0; i < buttons.length; i++) {
+            buttons[i].addEventListener('change', function(){
+                var params = this.getAttribute('data-directory-params');
+                params = params ? JSON.parse(params) : [];
+                var self = this;
+                RSFormProDirectory[this.getAttribute('data-directory-change')].apply(self, params);
+            })
+        }
+    }
+});

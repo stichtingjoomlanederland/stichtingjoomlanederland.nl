@@ -63,6 +63,21 @@ class RsformControllerComponents extends RsformController
 
 			$componentIdToEdit = $component->ComponentId;
 			$just_added = true;
+
+			$rowIndex = $app->input->getInt('rowIndex');
+			$columnIndex = $app->input->getInt('columnIndex');
+			$session = JFactory::getSession();
+
+			if ($rowIndex !== null && $columnIndex !== null)
+			{
+				$session->set('com_rsform.grid.row', $rowIndex);
+				$session->set('com_rsform.grid.column', $columnIndex);
+			}
+			else
+			{
+				$session->set('com_rsform.grid.row', null);
+				$session->set('com_rsform.grid.column', null);
+			}
 		}
 		else
 		{

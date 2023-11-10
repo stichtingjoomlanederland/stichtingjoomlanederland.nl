@@ -11,10 +11,11 @@ use Joomla\CMS\Extension\PluginInterface;
 use Joomla\CMS\Extension\Service\Provider\MVCFactory;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\Database\DatabaseInterface;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
 use Joomla\Event\DispatcherInterface;
-use Joomla\Plugin\System\BackupOnUpdate\Extension\BackupOnUpdate;
+use Akeeba\Plugin\System\BackupOnUpdate\Extension\BackupOnUpdate;
 
 return new class implements ServiceProviderInterface {
 	/**
@@ -42,7 +43,7 @@ return new class implements ServiceProviderInterface {
 				);
 
 				$plugin->setApplication(Factory::getApplication());
-				$plugin->setDatabase($container->get('DatabaseDriver'));
+				$plugin->setDatabase($container->get(DatabaseInterface::class));
 
 				return $plugin;
 			}

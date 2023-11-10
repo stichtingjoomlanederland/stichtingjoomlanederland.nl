@@ -13,13 +13,11 @@ class RsformModelMenus extends JModelLegacy
 	public $_total = 0;
 	public $_query = '';
 	public $_pagination = null;
-	public $_db = null;
 
 	public function __construct($config = array())
 	{
 		parent::__construct($config);
 
-		$this->_db = JFactory::getDbo();
 		$this->_query = $this->_buildQuery();
 
 		$mainframe = JFactory::getApplication();

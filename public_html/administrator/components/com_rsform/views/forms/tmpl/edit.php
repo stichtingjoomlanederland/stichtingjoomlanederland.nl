@@ -16,6 +16,7 @@ JText::script('WARNING');
 JText::script('RSFP_SPECIFY_FORM_NAME');
 JText::script('RSFP_COMP_FIELD_VALIDATIONEXTRAREGEX');
 JText::script('RSFP_COMP_FIELD_VALIDATIONEXTRASAMEAS');
+JText::script('RSFP_COMP_FIELD_VALIDATIONEXTRALENGTH');
 JText::script('RSFP_COMP_FIELD_VALIDATIONEXTRA');
 JText::script('RSFP_REMOVE_COMPONENT_CONFIRM');
 JText::script('RSFP_AUTOGENERATE_LAYOUT_WARNING_SURE');
@@ -29,7 +30,7 @@ JText::script('COM_RSFORM_EMAIL_FIELD_ERROR_WRONG_PLACEHOLDER');
 JText::script('COM_RSFORM_EMAIL_FIELD_ERROR_NOT_AN_EMAIL');
 JText::script('COM_RSFORM_EMAIL_FIELD_ERROR_WRONG_DELIMITER');
 ?>
-	<form action="<?php echo JRoute::_('index.php?option=com_rsform&view=forms&layout=edit&formId=' . $this->form->FormId); ?>" method="post" name="adminForm" id="adminForm">
+	<form action="<?php echo JRoute::_('index.php?option=com_rsform&view=forms&layout=edit&formId=' . $this->form->FormId); ?>" method="post" name="adminForm" id="adminForm" autocomplete="off">
 		<?php
 		echo JHtml::_('bootstrap.renderModal', 'editModal', array(
 			'title' => JText::_('RSFP_FORM_FIELD'),

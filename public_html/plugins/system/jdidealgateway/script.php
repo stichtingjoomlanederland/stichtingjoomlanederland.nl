@@ -8,6 +8,9 @@
  * @link       https://rolandd.com
  */
 
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+
 defined('_JEXEC') or die;
 
 /**
@@ -31,9 +34,9 @@ class PlgsystemjdidealgatewayInstallerScript
 	 */
 	public function postflight($parent)
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 		/** @var JDatabaseDriver $db */
-		$db  = JFactory::getDbo();
+		$db  = Factory::getDbo();
 
 		// Enable the plugin
 		$query = $db->getQuery(true)
@@ -46,12 +49,12 @@ class PlgsystemjdidealgatewayInstallerScript
 
 		if (!$db->execute())
 		{
-			$app->enqueueMessage(JText::sprintf('PLG_SYSTEM_JDIDEALGATEWAY_PLUGIN_NOT_ENABLED', $db->getErrorMsg()), 'error');
+			$app->enqueueMessage(Text::sprintf('PLG_SYSTEM_JDIDEALGATEWAY_PLUGIN_NOT_ENABLED', $db->getErrorMsg()), 'error');
 
 			return false;
 		}
 
-		$app->enqueueMessage(JText::_('PLG_SYSTEM_JDIDEALGATEWAY_PLUGIN_ENABLED'));
+		$app->enqueueMessage(Text::_('PLG_SYSTEM_JDIDEALGATEWAY_PLUGIN_ENABLED'));
 
 		return true;
 	}

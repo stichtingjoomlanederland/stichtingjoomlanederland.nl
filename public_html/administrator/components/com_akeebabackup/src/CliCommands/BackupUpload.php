@@ -95,7 +95,7 @@ class BackupUpload extends AbstractCommand
 
 		// Set the correct profile ID
 		$profileId = $record['profile_id'];
-		\Joomla\CMS\Factory::getApplication()->getSession()->set('akeebabackup.profile', $profileId);
+		$this->getApplication()->getSession()->set('akeebabackup.profile', $profileId);
 		Platform::getInstance()->load_configuration($profileId);
 
 		/** @var UploadModel $model */

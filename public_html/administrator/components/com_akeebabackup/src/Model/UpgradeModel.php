@@ -69,7 +69,6 @@ class UpgradeModel extends BaseModel implements DatabaseAwareInterface
 	private const PRO_CRITERIA = [
 		['const', 'AKEEBABACKUP_PRO'],
 		['const', 'AKEEBABACKUP_INSTALLATION_PRO'],
-		//['folder', JPATH_ADMINISTRATOR . '/components/com_akeebabackup/AliceChecks'],
 	];
 
 	/**
@@ -82,9 +81,9 @@ class UpgradeModel extends BaseModel implements DatabaseAwareInterface
 			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/src/Model/UsageStatisticsModel.php',
 
 			// Remove iDriveSync — the service has been discontinued
-			JPATH_ADMINISTRATOR . 'administrator/components/com_akeebabackup/engine/Postproc/idrivesync.json',
-			JPATH_ADMINISTRATOR . 'administrator/components/com_akeebabackup/engine/Postproc/Idrivesync.php',
-			JPATH_ADMINISTRATOR . 'administrator/components/com_akeebabackup/engine/Postproc/Connector/Idrivesync.php',
+			JPATH_ADMINISTRATOR . 'administrator/components/com_akeebabackup/vendor/akeeba/engine/Postproc/idrivesync.json',
+			JPATH_ADMINISTRATOR . 'administrator/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Idrivesync.php',
+			JPATH_ADMINISTRATOR . 'administrator/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Connector/Idrivesync.php',
 
 			// Remove Piecon
 			JPATH_ADMINISTRATOR . 'media/com_akeebabackup/js/piecon.js',
@@ -108,6 +107,10 @@ class UpgradeModel extends BaseModel implements DatabaseAwareInterface
 			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/src/Model/Mixin',
 			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/src/Table/Mixin',
 			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/src/View/Mixin',
+
+			// Legacy folders (these dependencies are now imported through Composer)
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/webpush',
 		],
 	];
 
@@ -119,71 +122,71 @@ class UpgradeModel extends BaseModel implements DatabaseAwareInterface
 	private const REMOVE_FROM_CORE = [
 		'files'   => [
 			// Pro engine features
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Archiver/Directftp.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Archiver/directftp.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Archiver/Directftpcurl.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Archiver/directftpcurl.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Archiver/Directsftp.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Archiver/directsftp.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Archiver/Directsftpcurl.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Archiver/directsftpcurl.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Archiver/Jps.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Archiver/jps.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Archiver/Zipnative.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Archiver/zipnative.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Connector/**"',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/amazons3.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Amazons3.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/azure.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Azure.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/backblaze.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Backblaze.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/box.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Box.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/cloudfiles.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Cloudfiles.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/cloudme.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Cloudme.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/dreamobjects.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Dreamobjects.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/dropbox.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Dropbox.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/dropbox2.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Dropbox2.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/ftp.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Ftp.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/ftpcurl.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Ftpcurl.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/googledrive.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Googledrive.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/googlestorage.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Googlestorage.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/googlestoragejson.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Googlestoragejson.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/idrivesync.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Idrivesync.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/onedrive.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Onedrive.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/onedrivebusiness.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Onedrivebusiness.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/ovh.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Ovh.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/pcloud.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Pcloud.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/s3.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/S3.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/sftp.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Sftp.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/sftpcurl.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Sftpcurl.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/sugarsync.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Sugarsync.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/swift.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Swift.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/webdav.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Postproc/Webdav.php',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Scan/large.json',
-			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/engine/Scan/Large.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Archiver/Directftp.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Archiver/directftp.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Archiver/Directftpcurl.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Archiver/directftpcurl.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Archiver/Directsftp.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Archiver/directsftp.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Archiver/Directsftpcurl.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Archiver/directsftpcurl.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Archiver/Jps.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Archiver/jps.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Archiver/Zipnative.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Archiver/zipnative.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Connector/**"',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/amazons3.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Amazons3.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/azure.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Azure.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/backblaze.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Backblaze.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/box.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Box.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/cloudfiles.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Cloudfiles.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/cloudme.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Cloudme.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/dreamobjects.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Dreamobjects.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/dropbox.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Dropbox.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/dropbox2.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Dropbox2.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/ftp.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Ftp.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/ftpcurl.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Ftpcurl.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/googledrive.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Googledrive.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/googlestorage.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Googlestorage.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/googlestoragejson.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Googlestoragejson.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/idrivesync.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Idrivesync.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/onedrive.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Onedrive.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/onedrivebusiness.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Onedrivebusiness.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/ovh.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Ovh.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/pcloud.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Pcloud.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/s3.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/S3.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/sftp.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Sftp.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/sftpcurl.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Sftpcurl.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/sugarsync.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Sugarsync.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/swift.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Swift.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/webdav.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Postproc/Webdav.php',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Scan/large.json',
+			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/akeeba/engine/Scan/Large.php',
 
 			// Kickstart, used for Site Transfer Wizard
 			JPATH_ADMINISTRATOR . '/components/com_akeebabackup/installers/kickstart.txt',
@@ -288,6 +291,7 @@ class UpgradeModel extends BaseModel implements DatabaseAwareInterface
 	private const ALWAYS_ENABLE_EXTENSIONS = [
 		'plg_console_akeebabackup',
 		'plg_task_akeebabackup',
+		'plg_webservices_akeebabackup',
 	];
 
 	/** @var string[] Extensions to always uninstall if they are still installed (runs on install and upgrade) */
@@ -299,6 +303,7 @@ class UpgradeModel extends BaseModel implements DatabaseAwareInterface
 		'plg_system_backuponupdate',
 		'plg_actionlog_akeebabackup',
 		'plg_task_akeebabackup',
+		'plg_webservices_akeebabackup',
 	];
 
 	/** @var string Relative directory to the custom handlers */
@@ -1217,6 +1222,9 @@ class UpgradeModel extends BaseModel implements DatabaseAwareInterface
 			return false;
 		}
 
+		// Extensions must be marked as not belonging to the package before they can be removed
+		$this->removeExtensionPackageLink($eid);
+
 		// Get an Extension table object and Installer object.
 		$row       = new Extension($this->getDatabase());
 		$installer = Installer::getInstance();
@@ -1341,5 +1349,16 @@ class UpgradeModel extends BaseModel implements DatabaseAwareInterface
 	private function isSamePackage(): bool
 	{
 		return empty(self::OLD_PACKAGE_NAME) || (self::OLD_PACKAGE_NAME === self::PACKAGE_NAME);
+	}
+
+	private function removeExtensionPackageLink(int $eid): void
+	{
+		$db    = $this->getDatabase();
+		$query = $db->getQuery(true)
+			->update($db->quoteName('#__extensions'))
+			->set($db->quoteName('package_id') . ' = 0')
+			->where($db->quoteName('extension_id') . ' = :eid')
+			->bind(':eid', $eid, ParameterType::INTEGER);
+		$db->setQuery($query)->execute();
 	}
 }

@@ -9,6 +9,8 @@
  */
 
 use Jdideal\Gateway;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Uri\Uri;
 
 require_once __DIR__ . '/iDEALConnector_config.inc.php';
 
@@ -32,7 +34,7 @@ function getCurrentDateTime()
  */
 function logMessage($desiredVerbosity, $message)
 {
-	$logId = JFactory::getApplication()->input->get('logid');
+	$logId = Factory::getApplication()->input->get('logid');
 
 	if ($logId)
 	{
@@ -109,7 +111,7 @@ class ConfigurationManager
 		// Get the configuration data
 		$this->config['MERCHANTID']             = $jdideal->get('IDEAL_MerchantID');
 		$this->config['SUBID']                  = $jdideal->get('IDEAL_SubID');
-		$this->config['MERCHANTRETURNURL']      = JUri::root() . 'cli/notify.php';
+		$this->config['MERCHANTRETURNURL']      = Uri::root() . 'cli/notify.php';
 		$this->config['ACQUIRERURL']            = $this->getBank('IDEAL_AcquirerURL', $selectedBank);
 		$this->config['ACQUIRERDIRECTORYURL']   = $this->getBank('IDEAL_AcquirerURL', $selectedBank);
 		$this->config['ACQUIRERTRANSACTIONURL'] = $this->getBank('IDEAL_AcquirerURL', $selectedBank);

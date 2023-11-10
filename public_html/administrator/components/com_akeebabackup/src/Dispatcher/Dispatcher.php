@@ -24,7 +24,6 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\WebAsset\WebAssetItem;
 use Joomla\Database\DatabaseAwareTrait;
-use Joomla\Database\DatabaseInterface;
 use ReflectionObject;
 use Throwable;
 
@@ -225,7 +224,8 @@ class Dispatcher extends ComponentDispatcher
 		$versionModifier    = $this->app->get('debug') ? microtime() : '';
 		$akeebaMediaVersion = ApplicationHelper::getHash(AKEEBABACKUP_VERSION . AKEEBABACKUP_DATE . $versionModifier);
 
-		$waRegistry = $document->getWebAssetManager()->getRegistry();
+		$webAssetManager = $document->getWebAssetManager();
+		$waRegistry      = $webAssetManager->getRegistry();
 		$waRegistry->get('preset', 'com_akeebabackup.common');
 
 		$refObj  = new ReflectionObject($waRegistry);
@@ -263,8 +263,14 @@ class Dispatcher extends ComponentDispatcher
 		$refProp->setValue($waRegistry, $registeredAssets);
 
 		// Finally, load our 'common' preset
-		$document->getWebAssetManager()
+		$webAssetManager
 			->usePreset('com_akeebabackup.common');
+
+		if (version_compare(JVERSION, '4.999.999', 'gt'))
+		{
+			$webAssetManager
+				->useStyle('com_akeebabackup.j5dark');
+		}
 	}
 
 	private function applyViewAndController(): void

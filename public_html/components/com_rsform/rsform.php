@@ -7,9 +7,6 @@
 
 defined('_JEXEC') or die('Restricted access');
 
-$cache = JFactory::getCache('com_rsform');
-$cache->clean();
-
 $app = JFactory::getApplication();
 
 // Require the base controller

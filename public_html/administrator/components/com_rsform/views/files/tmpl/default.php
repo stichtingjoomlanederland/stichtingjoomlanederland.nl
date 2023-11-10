@@ -17,8 +17,8 @@ defined('_JEXEC') or die('Restricted access');
 		</tr>
 		<tr>
 			<td width="120"><label for="upload"><?php echo JText::_('RSFP_FILE'); ?>:</label></td>
-			<td width="1%" nowrap="nowrap"><input class="input_box" id="upload" name="upload" type="file" size="57" /></td>
-			<td><input class="btn btn-primary" type="button" value="<?php echo JText::_('RSFP_UPLOAD_FILE'); ?>" onclick="Joomla.submitbutton('files.upload')" /></td>
+			<td width="1%" nowrap="nowrap"><input class="input_box form-control" id="upload" name="upload" type="file" size="57" /></td>
+            <td><button class="btn btn-primary" type="button" onclick="Joomla.submitbutton('files.upload')"><?php echo JText::_('RSFP_UPLOAD_FILE'); ?></button></td>
 		</tr>
 		</table>
 	<?php } else { ?>
@@ -38,16 +38,16 @@ defined('_JEXEC') or die('Restricted access');
 		</tr>
 		</thead>
 		<tr>
-			<td><a class="folder" href="index.php?option=com_rsform&amp;task=files.display&amp;folder=<?php echo urlencode($this->previous); ?>&amp;tmpl=component">..</a></td>
+			<td><i class="icon-folder"></i> <a href="index.php?option=com_rsform&amp;task=files.display&amp;folder=<?php echo urlencode($this->previous); ?>&amp;tmpl=component">..</a></td>
 		</tr>
 	<?php foreach ($this->folders as $folder) { ?>
 		<tr>
-			<td><a class="folder" href="index.php?option=com_rsform&amp;task=files.display&amp;folder=<?php echo urlencode($folder->fullpath); ?>&amp;tmpl=component"><?php echo $this->escape($folder->name); ?></a></td>
+			<td><i class="icon-folder"></i> <a href="index.php?option=com_rsform&amp;task=files.display&amp;folder=<?php echo urlencode($folder->fullpath); ?>&amp;tmpl=component"><?php echo $this->escape($folder->name); ?></a></td>
 		</tr>
 	<?php } ?>
 	<?php foreach ($this->files as $file) { ?>
 			<tr>
-				<td><a class="file" href="javascript: void(0);" data-fullpath="<?php echo $this->escape($file->fullpath); ?>" onclick="window.opener.document.getElementById('UserEmailAttachFile').value = jQuery(this).data('fullpath'); window.close();"><?php echo $this->escape($file->name); ?></a></td>
+				<td><i class="icon-file"></i> <a href="javascript: void(0);" data-fullpath="<?php echo $this->escape($file->fullpath); ?>" onclick="window.opener.document.getElementById('UserEmailAttachFile').value = jQuery(this).data('fullpath'); window.close();"><?php echo $this->escape($file->name); ?></a></td>
 			</tr>
 	<?php } ?>
 	</table>

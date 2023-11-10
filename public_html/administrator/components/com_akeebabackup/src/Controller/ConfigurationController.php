@@ -130,8 +130,15 @@ class ConfigurationController extends BaseController
 		$model->setState('method', $this->input->get('method', '', 'raw'));
 		$model->setState('params', $this->input->get('params', [], 'raw'));
 
+		$result = $model->dpeCustomAPICall();
+
+		if (is_array($result) && $this->isNumericIndexedArray($result))
+		{
+			$result = ['list' => $result];
+		}
+
 		@ob_end_clean();
-		echo '###' . json_encode($model->dpeCustomAPICall()) . '###';
+		echo '###' . json_encode($result) . '###';
 		flush();
 
 		$this->app->close();
@@ -258,7 +265,9 @@ class ConfigurationController extends BaseController
 		}
 
 		@ob_end_clean();
-		echo '###' . json_encode($testResult) . '###';
+		echo '###' . json_encode([
+			'status' => $testResult
+			]) . '###';
 		flush();
 
 		$this->app->close();
@@ -291,9 +300,22 @@ class ConfigurationController extends BaseController
 		}
 
 		@ob_end_clean();
-		echo '###' . json_encode($testResult) . '###';
+		echo '###' . json_encode([
+			'status' => $testResult
+			]) . '###';
 		flush();
 
 		$this->app->close();
+	}
+
+	private function isNumericIndexedArray(array $result)
+	{
+		return array_reduce(
+			array_keys($result),
+			function (bool $carry, $key) {
+				return $carry || (is_numeric($key) && intval($key) == $key);
+			},
+			false
+		);
 	}
 }

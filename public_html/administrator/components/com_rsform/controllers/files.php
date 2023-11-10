@@ -29,10 +29,12 @@ class RsformControllerFiles extends RsformController
 		
 		if ($result) {
 			$msg = JText::sprintf('COM_RSFORM_SUCCESSFULLY_UPLOADED', $file);
+			$this->setMessage($msg);
 		} else {
             $msg = JText::sprintf('COM_RSFORM_FAILED_TO_UPLOAD_IN', $file, $folder);
+			$this->setMessage($msg, 'error');
 		}
 		
-		$this->setRedirect('index.php?option=com_rsform&controller=files&task=display&folder='.urlencode($folder).'&tmpl=component', $msg);
+		$this->setRedirect('index.php?option=com_rsform&controller=files&task=display&folder='.urlencode($folder).'&tmpl=component');
 	}
 }

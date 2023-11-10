@@ -9,12 +9,15 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Table;
 
 defined('_JEXEC') or die;
 
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\GetPropertiesAwareTrait;
 use Joomla\CMS\Table\Table;
 use Joomla\Database\DatabaseDriver;
 
 #[\AllowDynamicProperties]
 class StatisticTable extends Table
 {
+	use GetPropertiesAwareTrait;
+
 	/**
 	 * The absolute path to the backup archive on the local filesystem
 	 *

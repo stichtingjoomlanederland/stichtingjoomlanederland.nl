@@ -12,7 +12,7 @@ require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/calendar.php'
 
 class RSFormProFieldCalendar extends RSFormProField
 {
-	protected $customId;
+	public $customId;
 	
 	// backend preview
 	public function getPreviewInput()

@@ -27,7 +27,6 @@ class RSFormProFieldPageBreak extends RSFormProField
 	// functions used for rendering in front view
 	public function getFormInput() {
 		$validate 	 = (int) $this->getProperty('VALIDATENEXTPAGE', 'NO');
-		$buttonType  = $this->getProperty('BUTTONTYPE', 'TYPEINPUT') == 'TYPEBUTTON' ? 'button' : 'input';
 		$allowHtml   = $this->getProperty('ALLOWHTML', 'NO');
 		$componentId = $this->getProperty('componentId');
 		$id			 = $this->getId();
@@ -58,11 +57,7 @@ class RSFormProFieldPageBreak extends RSFormProField
 			}
 			
 			// Start building the HTML input
-			if ($buttonType == 'button') {
-				$html .= '<button';
-			} else {
-				$html .= '<input';
-			}
+			$html .= '<button';
 			// Set the type
 			$html .= ' type="button"';
 			// Id
@@ -70,11 +65,7 @@ class RSFormProFieldPageBreak extends RSFormProField
 			// Additional HTML
 			$html .= $additional;
 			// Add the label & close the tag
-			if ($buttonType == 'button') {
-				$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
-			} else {
-				$html .= ' value="'.$this->escape($label).'" />';
-			}
+			$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
 		}
 		
 		// Build next button if it's not the last pagebreak.
@@ -104,11 +95,7 @@ class RSFormProFieldPageBreak extends RSFormProField
 			}
 			
 			// Start building the HTML input
-			if ($buttonType == 'button') {
-				$html .= '<button';
-			} else {
-				$html .= '<input';
-			}
+			$html .= '<button';
 			// Set the type
 			$html .= ' type="button"';
 			// Id
@@ -116,11 +103,7 @@ class RSFormProFieldPageBreak extends RSFormProField
 			// Additional HTML
 			$html .= $additional;
 			// Add the label & close the tag
-			if ($buttonType == 'button') {
-				$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
-			} else {
-				$html .= ' value="'.$this->escape($label).'" />';
-			}
+			$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
 		}
 		
 		return $html;

@@ -10,13 +10,10 @@ namespace Akeeba\Component\AkeebaBackup\Site\Model\Json\Task;
 // Protect from unauthorized access
 defined('_JEXEC') || die();
 
-use Akeeba\Component\AkeebaBackup\Administrator\Model\DatabasefiltersModel;
-use Akeeba\Engine\Platform;
-use Joomla\CMS\Factory;
-use Joomla\CMS\Filter\InputFilter;
-
 /**
  * Get the database entities along with their filtering status (typically for rendering a GUI)
+ *
+ * @deprecated
  */
 class GetDBEntities extends AbstractTask
 {
@@ -31,39 +28,6 @@ class GetDBEntities extends AbstractTask
 	 */
 	public function execute(array $parameters = [])
 	{
-		$filter = InputFilter::getInstance();
-
-		// Get the passed configuration values
-		$defConfig = [
-			'profile' => 0,
-			'root'    => '[SITEDB]',
-		];
-
-		$defConfig = array_merge($defConfig, $parameters);
-
-		$profile = $filter->clean($defConfig['profile'], 'int');
-		$root    = $filter->clean($defConfig['root'], 'string');
-
-		// We need a valid profile ID
-		if ($profile <= 0)
-		{
-			$profile = 1;
-		}
-
-		// We need a root
-		if (empty($root))
-		{
-			throw new \RuntimeException('Unknown database root', 500);
-		}
-
-		Factory::getApplication()->getSession()->set('akeebabackup.profile', $profile);
-
-		// Load the configuration
-		Platform::getInstance()->load_configuration($profile);
-
-		/** @var DatabasefiltersModel $model */
-		$model = $this->factory->createModel('Databasefilters', 'Administrator', ['ignore_request' => true]);
-
-		return $model->makeListing($root);
+		throw new \RuntimeException('This method is no longer supported by the Akeeba Remote JSON API', 501);
 	}
 }

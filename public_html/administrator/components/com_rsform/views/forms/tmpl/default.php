@@ -9,6 +9,8 @@ defined('_JEXEC') or die('Restricted access');
 JHtml::_('bootstrap.tooltip');
 
 JText::script('COM_RSFORM_ARE_YOU_SURE_YOU_WANT_TO_CLEAR');
+
+$Itemid = $this->preview_itemid ? '&amp;Itemid=' . (int) $this->preview_itemid : '';
 ?>
 
 <form action="index.php?option=com_rsform&amp;view=forms" method="post" name="adminForm" id="adminForm">
@@ -69,7 +71,7 @@ JText::script('COM_RSFORM_ARE_YOU_SURE_YOU_WANT_TO_CLEAR');
 			</td>
             <?php } ?>
 			<td align="center" nowrap="nowrap">
-				<a class="btn btn-secondary" href="<?php echo JUri::root(); ?>index.php?option=com_rsform&amp;view=rsform&amp;formId=<?php echo $row->FormId; ?>" target="_blank"><span class="rsficon rsficon-eye rsficon-green"></span> <?php echo JText::_('RSFP_PREVIEW'); ?></a>
+				<a class="btn btn-secondary" href="<?php echo JUri::root(); ?>index.php?option=com_rsform&amp;view=rsform&amp;formId=<?php echo $row->FormId . $Itemid; ?>" target="_blank"><span class="rsficon rsficon-eye rsficon-green"></span> <?php echo JText::_('RSFP_PREVIEW'); ?></a>
 				<div class="btn-group">
 					<a class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" href="#"><?php echo JText::_('RSFP_TOOLS'); ?> <span class="caret"></span></a>
 					<ul class="dropdown-menu" role="menu" aria-label="<?php echo JText::_('RSFP_TOOLS'); ?>">

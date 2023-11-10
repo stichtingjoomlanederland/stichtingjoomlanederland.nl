@@ -304,9 +304,6 @@ class RSFormProRestoreForm
 											case 'DISPLAYPROGRESS':
 												$value = 'NO';
 											break;
-											case 'BUTTONTYPE':
-												$value = 'TYPEINPUT';
-											break;
 											case 'DISPLAYPROGRESSMSG':
 												$value = '<div>'."\r\n".' <p><em>Page <strong>{page}</strong> of {total}</em></p>'."\r\n".' <div class="rsformProgressContainer">'."\r\n".'  <div class="rsformProgressBar" style="width: {percent}%;"></div>'."\r\n".' </div>'."\r\n".'</div>';
 											break;
@@ -568,14 +565,14 @@ class RSFormProRestoreForm
 					'formId'                    => $this->form->FormId,
 					'filename'                  => (string) $directory->filename,
 					'csvfilename'               => (string) $directory->csvfilename,
-					'enablepdf'                 => (string) $directory->enablepdf,
-					'enablecsv'                 => (string) $directory->enablecsv,
+					'enablepdf'                 => (int) $directory->enablepdf,
+					'enablecsv'                 => (int) $directory->enablecsv,
 					'AllowCSVFullDownload'      => (int) $directory->AllowCSVFullDownload,
-					'HideEmptyValues'           => (string) $directory->HideEmptyValues,
-					'ShowGoogleMap'             => (string) $directory->ShowGoogleMap,
+					'HideEmptyValues'           => (int) $directory->HideEmptyValues,
+					'ShowGoogleMap'             => (int) $directory->ShowGoogleMap,
 					'ViewLayout'                => (string) $directory->ViewLayout,
 					'ViewLayoutName'            => (string) $directory->ViewLayoutName,
-					'ViewLayoutAutogenerate'    => (string) $directory->ViewLayoutAutogenerate,
+					'ViewLayoutAutogenerate'    => (int) $directory->ViewLayoutAutogenerate,
 					'CSS'                       => (string) $directory->CSS,
 					'JS'                        => (string) $directory->JS,
 					'ListScript'                => (string) $directory->ListScript,
@@ -611,12 +608,13 @@ class RSFormProRestoreForm
 							$data = array(
 								'formId'        => $this->form->FormId,
 								'componentId'   => $componentId,
-								'viewable'      => (string) $field->viewable,
-								'searchable'    => (string) $field->searchable,
-								'editable'      => (string) $field->editable,
-								'indetails'     => (string) $field->indetails,
-								'incsv'         => (string) $field->incsv,
-								'ordering'      => (string) $field->ordering,
+								'viewable'      => (int) $field->viewable,
+								'searchable'    => (int) $field->searchable,
+								'editable'      => (int) $field->editable,
+								'indetails'     => (int) $field->indetails,
+								'incsv'         => (int) $field->incsv,
+								'sort'          => (int) $field->sort,
+								'ordering'      => (int) $field->ordering,
 							);
 
 							$data = (object) $data;

@@ -10,13 +10,10 @@ namespace Akeeba\Component\AkeebaBackup\Site\Model\Json\Task;
 // Protect from unauthorized access
 defined('_JEXEC') || die();
 
-use Akeeba\Component\AkeebaBackup\Administrator\Model\FilefiltersModel;
-use Akeeba\Engine\Platform;
-use Joomla\CMS\Factory;
-use Joomla\CMS\Filter\InputFilter;
-
 /**
  * Get the filesystem entities along with their filtering status (typically for rendering a GUI)
+ *
+ * @deprecated
  */
 class GetFSEntities extends AbstractTask
 {
@@ -31,54 +28,6 @@ class GetFSEntities extends AbstractTask
 	 */
 	public function execute(array $parameters = [])
 	{
-		$filter = InputFilter::getInstance();
-
-		// Get the passed configuration values
-		$defConfig = [
-			'profile'      => 0,
-			'root'         => '[SITEROOT]',
-			'subdirectory' => '',
-		];
-
-		$defConfig = array_merge($defConfig, $parameters);
-
-		$profile      = $filter->clean($defConfig['profile'], 'int');
-		$root         = $filter->clean($defConfig['root'], 'string');
-		$subdirectory = $filter->clean($defConfig['subdirectory'], 'path');
-		$crumbs       = [];
-
-		// We need a valid profile ID
-		if ($profile <= 0)
-		{
-			$profile = 1;
-		}
-
-		// We need a root
-		if (empty($root))
-		{
-			throw new \RuntimeException('Unknown filesystem root', 500);
-		}
-
-		// Get the subdirectory and explode it to its parts
-		if (!empty($subdirectory))
-		{
-			$subdirectory = trim($subdirectory, '/');
-		}
-
-		if (!empty($subdirectory))
-		{
-			$crumbs = explode('/', $subdirectory);
-		}
-
-		// Set the active profile
-		Factory::getApplication()->getSession()->set('akeebabackup.profile', $profile);
-
-		// Load the configuration
-		Platform::getInstance()->load_configuration($profile);
-
-		/** @var FilefiltersModel $model */
-		$model = $this->factory->createModel('Filefilters', 'Administrator', ['ignore_request' => true]);
-
-		return $model->makeListing($root, $crumbs);
+		throw new \RuntimeException('This method is no longer supported by the Akeeba Remote JSON API', 501);
 	}
 }

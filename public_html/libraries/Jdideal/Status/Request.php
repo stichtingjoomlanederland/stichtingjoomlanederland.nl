@@ -119,7 +119,7 @@ class Request
 	public function batch(): array
 	{
 		$jdideal = new Gateway;
-		$input   = Factory::getApplication()->input;
+		$input   = $this->app->input;
 
 		/** @var PspInterface $notifier */
 		$notifier = $jdideal->loadNotifier($jdideal, $input);
@@ -256,14 +256,24 @@ class Request
 		if ($isCustomer && !$transactionDetails->processed
 			&& !$notifier->canUseCustomerStatus())
 		{
-			$jdideal->log('Going to sleep', $logId);
-			sleep(3);
-			$jdideal->log('Waking up', $logId);
+            $seconds = 0;
+            $isProcessed = (int) $transactionDetails->processed;
 
-			// Get the new transaction details
-			$transactionDetails = $jdideal->getDetails($logId, 'id', true);
+            while ($isProcessed === 0)
+            {
+                $jdideal->log('Going to sleep', $logId);
+                sleep(1);
+                $jdideal->log('Waking up', $logId);
+                $transactionDetails = $jdideal->getDetails($logId, 'id', true);
+                $isProcessed = (int) $transactionDetails->processed;
+                $seconds++;
 
-			// Add some logging
+                if ($seconds > 5)
+                {
+                    $isProcessed = 1;
+                }
+            }
+
 			$jdideal->log('Result: ' . $transactionDetails->result, $logId);
 			$jdideal->log(
 				'Is transaction processed: ' . ($transactionDetails->processed
@@ -340,7 +350,7 @@ class Request
 
 				// Need to add the domain here because J! messes up the URL in the Route:: function by prepending cli
 				$params = ComponentHelper::getParams('com_jdidealgateway');
-				$domain = $params->get('domain');
+				$domain = $params->get('domain', '');
 
 				if (substr($domain, -1) !== '/')
 				{
@@ -874,7 +884,7 @@ class Request
 		}
 		else
 		{
-			Factory::getApplication()->triggerEvent(
+			$this->app->triggerEvent(
 				$trigger, [$data]
 			);
 		}
@@ -1286,7 +1296,7 @@ class Request
 						$orderStatusName
 					) . "\n";
 
-				if ($result['card'])
+				if (isset($result['card']) && $result['card'])
 				{
 					$body .= sprintf(
 							Text::_('COM_ROPAYMENTS_MAIL_ORDER_CARD'),

@@ -501,7 +501,7 @@
 		mask: false,
 		validateOnBlur: true,
 		allowBlank: true,
-		yearStart: 1950,
+		yearStart: 1920,
 		yearEnd: 2050,
 		monthStart: 0,
 		monthEnd: 11,

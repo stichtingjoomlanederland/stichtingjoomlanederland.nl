@@ -42,8 +42,9 @@ class JdidealgatewayControllerPay extends BaseController
 
 		$data = $this->input->get('jform', [], 'array');
 		$form = $payModel->getForm($data, false);
+        $silent = $this->input->getBool('silent', false);
 
-		if (!Factory::getUser()->guest)
+		if ($silent || !Factory::getUser()->guest)
 		{
 			$form->removeField('captcha');
 		}

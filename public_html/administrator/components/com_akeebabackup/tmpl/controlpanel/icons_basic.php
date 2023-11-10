@@ -19,9 +19,9 @@ use Joomla\CMS\Language\Text;
 	</h3>
 
 	<div class="card-body">
-		<div class="d-flex flex-row flex-wrap align-items-stretch">
+		<div class="akeeba-cpanel-container d-flex flex-row flex-wrap align-items-stretch">
 			<?php if ($this->permissions['backup']): ?>
-				<a class="text-center align-self-stretch btn btn-outline-success border-0" style="width: 10em"
+				<a class="akeeba-cpanel-button text-center align-self-stretch btn btn-outline-success border-0" style="width: 10em"
 				   href="index.php?option=com_akeebabackup&view=Backup">
 					<div class="bg-success text-white d-block text-center p-3 h2">
 						<span class="fa fa-play"></span>
@@ -33,7 +33,7 @@ use Joomla\CMS\Language\Text;
 			<?php endif ?>
 
 			<?php if ($this->permissions['download'] && AKEEBABACKUP_PRO): ?>
-				<a class="text-center align-self-stretch btn btn-outline-success border-0" style="width: 10em"
+				<a class="akeeba-cpanel-button text-center align-self-stretch btn btn-outline-success border-0" style="width: 10em"
 				   href="index.php?option=com_akeebabackup&view=Transfer">
 					<div class="bg-success text-white d-block text-center p-3 h2">
 						<span class="fa fa-external-link-alt"></span>
@@ -44,7 +44,7 @@ use Joomla\CMS\Language\Text;
 				</a>
 			<?php endif ?>
 
-			<a class="text-center align-self-stretch btn btn-outline-primary border-0" style="width: 10em"
+			<a class="akeeba-cpanel-button text-center align-self-stretch btn btn-outline-primary border-0" style="width: 10em"
 			   href="index.php?option=com_akeebabackup&view=Manage">
 				<div class="bg-primary text-white d-block text-center p-3 h2">
 					<span class="fa fa-list-alt"></span>
@@ -55,7 +55,7 @@ use Joomla\CMS\Language\Text;
 			</a>
 
 			<?php if ($this->permissions['configure']): ?>
-				<a class="text-center align-self-stretch btn btn-outline-primary border-0" style="width: 10em"
+				<a class="akeeba-cpanel-button text-center align-self-stretch btn btn-outline-primary border-0" style="width: 10em"
 				   href="index.php?option=com_akeebabackup&view=Configuration">
 					<div class="bg-primary text-white d-block text-center p-3 h2">
 						<span class="fa fa-cog"></span>
@@ -67,7 +67,7 @@ use Joomla\CMS\Language\Text;
 			<?php endif ?>
 
 			<?php if ($this->permissions['configure']): ?>
-				<a class="text-center align-self-stretch btn btn-outline-primary border-0" style="width: 10em"
+				<a class="akeeba-cpanel-button text-center align-self-stretch btn btn-outline-primary border-0" style="width: 10em"
 				   href="index.php?option=com_akeebabackup&view=Profiles">
 					<div class="bg-primary text-white d-block text-center p-3 h2">
 						<span class="fa fa-user-friends"></span>

@@ -10,12 +10,10 @@ namespace Akeeba\Component\AkeebaBackup\Site\Model\Json\Task;
 // Protect from unauthorized access
 defined('_JEXEC') || die();
 
-use Akeeba\Engine\Factory;
-use Akeeba\Engine\Platform;
-use Joomla\CMS\Factory as JoomlaFactory;
-
 /**
  * Get the filesystem roots (site root and extra included directories)
+ *
+ * @deprecated
  */
 class GetFSRoots extends AbstractTask
 {
@@ -30,28 +28,6 @@ class GetFSRoots extends AbstractTask
 	 */
 	public function execute(array $parameters = [])
 	{
-		// Get the passed configuration values
-		$defConfig = [
-			'profile' => 0,
-		];
-
-		$defConfig = array_merge($defConfig, $parameters);
-
-		$profile = (int) $defConfig['profile'];
-
-		if ($profile <= 0)
-		{
-			$profile = 1;
-		}
-
-		// Set the active profile
-		JoomlaFactory::getApplication()->getSession()->set('akeebabackup.profile', $profile);
-
-		// Load the configuration
-		Platform::getInstance()->load_configuration($profile);
-
-		$filters = Factory::getFilters();
-
-		return $filters->getInclusions('dir');
+		throw new \RuntimeException('This method is no longer supported by the Akeeba Remote JSON API', 501);
 	}
 }

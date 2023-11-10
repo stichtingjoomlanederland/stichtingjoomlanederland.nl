@@ -1110,6 +1110,13 @@ class RsformModelForms extends JModelList
 			'icon'  => 'rsficon rsficon-shield',
 			'exists' => $exists ? $exists[0] : false
 		);
+		$exists = RSFormProHelper::componentExists($formId, RSFORM_FIELD_HASHCASH);
+		$groups['captcha']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_HASHCASH,
+			'name' 	=> JText::_('RSFP_COMP_HASHCASH'),
+			'icon'  => 'rsficon rsficon-shield',
+			'exists' => $exists ? $exists[0] : false
+		);
 
 		// Advanced
 		$groups['advanced']->fields[] = (object) array(

@@ -15,6 +15,7 @@ use Joomla\CMS\Factory as JoomlaFactory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\User\User;
 use Joomla\Database\DatabaseDriver;
+use Joomla\Database\DatabaseInterface;
 
 class Status
 {
@@ -133,7 +134,7 @@ class Status
 	public function getLatestBackupDetails()
 	{
 		/** @var DatabaseDriver $db */
-		$db    = JoomlaFactory::getContainer()->get('DatabaseDriver');
+		$db    = JoomlaFactory::getContainer()->get(DatabaseInterface::class);
 		$query = $db->getQuery(true)
 			->select('MAX(' . $db->qn('id') . ')')
 			->from($db->qn('#__akeebabackup_backups'));

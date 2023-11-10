@@ -42,7 +42,17 @@ JHtml::_('bootstrap.tooltip');
 		<div id="dashboard-right" class="hidden-phone hidden-tablet">
 			<div class="dashboard-container">
 				<div class="dashboard-info">
-					<?php echo JHtml::_('image', 'com_rsform/admin/rsformpro.png', JText::_('COM_RSFORM'), null, true); ?>
+                    <picture>
+                        <?php
+                        if ($this->jversion->isCompatible('5.0'))
+                        {
+                        ?>
+                        <source srcset="<?php echo JHtml::_('image', 'com_rsform/admin/rsformpro-inverted.png', JText::_('COM_RSFORM'), null, true, 1); ?>" media="(prefers-color-scheme: dark)">
+                        <?php
+                        }
+
+                        echo JHtml::_('image', 'com_rsform/admin/rsformpro.png', JText::_('COM_RSFORM'), null, true); ?>
+                    </picture>
 					<table class="dashboard-table">
 						<tr>
 							<td nowrap="nowrap" class="text-right"><strong><?php echo JText::_('COM_RSFORM_PRODUCT_VERSION') ?>: </strong></td>

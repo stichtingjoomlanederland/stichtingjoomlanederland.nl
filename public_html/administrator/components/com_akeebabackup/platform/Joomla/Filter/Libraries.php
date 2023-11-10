@@ -31,50 +31,44 @@ class Libraries extends Base
 		$this->method      = 'direct';
 		$this->filter_name = 'Libraries';
 
-		// FIXME This filter doesn't work very well on many live hosts. Disabled for now.
 		parent::__construct();
 
-		return;
+		$this->initialise();
+	}
 
-
-		if (empty($this->filter_name))
+	private function initialise()
+	{
+		// Bail out if the user has provided a custom (alternate) root to back up
+		if (Factory::getConfiguration()->get('akeeba.platform.override_root', 0))
 		{
-			$this->filter_name = strtolower(basename(__FILE__, '.php'));
+			return;
 		}
 
-		// Get the saved library path and compare it to the default
-		$jlibdir = Platform::getInstance()->get_platform_configuration_option('jlibrariesdir', '');
-		if (empty($jlibdir))
+		if (defined('JPATH_LIBRARIES'))
 		{
-			if (defined('JPATH_LIBRARIES'))
-			{
-				$jlibdir = JPATH_LIBRARIES;
-			}
-			elseif (defined('JPATH_PLATFORM'))
-			{
-				$jlibdir = JPATH_PLATFORM;
-			}
-			else
-			{
-				$jlibdir = false;
-			}
+			$jLibrariesDir = JPATH_LIBRARIES;
 		}
-
-		if ($jlibdir !== false)
+		elseif (defined('JPATH_PLATFORM'))
 		{
-			$jlibdir          = Factory::getFilesystemTools()->TranslateWinPath($jlibdir);
-			$defaultLibraries = Factory::getFilesystemTools()->TranslateWinPath(JPATH_SITE . '/libraries');
-
-			if ($defaultLibraries != $jlibdir)
-			{
-				// The path differs, add it here
-				$this->filter_data['JPATH_LIBRARIES'] = $jlibdir;
-			}
+			$jLibrariesDir = JPATH_PLATFORM;
 		}
 		else
 		{
-			$this->filter_data = array();
+			return;
 		}
-		parent::__construct();
+
+		$jLibrariesDir    = Factory::getFilesystemTools()->TranslateWinPath($jLibrariesDir);
+		$defaultLibraries = Factory::getFilesystemTools()->TranslateWinPath(JPATH_ROOT . '/libraries');
+
+		if ($defaultLibraries === $jLibrariesDir)
+		{
+			return;
+		}
+
+		// The path differs, add it here
+		$this->filter_data['JPATH_LIBRARIES'] = 			[
+			Factory::getFilesystemTools()->rebaseFolderToStockDirs($jLibrariesDir),
+			'JPATH_LIBRARIES',
+		];
 	}
 }

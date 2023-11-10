@@ -8,13 +8,14 @@
  * @link       https://rolandd.com
  */
 
-use Joomla\CMS\Form\Field\ListField;
+use Joomla\CMS\Form\FormHelper;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 
 defined('_JEXEC') or die;
 
-JFormHelper::loadFieldClass('list');
+JLoader::registerAlias('JFormFieldList', '\\Joomla\\CMS\\Form\\Field\\ListField', '6.0');
+FormHelper::loadFieldClass('list');
 
 /**
  * List of available order number fields.

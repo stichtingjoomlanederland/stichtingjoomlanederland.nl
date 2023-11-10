@@ -88,13 +88,13 @@ class MultipledatabasesModel extends BaseModel
 	 * @param   string  $root  The name of the database root key
 	 * @param   array   $data  The connection information
 	 *
-	 * @return  bool
+	 * @return  array
 	 */
 	public function setFilter($root, $data)
 	{
 		$ret = $this->applyExclusionFilter('multidb', $root, $data, 'set');
 
-		return $ret['success'];
+		return $ret;
 	}
 
 	/**

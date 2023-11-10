@@ -1182,6 +1182,11 @@ class Gateway
      */
     public function canUpdateOrder($orderStatus): bool
     {
+        if (!$this->get('checkOrderStatus', true))
+        {
+            return true;
+        }
+
         return !($orderStatus !== $this->get('pendingStatus', 'P'));
     }
 }

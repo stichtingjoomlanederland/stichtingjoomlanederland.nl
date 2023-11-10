@@ -9,6 +9,7 @@ namespace Akeeba\Component\AkeebaBackup\Site\Model\Json;
 
 // Protect from unauthorized access
 use DirectoryIterator;
+use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
 use RuntimeException;
 
@@ -29,16 +30,39 @@ class Task
 	 *
 	 * @var MVCFactoryInterface
 	 */
-	protected $MVCFactory;
+	protected $factory;
+
+	private static ?self $instance = null;
+
+	/**
+	 * Returns a static instance of this object
+	 *
+	 * @param   MVCFactoryInterface|null  $factory  The MVCFactory of the Akeeba Backup component
+	 *
+	 * @return  Task
+	 * @throws  \Exception
+	 * @since   9.6.0
+	 */
+	public static function getInstance(?MVCFactoryInterface $factory = null): self
+	{
+		if (!self::$instance)
+		{
+			$factory = $factory ?? Factory::getApplication()->bootComponent('com_akeebabackup')->getMVCFactory();
+
+			self::$instance = new self($factory);
+		}
+
+		return self::$instance;
+	}
 
 	/**
 	 * Public constructor. Populates the list of task handlers.
 	 *
-	 * @param   MVCFactoryInterface  $MVCFactory
+	 * @param   MVCFactoryInterface  $factory
 	 */
-	public function __construct(MVCFactoryInterface $MVCFactory)
+	public function __construct(MVCFactoryInterface $factory)
 	{
-		$this->MVCFactory = $MVCFactory;
+		$this->factory = $factory;
 
 		// Populate the list of task handlers
 		$this->initialiseHandlers();
@@ -58,6 +82,11 @@ class Task
 		return isset($this->handlers[$method]);
 	}
 
+	public function getMethods(): array
+	{
+		return array_keys($this->handlers);
+	}
+
 	/**
 	 * Execute a JSON API method
 	 *
@@ -70,7 +99,7 @@ class Task
 	 */
 	public function execute($method, $parameters = [])
 	{
-		if ((!defined('AKEEBABACKUP_PRO') || !AKEEBABACKUP_PRO) && (time() >= 1583020800))
+		if (!defined('AKEEBABACKUP_PRO') || !AKEEBABACKUP_PRO)
 		{
 			throw new RuntimeException('Access denied', 503);
 		}
@@ -125,7 +154,7 @@ class Task
 			}
 
 			/** @var TaskInterface $o */
-			$o = new $className($this->MVCFactory);
+			$o = new $className($this->factory);
 			$name = $o->getMethodName();
 			$name = strtolower($name);
 			$this->handlers[$name] = $o;

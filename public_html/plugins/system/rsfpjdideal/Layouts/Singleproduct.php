@@ -35,6 +35,14 @@ class Singleproduct extends RSFormProField
 	 */
 	private $price;
 
+    /**
+     * The field settings
+     *
+     * @var    Registry
+     * @since  7.0.0
+     */
+    protected $settings;
+
 	/**
 	 * Class constructor.
 	 *

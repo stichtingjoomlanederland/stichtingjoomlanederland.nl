@@ -8,10 +8,13 @@
 // no direct access
 defined( '_JEXEC' ) or die( 'Restricted access' );
 
+use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\Factory;
+
 /**
  * RSForm! Pro Delete Submissions System Plugin
  */
-class plgSystemRsformdeletesubmissions extends JPlugin
+class plgSystemRsformdeletesubmissions extends CMSPlugin
 {
     public function onAfterInitialise()
     {
@@ -22,7 +25,12 @@ class plgSystemRsformdeletesubmissions extends JPlugin
 
         require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/rsform.php';
 
-        $now        = JFactory::getDate()->toUnix();
+		if (!class_exists('RSFormProConfig'))
+		{
+			return false;
+		}
+
+        $now        = Factory::getDate()->toUnix();
         $config     = RSFormProConfig::getInstance();
         $last_run   = $config->get('deleteafter.last_run', 0);
         $interval   = $config->get('deleteafter.interval', 10);
@@ -34,7 +42,7 @@ class plgSystemRsformdeletesubmissions extends JPlugin
 
         $config->set('deleteafter.last_run', $now);
 
-		$db = JFactory::getDbo();
+		$db = Factory::getDbo();
 		
 		$query = $db->getQuery(true)
 			->select($db->qn('FormId'))
@@ -46,7 +54,7 @@ class plgSystemRsformdeletesubmissions extends JPlugin
 		{
 			foreach ($forms as $form)
 			{
-				$date = JFactory::getDate()->modify("-{$form->DeleteSubmissionsAfter} days")->toSql();
+				$date = Factory::getDate()->modify("-{$form->DeleteSubmissionsAfter} days")->toSql();
 				// Find all Submission IDs that need to get removed
 				$query->clear()
 					->select($db->qn('SubmissionId'))
@@ -66,24 +74,46 @@ class plgSystemRsformdeletesubmissions extends JPlugin
 
     public function onPreprocessMenuItems($context, &$items, $params = null, $enabled = true)
     {
-        $user = JFactory::getUser();
+	    if ($context != 'com_menus.administrator.module' )
+	    {
+		    return;
+	    }
 
+        $user = Factory::getUser();
+		$remove = array();
         foreach ($items as $i => $item)
         {
             if ($item->element == 'com_rsform')
             {
                 if (
-                    ($item->title == 'COM_RSFORM_MANAGE_FORMS' && !$user->authorise('forms.manage', 'com_rsform')) ||
-                    ($item->title == 'COM_RSFORM_MANAGE_SUBMISSIONS' && !$user->authorise('submissions.manage', 'com_rsform')) ||
-                    ($item->title == 'COM_RSFORM_MANAGE_DIRECTORY_SUBMISSIONS' && !$user->authorise('directory.manage', 'com_rsform')) ||
-                    ($item->title == 'COM_RSFORM_CONFIGURATION' && !$user->authorise('core.admin', 'com_rsform')) ||
-                    ($item->title == 'COM_RSFORM_BACKUP_SCREEN' && !$user->authorise('backuprestore.manage', 'com_rsform')) ||
-					($item->title == 'COM_RSFORM_RESTORE_SCREEN' && !$user->authorise('backuprestore.manage', 'com_rsform'))
+                    ($item->link === 'index.php?option=com_rsform&view=forms' && !$user->authorise('forms.manage', 'com_rsform')) ||
+                    ($item->link === 'index.php?option=com_rsform&view=submissions' && !$user->authorise('submissions.manage', 'com_rsform')) ||
+                    ($item->link === 'index.php?option=com_rsform&view=directory' && !$user->authorise('directory.manage', 'com_rsform')) ||
+                    ($item->link === 'index.php?option=com_rsform&view=configuration' && !$user->authorise('core.admin', 'com_rsform')) ||
+                    ($item->link === 'index.php?option=com_rsform&view=backupscreen' && !$user->authorise('backuprestore.manage', 'com_rsform')) ||
+					($item->link === 'index.php?option=com_rsform&view=restorescreen' && !$user->authorise('backuprestore.manage', 'com_rsform'))
                 )
                 {
-                    unset($items[$i]);
+					if (is_callable(array($item, 'getParams')))
+					{
+						$params = $item->getParams();
+						$params->set('menu_show', 0);
+						$item->setParams($params);
+					}
+					else
+					{
+						$remove[] = $i;
+					}
                 }
             }
         }
+
+		if ($remove)
+		{
+			foreach ($remove as $key)
+			{
+				unset($items[$key]);
+			}
+		}
     }
 }

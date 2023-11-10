@@ -15,7 +15,7 @@ $tabs->addContent('');
 $tabs->addTitle('RSFP_COMPONENTS_ATTRIBUTES_TAB', 'rsfptab2');
 $tabs->addContent('');
 $tabs->addTitle('RSFP_COMPONENTS_FREETEXT_TAB', 'rsfptab3');
-$tabs->addContent('<div id="rsfp-editor-container" class="rsfp-hidden">' . RSFormProHelper::getEditor()->display('param[TEXT]', '', '100%', '120px', 40, 12, false, 'TEXT', null, null) . '</div>');
+$tabs->addContent('<div id="rsfp-editor-container" class="rsfp-hidden">' . RSFormProHelper::getEditor()->display('param[TEXT]', '', '100%', '500', 40, 12, false, 'TEXT', null, null) . '</div>');
 ?>
 	<div id="rsfp-tabs">
 		<?php $tabs->render(); ?>

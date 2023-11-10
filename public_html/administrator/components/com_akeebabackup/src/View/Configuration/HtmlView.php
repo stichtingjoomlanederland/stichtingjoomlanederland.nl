@@ -143,7 +143,7 @@ class HtmlView extends BaseHtmlView
 			return 0;
 		}
 
-		$filename = AKEEBAROOT . '/serverkey.php';
+		$filename = JPATH_ADMINISTRATOR . '/components/com_akeebabackup/serverkey.php';
 
 		// Encryption enabled, supported and a key file is present: encryption enabled
 		if (is_file($filename))

@@ -1163,8 +1163,12 @@ JS;
 		$status = (int) $this->db->loadResult();
 
 		$jdideal->log('RSForm status: ' . $status, $details->id);
+        $settings = $this->loadFormSettings($formId);
+        $alwaysUpdate = $settings->get('alwaysUpdate', 0);
 
-		if ($status === 0)
+        $jdideal->log('Always update: ' . ($alwaysUpdate ? 'Yes' :  'No'), $details->id);
+
+		if ($status === 0 || $alwaysUpdate)
 		{
 			$query->clear()
 				->update($this->db->quoteName('#__rsform_submission_values'))
@@ -1182,9 +1186,23 @@ JS;
 				);
 			$this->db->setQuery($query)->execute();
 
-			$jdideal->setProcessed(1, $details->id);
+            $query->clear()
+                ->update($this->db->quoteName('#__rsform_submission_values'))
+                ->set(
+                    $this->db->quoteName('FieldValue') . ' = '
+                    . $this->db->quote($trans)
+                )
+                ->where(
+                    $this->db->quoteName('SubmissionId') . ' = ' . $submissionId
+                )
+                ->where($this->db->quoteName('FormId') . ' = ' . $formId)
+                ->where(
+                    $this->db->quoteName('FieldName') . ' =  '
+                    . $this->db->quote('_TRANSACTION_ID')
+                );
+            $this->db->setQuery($query)->execute();
 
-			$settings = $this->loadFormSettings($formId);
+			$jdideal->setProcessed(1, $details->id);
 
 			if ($statusValue === 1
 				|| (int) $settings->get(
@@ -1352,9 +1370,7 @@ JS;
 		$params = $this->loadFormSettings($formId);
 
 		// Get data from session
-		$formParams                = $session->get(
-			'com_rsform.formparams.formId' . $formId
-		);
+		$formParams                = $session->get('com_rsform.formparams.formId' . $formId, (new \stdClass()));
 		$formParams->formProcessed = true;
 
 		if ((int) $params->get('showMessage') === 1)
@@ -2068,7 +2084,7 @@ JS;
 			if ($price > 0)
 			{
 				$itemId = $this->app->input->getInt('Itemid', 0);
-				$lang   = substr($this->app->input->get('lang'), 0, 2);
+				$lang   = substr($this->app->input->get('lang', ''), 0, 2);
 
 				// Create the feedback URLs
 				$uri = Uri::getInstance(
@@ -2235,6 +2251,11 @@ JS;
 
 		foreach ($args['values'] as $key => $value)
 		{
+            if (is_null($value))
+            {
+                continue;
+            }
+
 			if (!strpos($value, ','))
 			{
 				$args['values'][$key] = Text::_(nl2br($value));
@@ -2731,6 +2752,7 @@ JS;
 			echo $form->renderField('currency', 'roPaymentsParams');
 			echo $form->renderField('allowEmpty', 'roPaymentsParams');
 			echo $form->renderField('showMessage', 'roPaymentsParams');
+			echo $form->renderField('alwaysUpdate', 'roPaymentsParams');
 			echo HTMLHelper::_('bootstrap.endTab');
 			echo HTMLHelper::_(
 				'bootstrap.addTab',

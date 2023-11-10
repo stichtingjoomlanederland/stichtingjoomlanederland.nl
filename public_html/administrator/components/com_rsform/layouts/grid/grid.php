@@ -123,6 +123,11 @@ class RSFormProGrid
 	
 	protected function getBlock($string)
 	{
+		if ($string === null)
+		{
+			$string = '';
+		}
+
 		// Remove any '-' from the string since they will be used as concatenaters
 		$str = str_replace('-', ' ', $string);
 

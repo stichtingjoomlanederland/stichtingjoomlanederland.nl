@@ -8,12 +8,12 @@
 <extension type="component" method="upgrade">
     <name>com_akeebabackup</name>
     <author>Akeeba Ltd</author>
-    <creationDate>2023-03-09</creationDate>
+    <creationDate>2023-11-07</creationDate>
     <copyright>(C) 2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd</copyright>
     <license>GNU General Public License version 3 or later; see LICENSE.txt</license>
     <authorEmail>no-reply@akeeba.com</authorEmail>
     <authorUrl>www.akeeba.com</authorUrl>
-    <version>9.5.1</version>
+    <version>9.8.3</version>
     <description>COM_AKEEBABACKUP_XML_DESCRIPTION</description>
     <namespace path="src">Akeeba\Component\AkeebaBackup</namespace>
 
@@ -43,19 +43,19 @@
 				Note that all & must be escaped to &amp; for the file to be valid
 				XML and be parsed by the installer
 			-->
-            <menu view="controlpanel">
+            <menu view="Controlpanel">
                 COM_AKEEBABACKUP_CONTROLPANEL
             </menu>
 
-            <menu view="configuration">
+            <menu view="Configuration">
                 COM_AKEEBABACKUP_CONFIGURATION
             </menu>
 
-            <menu view="backup">
+            <menu view="Backup">
                 COM_AKEEBABACKUP_BACKUP
             </menu>
 
-            <menu view="manage">
+            <menu view="Manage">
                 COM_AKEEBABACKUP_MANAGE
             </menu>
         </submenu>
@@ -69,7 +69,6 @@
 
             <folder>AliceChecks</folder>
             <folder>backup</folder>
-            <folder>engine</folder>
             <folder>forms</folder>
             <folder>installers</folder>
             <folder>language</folder>
@@ -78,7 +77,7 @@
             <folder>sql</folder>
             <folder>src</folder>
             <folder>tmpl</folder>
-            <folder>webpush</folder>
+            <folder>vendor</folder>
         </files>
 
         <languages folder="backend">
@@ -87,13 +86,11 @@
         </languages>
     </administration>
 
-    <!--
     <api>
         <files folder="api">
             <folder>src</folder>
         </files>
     </api>
-    -->
 
     <install>
         <sql>

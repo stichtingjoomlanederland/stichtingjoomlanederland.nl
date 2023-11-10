@@ -98,6 +98,7 @@ class RsformViewForms extends JViewLegacy
 			$this->fieldGroups = $this->get('FieldGroups');
 
 			$this->document->addScriptDeclaration('RSFormPro.Placeholders = ' . json_encode(array_values($displayPlaceholders)) . ';');
+			$this->document->addScriptDeclaration('RSFormPro.PreviewItemid = ' . (int) RSFormProHelper::getConfig('global.preview_itemid') . ';');
 		}
 		elseif ($layout == 'component_copy')
 		{
@@ -161,6 +162,7 @@ class RsformViewForms extends JViewLegacy
 			$this->today = JHtml::_('date', 'now', 'Y-m-d');
 
 			$this->disable_multilanguage = RSFormProHelper::getConfig('global.disable_multilanguage');
+			$this->preview_itemid = RSFormProHelper::getConfig('global.preview_itemid');
 
 			$this->state 		 = $this->get('State');
 			$this->filterForm    = $this->get('FilterForm');
@@ -307,6 +309,10 @@ class RsformViewForms extends JViewLegacy
 
 		JFactory::getApplication()->triggerEvent('onRsformDefineHiddenComponents', array(&$hiddenComponents));
 
+		$session = JFactory::getSession();
+		$receivedRowIndex = $session->set('com_rsform.grid.row', null);
+		$receivedColumnIndex = $session->set('com_rsform.grid.column', null);
+
 		// Let's add fields to rows, keeping pages on a separate row
 		foreach ($diff as $field)
 		{
@@ -328,27 +334,36 @@ class RsformViewForms extends JViewLegacy
 			// Pages are the only item on a row, they can't be resized
 			if ($field->type_id == RSFORM_FIELD_PAGEBREAK)
 			{
-				if (!count($rows[$row_index]['columns'][0]))
+				$page = array(
+					'columns'       => array(array($field)),
+					'sizes'         => array(12),
+					'has_pagebreak' => true
+				);
+				if ($receivedRowIndex !== null && $row_index > $receivedRowIndex)
 				{
-                    $rows[$row_index]['has_pagebreak'] = true;
-					$rows[$row_index]['columns'][0][] = $field;
-					$row_index++;
+					$first = array_slice($rows, 0, $receivedRowIndex + 1);
+					$second = array_slice($rows, $receivedRowIndex + 1);
+
+					$rows = array_merge($first, array($page), $second);
 				}
 				else
 				{
 					// Add new row with just this page
-					$rows[++$row_index] = array(
-						'columns'       => array(array($field)),
-						'sizes'         => array(12),
-                        'has_pagebreak' => true
-					);
-					
+					$rows[++$row_index] = $page;
+
 					$row_index++;
 				}
 			}
 			else
 			{
-				$rows[$row_index]['columns'][0][] = $field;
+				if ($receivedRowIndex !== null && $receivedColumnIndex !== null && isset($rows[$receivedRowIndex]['columns'][$receivedColumnIndex]))
+				{
+					$rows[$receivedRowIndex]['columns'][$receivedColumnIndex][] = $field;
+				}
+				else
+				{
+					$rows[$row_index]['columns'][0][] = $field;
+				}
 			}
 		}
 		
@@ -377,11 +392,6 @@ class RsformViewForms extends JViewLegacy
 			{
 				$preview = '<div>' . $preview . '</div>';
 			}
-		}
-
-		if (function_exists('mb_convert_encoding'))
-		{
-			$preview = mb_convert_encoding($preview, 'HTML-ENTITIES', 'UTF-8');
 		}
 
 		if (class_exists('DOMDocument'))

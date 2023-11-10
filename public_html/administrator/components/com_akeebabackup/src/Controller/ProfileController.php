@@ -64,7 +64,7 @@ class ProfileController extends FormController
 			// Load the server key file if necessary
 			if (!defined('AKEEBA_SERVERKEY'))
 			{
-				$filename = AKEEBAROOT . '/serverkey.php';
+				$filename = JPATH_ADMINISTRATOR . '/components/com_akeebabackup/serverkey.php';
 
 				include_once $filename;
 			}

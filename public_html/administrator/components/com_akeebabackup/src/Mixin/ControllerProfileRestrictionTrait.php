@@ -7,8 +7,8 @@
 
 namespace Akeeba\Component\AkeebaBackup\Administrator\Mixin;
 
-use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
+use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 
 /**

@@ -286,7 +286,9 @@ class DatabasefiltersModel extends BaseModel
 
 			// Tabular view
 			case 'tab':
-				$ret_array = $this->getFilters($action->root);
+				$ret_array = [
+					'list' => $this->getFilters($action->root)
+				];
 				break;
 
 			// Reset filters

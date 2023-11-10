@@ -527,7 +527,6 @@ class Mollie implements PspInterface
                 'description'
             )
         );
-        $description = substr($description, 0, 32);
 
         // Load the chosen payment method
         $paymentMethod = $this->jinput->get('payment', '');
@@ -610,6 +609,9 @@ class Mollie implements PspInterface
                     $customerEmail,
                     $jdideal->getProfileId()
                 );
+
+                $jdideal->log('Webhook URL', $logId);
+                $jdideal->log(Uri::root() . 'cli/notify.php?transaction_id=' . $trans, $logId);
 
                 $payment = $recurring->createFirstPayment(
                     $trans,

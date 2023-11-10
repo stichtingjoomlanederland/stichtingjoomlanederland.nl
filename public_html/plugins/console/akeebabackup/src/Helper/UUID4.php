@@ -5,7 +5,7 @@
  * @license   GNU General Public License version 3, or later
  */
 
-namespace Joomla\Plugin\Console\AkeebaBackup\Helper;
+namespace Akeeba\Plugin\Console\AkeebaBackup\Helper;
 
 defined('_JEXEC') || die;
 

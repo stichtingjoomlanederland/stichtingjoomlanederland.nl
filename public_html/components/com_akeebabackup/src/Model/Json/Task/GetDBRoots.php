@@ -10,12 +10,10 @@ namespace Akeeba\Component\AkeebaBackup\Site\Model\Json\Task;
 // Protect from unauthorized access
 defined('_JEXEC') || die();
 
-use Akeeba\Component\AkeebaBackup\Administrator\Model\DatabasefiltersModel;
-use Akeeba\Engine\Platform;
-use Joomla\CMS\Factory;
-
 /**
  * Get the database roots (database definitions)
+ *
+ * @deprecated
  */
 class GetDBRoots extends AbstractTask
 {
@@ -30,26 +28,6 @@ class GetDBRoots extends AbstractTask
 	 */
 	public function execute(array $parameters = [])
 	{
-		// Get the passed configuration values
-		$defConfig = ['profile' => 0];
-
-		$defConfig = array_merge($defConfig, $parameters);
-
-		$profile = (int)$defConfig['profile'];
-
-		if ($profile <= 0)
-		{
-			$profile = 1;
-		}
-
-		Factory::getApplication()->getSession()->set('akeebabackup.profile', $profile);
-
-		// Load the configuration
-		Platform::getInstance()->load_configuration($profile);
-
-		/** @var DatabasefiltersModel $model */
-		$model = $this->factory->createModel('Databasefilters', 'Administrator', ['ignore_request' => true]);
-
-		return $model->getRoots();
+		throw new \RuntimeException('This method is no longer supported by the Akeeba Remote JSON API', 501);
 	}
 }

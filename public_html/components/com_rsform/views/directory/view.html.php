@@ -22,6 +22,27 @@ class RsformViewDirectory extends JViewLegacy
 		$this->formId       = $this->params->get('formId');
 
         JHtml::_('script', 'com_rsform/directory.js', array('relative' => true, 'version' => 'auto'));
+
+		$nonce = '';
+		if (JPluginHelper::isEnabled('system', 'httpheaders'))
+		{
+			$app    = JFactory::getApplication();
+			$plugin = JPluginHelper::getPlugin('system', 'httpheaders');
+			$params = new JRegistry();
+			$params->loadString($plugin->params);
+
+			$cspEnabled          = (int) $params->get('contentsecuritypolicy', 0);
+			$cspClient           = (string) $params->get('contentsecuritypolicy_client', 'site');
+			$nonceEnabled        = (int) $params->get('nonce_enabled', 0);
+
+			if ($cspEnabled && ($app->isClient($cspClient) || $cspClient === 'both'))
+			{
+				if ($nonceEnabled)
+				{
+					$nonce = JFactory::getApplication()->get('csp_nonce');
+				}
+			}
+		}
 		
 		if ($this->layout == 'view')
 		{
@@ -35,11 +56,19 @@ class RsformViewDirectory extends JViewLegacy
 			// Add custom CSS and JS
 			if ($this->directory->JS)
 			{
+				if (strpos($this->directory->JS, '{nonce}') !== false)
+				{
+					$this->directory->JS = str_replace('{nonce}', $nonce, $this->directory->JS);
+				}
 				$this->doc->addCustomTag($this->directory->JS);
 			}
 
 			if ($this->directory->CSS)
 			{
+				if (strpos($this->directory->CSS, '{nonce}') !== false)
+				{
+					$this->directory->CSS = str_replace('{nonce}', $nonce, $this->directory->CSS);
+				}
 				$this->doc->addCustomTag($this->directory->CSS);
 			}
 			
@@ -94,11 +123,19 @@ class RsformViewDirectory extends JViewLegacy
 			// Add custom CSS and JS
 			if ($this->directory->JS)
 			{
+				if (strpos($this->directory->JS, '{nonce}') !== false)
+				{
+					$this->directory->JS = str_replace('{nonce}', $nonce, $this->directory->JS);
+				}
 				$this->doc->addCustomTag($this->directory->JS);
 			}
 
 			if ($this->directory->CSS)
 			{
+				if (strpos($this->directory->CSS, '{nonce}') !== false)
+				{
+					$this->directory->CSS = str_replace('{nonce}', $nonce, $this->directory->CSS);
+				}
 				$this->doc->addCustomTag($this->directory->CSS);
 			}
 		}
@@ -195,7 +232,7 @@ class RsformViewDirectory extends JViewLegacy
 			if ($field->componentId < 0 && isset($this->headers[$field->componentId]))
 			{
 				$header = $this->headers[$field->componentId];
-				if ($header == 'DateSubmitted')
+				if (in_array($header, array('DateSubmitted', 'ConfirmedDate')))
 				{
 					$value = RSFormProHelper::getDate($item->{$header});
 				}

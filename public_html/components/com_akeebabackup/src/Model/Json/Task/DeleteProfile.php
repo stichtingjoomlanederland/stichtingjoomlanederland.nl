@@ -10,11 +10,12 @@ namespace Akeeba\Component\AkeebaBackup\Site\Model\Json\Task;
 // Protect from unauthorized access
 defined('_JEXEC') || die();
 
-use Akeeba\Component\AkeebaBackup\Administrator\Model\ProfileModel;
 use RuntimeException;
 
 /**
  * Delete a backup profile
+ *
+ * @deprecated
  */
 class DeleteProfile extends AbstractTask
 {
@@ -29,34 +30,6 @@ class DeleteProfile extends AbstractTask
 	 */
 	public function execute(array $parameters = [])
 	{
-		// Get the passed configuration values
-		$defConfig = [
-			'profile' => 0,
-		];
-
-		$defConfig = array_merge($defConfig, $parameters);
-
-		$profile = (int) $defConfig['profile'];
-
-		// You need to specify the profile
-		if (empty($profile))
-		{
-			throw new RuntimeException('Invalid profile ID', 404);
-		}
-
-		if ($profile == 1)
-		{
-			throw new RuntimeException('You cannot delete the default backup profile', 404);
-		}
-
-		// Get a profile model
-		/** @var ProfileModel $profileModel */
-		$profileModel = $this->factory->createModel('Profile', 'Administrator', ['ignore_request' => true]);
-		$ids          = [$profile];
-
-		$profileModel->setState('workaround.override_canDelete', true);
-		$profileModel->delete($ids);
-
-		return true;
+		throw new \RuntimeException('This method is no longer supported by the Akeeba Remote JSON API', 501);
 	}
 }

@@ -78,7 +78,7 @@
 			<option value="0">JNO</option>
 			<option value="1">JYES</option>
 		</field>
-		<field name="KeepIP" type="radio" class="btn-group btn-group-yesno" label="RSFP_SAVE_IP_TO_DATABASE">
+		<field name="KeepIP" type="radio" class="btn-group btn-group-yesno" label="RSFP_SAVE_IP_TO_DATABASE" showon="Keepdata:1">
 			<option value="0">JNO</option>
 			<option value="1">JYES</option>
 		</field>
@@ -126,8 +126,8 @@
 		</field>
 	</fieldset>
 	<fieldset name="user_email_sender">
-		<field type="placeholder" class="rs_75" name="UserEmailFrom" label="RSFP_EMAILS_FROM" hint="RSFP_EMAILS_FROM_PLACEHOLDER" data-delimiter=" " data-placeholders="display" data-filter-type="include" data-filter="value,global" required="true" />
-		<field type="placeholder" class="rs_75" name="UserEmailFromName" label="RSFP_EMAILS_FROM_NAME" hint="RSFP_EMAILS_FROM_NAME_PLACEHOLDER" data-delimiter=" " data-placeholders="display" labelclass="rsfp-translate-icon" required="true" />
+		<field type="placeholder" class="rs_75" name="UserEmailFrom" label="RSFP_EMAILS_FROM" hint="RSFP_EMAILS_FROM_PLACEHOLDER" data-delimiter=" " data-placeholders="display" data-filter-type="include" data-filter="value,global" />
+		<field type="placeholder" class="rs_75" name="UserEmailFromName" label="RSFP_EMAILS_FROM_NAME" hint="RSFP_EMAILS_FROM_NAME_PLACEHOLDER" data-delimiter=" " data-placeholders="display" labelclass="rsfp-translate-icon" />
 	</fieldset>
 	<fieldset name="user_email_recipient">
 		<field type="placeholder" class="rs_75" name="UserEmailTo" label="RSFP_EMAILS_TO" hint="RSFP_EMAILS_TO_PLACEHOLDER" data-delimiter="," data-placeholders="display" data-filter-type="include" data-filter="value,global" required="true" />
@@ -156,8 +156,8 @@
 		<field type="emailattachment" class="rs_75" name="UserEmailAttachFile" label="RSFP_EMAILS_ATTACH_FILE_LOCATION" showon="UserEmailAttach:1" />
 	</fieldset>
 	<fieldset name="admin_email_sender">
-		<field type="placeholder" class="rs_75" name="AdminEmailFrom" label="RSFP_EMAILS_FROM" hint="RSFP_EMAILS_FROM_PLACEHOLDER" data-delimiter=" " data-placeholders="display" data-filter-type="include" data-filter="value,global" required="true" />
-		<field type="placeholder" class="rs_75" name="AdminEmailFromName" label="RSFP_EMAILS_FROM_NAME" hint="RSFP_EMAILS_FROM_NAME_PLACEHOLDER" data-delimiter=" " data-placeholders="display" labelclass="rsfp-translate-icon" required="true" />
+		<field type="placeholder" class="rs_75" name="AdminEmailFrom" label="RSFP_EMAILS_FROM" hint="RSFP_EMAILS_FROM_PLACEHOLDER" data-delimiter=" " data-placeholders="display" data-filter-type="include" data-filter="value,global" />
+		<field type="placeholder" class="rs_75" name="AdminEmailFromName" label="RSFP_EMAILS_FROM_NAME" hint="RSFP_EMAILS_FROM_NAME_PLACEHOLDER" data-delimiter=" " data-placeholders="display" labelclass="rsfp-translate-icon" />
 	</fieldset>
 	<fieldset name="admin_email_recipient">
 		<field type="placeholder" class="rs_75" name="AdminEmailTo" label="RSFP_EMAILS_TO" hint="RSFP_EMAILS_TO_PLACEHOLDER" data-delimiter="," data-placeholders="display" data-filter-type="include" data-filter="value,global" required="true" />

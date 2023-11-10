@@ -13,6 +13,7 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Form\Field\ListField;
 use Joomla\CMS\Language\Text;
 use Joomla\Database\DatabaseDriver;
+use Joomla\Database\DatabaseInterface;
 
 /**
  * Our main element class, creating a multi-select list out of an SQL statement
@@ -38,7 +39,7 @@ class BackupprofilesField extends ListField
 		/** @var DatabaseDriver $db */
 		$db = method_exists($this, 'getDatabase')
 			? $this->getDatabase()
-			:Factory::getContainer()->get('DatabaseDriver');
+			:Factory::getContainer()->get(DatabaseInterface::class);
 
 		$query = $db->getQuery(true)
 			->select([

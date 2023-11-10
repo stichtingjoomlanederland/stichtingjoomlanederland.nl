@@ -56,20 +56,12 @@ akeebabackup.Regexfsfilters.load = function load(new_root)
  */
 akeebabackup.Regexfsfilters.render = function (data)
 {
-    var tbody       = document.getElementById("ak_list_contents");
+    const tbody       = document.getElementById("ak_list_contents");
     tbody.innerHTML = "";
 
-    for (var counter = 0; counter < data.length; counter++)
-    {
-        var def = data[counter];
-
-        akeebabackup.Regexfsfilters.addRow(def, tbody);
+    if (data?.list?.length) {
+        data.list.forEach(def => akeebabackup.Regexfsfilters.addRow(def, tbody));
     }
-
-    var newdef = {
-        type: "",
-        item: ""
-    };
 
     akeebabackup.Regexfsfilters.addNewRow(tbody);
 };

@@ -321,7 +321,7 @@ ENDDATA;
 		// Clear opcode caches for the generated .php file
 		if (function_exists('opcache_invalidate'))
 		{
-			opcache_invalidate($configPath);
+			opcache_invalidate($configPath, true);
 		}
 
 		if (function_exists('apc_compile_file'))

@@ -19,6 +19,7 @@ use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Factory as JoomlaFactory;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\Database\DatabaseDriver;
+use Joomla\Database\DatabaseInterface;
 use Joomla\Database\ParameterType;
 use Joomla\Registry\Registry;
 use ReflectionClass;
@@ -57,7 +58,7 @@ class ComponentParameters
 		}
 
 		/** @var DatabaseDriver $db */
-		$db   = JoomlaFactory::getContainer()->get('DatabaseDriver');
+		$db   = JoomlaFactory::getContainer()->get(DatabaseInterface::class);
 		$data = $params->toString('JSON');
 
 		$query = $db->getQuery(true)

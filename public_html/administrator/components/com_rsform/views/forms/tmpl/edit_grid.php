@@ -20,6 +20,7 @@ else
 JHtml::_('script', 'com_rsform/admin/jquery.ui.resizable.js', array('relative' => true, 'version' => 'auto'));
 JHtml::_('stylesheet', 'com_rsform/admin/jquery.ui.resizable.css', array('relative' => true, 'version' => 'auto'));
 
+JText::script('COM_RSFORM_ADD_FIELD');
 JText::script('RSFP_ROW_OPTIONS');
 JText::script('RSFP_ADD_NEW_ROW');
 JText::script('RSFP_DELETE_ROW');
@@ -73,6 +74,11 @@ $this->loadTemplate('grid_modal_body'));
 				?>
 				<div class="rsfp-grid-column rsfp-grid-column<?php echo $size; ?><?php if ($last_column) { ?> rsfp-grid-column-unresizable<?php } ?><?php if ($has_pagebreak) { ?> rsfp-grid-column-unconnectable<?php } ?>">
 				<h3><?php echo $size; ?>/12</h3>
+                <?php if (!$has_pagebreak) { ?>
+                    <div class="rsfp-grid-add-field">
+                        <button type="button" class="btn btn-secondary" onclick="RSFormPro.offcanvas.open(this);"><i class="icon-plus"></i> <?php echo JText::_('COM_RSFORM_ADD_FIELD'); ?></button>
+                    </div>
+                <?php } ?>
 				<?php foreach ($fields as $field) { ?>
 					<?php
 					$fieldClasses = array();
@@ -118,7 +124,7 @@ $this->loadTemplate('grid_modal_body'));
 			<?php
 			}
 			?>
-			<div class="clearfix"></div>
+            <div class="clearfix"></div>
 			<div class="rsfp-row-controls">
 				<?php if (!$has_pagebreak) { ?>
 				<button type="button" class="btn btn-secondary" onclick="RSFormPro.gridModal.open(this);"><?php echo JText::_('RSFP_ROW_OPTIONS'); ?></button>

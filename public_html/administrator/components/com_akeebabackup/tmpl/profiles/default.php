@@ -135,14 +135,11 @@ $listDirn  = $this->escape($this->state->get('list.direction'));
 						aria-label="<?= Text::_('JLIB_HTML_BEHAVIOR_CLOSE') ?>"></button>
 			</div>
 			<div class="modal-body p-5">
-				<form action="index.php" method="post" name="importForm" id="importForm"
+				<form action="<?= Route::_('index.php?option=com_akeebabackup&task=Profiles.import') ?>" method="post" name="importForm" id="importForm"
 					  enctype="multipart/form-data"
 					  class="border rounded p-3 bg-light"
 				>
-					<input type="hidden" name="option" value="com_akeebabackup" />
-					<input type="hidden" name="view" value="Profiles" />
 					<input type="hidden" name="boxchecked" id="boxchecked" value="0" />
-					<input type="hidden" name="task" id="task" value="import" />
 					<?= HTMLHelper::_('form.token') ?>
 
 					<div class="input-group mb-2">

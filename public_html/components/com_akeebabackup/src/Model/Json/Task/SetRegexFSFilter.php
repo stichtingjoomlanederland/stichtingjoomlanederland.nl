@@ -10,13 +10,10 @@ namespace Akeeba\Component\AkeebaBackup\Site\Model\Json\Task;
 // Protect from unauthorized access
 defined('_JEXEC') || die();
 
-use Akeeba\Component\AkeebaBackup\Administrator\Model\RegexfilefiltersModel;
-use Akeeba\Engine\Platform;
-use Joomla\CMS\Factory;
-use Joomla\CMS\Filter\InputFilter;
-
 /**
  * Set or unset a Regex filesystem filter
+ *
+ * @deprecated
  */
 class SetRegexFSFilter extends AbstractTask
 {
@@ -31,67 +28,6 @@ class SetRegexFSFilter extends AbstractTask
 	 */
 	public function execute(array $parameters = [])
 	{
-		$filter = InputFilter::getInstance();
-
-		// Get the passed configuration values
-		$defConfig = [
-			'profile' => 0,
-			'root'    => '[SITEDB]',
-			'regex'   => '',
-			'type'    => 'directories',
-			'status'  => 1,
-		];
-
-		$defConfig = array_merge($defConfig, $parameters);
-
-		$profile = $filter->clean($defConfig['profile'], 'int');
-		$root    = $filter->clean($defConfig['root'], 'string');
-		$regex   = $filter->clean($defConfig['regex'], 'string');
-		$type    = $filter->clean($defConfig['type'], 'cmd');
-		$status  = $filter->clean($defConfig['status'], 'bool');
-
-		// We need a valid profile ID
-		if ($profile <= 0)
-		{
-			$profile = 1;
-		}
-
-		// We need a root
-		if (empty($root))
-		{
-			throw new \RuntimeException('Unknown database root', 500);
-		}
-
-		// We need a regex name
-		if (empty($regex))
-		{
-			throw new \RuntimeException('Regex is mandatory', 500);
-		}
-
-		// We need a regex name
-		if (empty($type))
-		{
-			throw new \RuntimeException('Filter type is mandatory', 500);
-		}
-
-		// Set the active profile
-		Factory::getApplication()->getSession()->set('akeebabackup.profile', $profile);
-
-		// Load the configuration
-		Platform::getInstance()->load_configuration($profile);
-
-		/** @var RegexfilefiltersModel $model */
-		$model = $this->factory->createModel('Regexfilefilters', 'Administrator', ['ignore_request' => true]);
-
-		if ($status)
-		{
-			$ret = $model->setFilter($type, $root, $regex);
-		}
-		else
-		{
-			$ret = $model->remove($type, $root, $regex);
-		}
-
-		return $ret;
+		throw new \RuntimeException('This method is no longer supported by the Akeeba Remote JSON API', 501);
 	}
 }

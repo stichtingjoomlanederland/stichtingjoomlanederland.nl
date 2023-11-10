@@ -20,6 +20,9 @@ use Akeeba\Engine\Platform;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Factory\MVCFactoryAwareTrait;
 use Joomla\Console\Command\AbstractCommand;
+use Joomla\Database\DatabaseAwareInterface;
+use Joomla\Database\DatabaseAwareTrait;
+use Joomla\Database\DatabaseDriver;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -31,7 +34,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @since   7.5.0
  */
-class BackupTake extends AbstractCommand
+class BackupTake extends AbstractCommand implements DatabaseAwareInterface
 {
 	use ConfigureIO;
 	use ArgumentUtilities;
@@ -39,6 +42,7 @@ class BackupTake extends AbstractCommand
 	use TimeInfo;
 	use MVCFactoryAwareTrait;
 	use InitialiseEngine;
+	use DatabaseAwareTrait;
 
 	/**
 	 * The default command name

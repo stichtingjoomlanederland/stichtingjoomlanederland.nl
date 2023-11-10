@@ -11,19 +11,11 @@ $showDescriptions = $this->params->get('show_descriptions', 0);
 
 JHtml::_('behavior.keepalive');
 JHtml::_('script', 'com_rsform/script.js', array('relative' => true, 'version' => 'auto'));
+JHtml::_('script', 'com_rsform/directory-edit.js', array('relative' => true, 'version' => 'auto'));
 JHtml::_('stylesheet', 'com_rsform/front.css', array('relative' => true, 'version' => 'auto'));
 
 eval($this->directory->EditScript);
 ?>
-
-<script type="text/javascript">
-function directorySave(task) {
-	var form = document.getElementById('directoryEditForm');
-	form.task.value = task;
-	form.submit();
-}
-</script>
-
 <form action="<?php echo JRoute::_('index.php?option=com_rsform&view=directory&layout=edit&id='.$this->app->input->getInt('id',0)); ?>" method="post" name="adminForm" id="directoryEditForm" enctype="multipart/form-data">
 	<div class="rsform-dir-edit-container">
 		<?php
@@ -39,7 +31,7 @@ function directorySave(task) {
 					{
 						echo '<div class="rsform-dir-tooltip">';
 					}
-					echo $caption;
+					echo !empty($field[RSFORM_DIR_ID]) ? '<label for="'. $field[RSFORM_DIR_ID] . '">' . $caption . '</label>' : $caption;
 					if ($showTooltip)
 					{
 						echo '<span class="rsform-dir-tooltiptext">' . $field[RSFORM_DIR_DESCRIPTION] . '</span>';
@@ -64,9 +56,9 @@ function directorySave(task) {
 	</div>
 	
 	<div class="form-actions">
-		<button type="button" onclick="directorySave('apply');" class="btn btn-primary button"><?php echo JText::_('RSFP_SUBM_DIR_APPLY'); ?></button> 
-		<button type="button" onclick="directorySave('save');" class="btn btn-primary button"><?php echo JText::_('RSFP_SUBM_DIR_SAVE'); ?></button> 
-		<button type="button" onclick="directorySave('back')" class="btn btn-secondary"><?php echo JText::_('RSFP_SUBM_DIR_BACK'); ?></button>
+		<button type="button" data-directory-task="apply" class="btn btn-primary button"><?php echo JText::_('RSFP_SUBM_DIR_APPLY'); ?></button>
+		<button type="button" data-directory-task="save" class="btn btn-primary button"><?php echo JText::_('RSFP_SUBM_DIR_SAVE'); ?></button>
+		<button type="button" data-directory-task="back" class="btn btn-secondary"><?php echo JText::_('RSFP_SUBM_DIR_BACK'); ?></button>
 	</div>
 	
 	<input type="hidden" name="option" value="com_rsform">

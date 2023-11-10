@@ -8,9 +8,9 @@
 <extension type="package" method="upgrade">
     <name>pkg_akeebabackup</name>
     <author>Nicholas K. Dionysopoulos</author>
-    <creationDate>2023-03-09</creationDate>
+    <creationDate>2023-11-07</creationDate>
     <packagename>akeebabackup</packagename>
-    <version>9.5.1</version>
+    <version>9.8.3</version>
     <url>https://www.akeeba.com</url>
     <packager>Akeeba Ltd</packager>
     <packagerurl>https://www.akeeba.com</packagerurl>
@@ -18,6 +18,7 @@
     <license>GNU GPL v3 or later</license>
     <description>PKG_AKEEBABACKUP_XML_DESCRIPTION</description>
     <dlid prefix="dlid=" suffix=""/>
+    <blockChildUninstall>true</blockChildUninstall>
 
     <files>
         <file type="component" id="com_akeebabackup">com_akeebabackup-pro.zip</file>
@@ -31,6 +32,8 @@
         <file type="plugin" group="actionlog" id="akeebabackup">plg_actionlog_akeebabackup.zip</file>
 
         <file type="plugin" group="task" id="akeebabackup">plg_task_akeebabackup.zip</file>
+
+        <file type="plugin" group="webservices" id="akeebabackup">plg_webservices_akeebabackup.zip</file>
     </files>
 
     <languages folder="language">

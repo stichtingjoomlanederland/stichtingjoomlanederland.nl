@@ -7,6 +7,8 @@ CREATE TABLE IF NOT EXISTS `#__rsform_submissions` (
   `UserId` int(11) NOT NULL default '0',
   `Lang` varchar(255) NOT NULL,
   `confirmed` tinyint(1) NOT NULL,
+  `ConfirmedIp` varchar(255) NOT NULL default '',
+  `ConfirmedDate` datetime,
   `SubmissionHash` varchar(32) NOT NULL,
   PRIMARY KEY (`SubmissionId`),
   KEY `FormId` (`FormId`),

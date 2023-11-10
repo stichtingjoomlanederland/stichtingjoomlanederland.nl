@@ -15,7 +15,7 @@ class RSFormProFieldTextarea extends RSFormProField
 	public function getPreviewInput()
 	{
 		$value 		 = (string) $this->getProperty('DEFAULTVALUE', '');
-		$rows 		 = $this->getProperty('ROWS', 5);
+		$rows 		 = 5;
 		$cols  		 = $this->getProperty('COLS', 50);
 		$placeholder = $this->getProperty('PLACEHOLDER', '');
 		$codeIcon 	 = '';
@@ -56,7 +56,24 @@ class RSFormProFieldTextarea extends RSFormProField
 		{
 			$this->addScriptDeclaration('RSFormPro.Editors[' . json_encode($name) . '] = function() { try { return Joomla.editors.instances[' . json_encode($id) . '].getValue(); } catch (e) { return null; } };');
 
-			return $this->getEditor()->display($name, $this->escape($value), ($cols ? $cols * 10 : 0), ($rows ? $rows * 10 : 0), $cols, $rows, $this->getProperty('WYSIWYGBUTTONS', 'NO'), $id, null, null,
+			if (strpos($cols, '%') !== false || strpos($cols, 'px') !== false)
+			{
+				$width = $cols;
+			}
+			else
+			{
+				$width = $cols > 0 ? $cols * 10 : '100%';
+			}
+			if (strpos($rows, '%') !== false || strpos($rows, 'px') !== false)
+			{
+				$height = $rows;
+			}
+			else
+			{
+				$height = $rows > 0 ? $rows * 10 : '500';
+			}
+
+			return $this->getEditor()->display($name, $this->escape($value), $width, $height, (int) $cols, (int) $rows, $this->getProperty('WYSIWYGBUTTONS', 'NO'), $id, null, null,
 				array('relative_urls' => '0',
 				'cleanup_save' => '0',
 				'cleanup_startup' => '0',

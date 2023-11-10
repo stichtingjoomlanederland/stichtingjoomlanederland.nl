@@ -106,7 +106,7 @@ class Onlinekassa
 	 *
 	 * @since   4.8.0
 	 */
-	public function __construct(Input $jinput)
+	public function __construct($jinput)
 	{
 		// Set the input
 		$this->jinput = $jinput;

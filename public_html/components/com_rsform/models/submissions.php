@@ -25,8 +25,6 @@ class RsformModelSubmissions extends JModelLegacy
 		parent::__construct($config);
 		
 		$app 			= JFactory::getApplication();
-		$this->_db 		= JFactory::getDbo();
-
 		$this->params 	= $app->getParams('com_rsform');
 		$this->formId 	= (int) $this->params->get('formId');
 		
@@ -34,17 +32,6 @@ class RsformModelSubmissions extends JModelLegacy
 		if (!$this->params->get('enable_submissions', 0))
 		{
 		    throw new Exception(JText::_('RSFP_VIEW_SUBMISSIONS_NOT_ENABLED_FORGOT'), 403);
-		}
-
-		// For legacy menu items
-		$userId	= $this->params->get('userId');
-		if ($userId === '0')
-		{
-			$this->params->set('show_all_submissions', 1);
-		}
-		elseif ($userId == 'login')
-		{
-			$this->params->set('show_logged_in_submissions', 1);
 		}
 		
 		// Get pagination request variables

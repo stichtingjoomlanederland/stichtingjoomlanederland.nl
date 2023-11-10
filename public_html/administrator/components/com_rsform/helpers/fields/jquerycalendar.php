@@ -12,7 +12,7 @@ require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/calendar.php'
 
 class RSFormProFieldJqueryCalendar extends RSFormProField
 {
-	protected $customId;
+	public $customId;
 	
 	// backend preview
 	public function getPreviewInput()
@@ -266,6 +266,20 @@ class RSFormProFieldJqueryCalendar extends RSFormProField
 			if ($validDate !== $value)
 			{
 				return false;
+			}
+		}
+
+		if ($validationRule = $this->getProperty('VALIDATIONRULE'))
+		{
+			if ($required || strlen($value))
+			{
+				$validations 	 = array_flip(RSFormProHelper::getValidationRules(true));
+				$validationClass = RSFormProHelper::getValidationClass();
+
+				if (isset($validations[$validationRule]) && !call_user_func(array($validationClass, $validationRule), $value, $this->getProperty('VALIDATIONEXTRA'), $this->data))
+				{
+					return false;
+				}
 			}
 		}
 

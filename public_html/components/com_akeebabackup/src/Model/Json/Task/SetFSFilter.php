@@ -10,14 +10,12 @@ namespace Akeeba\Component\AkeebaBackup\Site\Model\Json\Task;
 // Protect from unauthorized access
 defined('_JEXEC') || die();
 
-use Akeeba\Component\AkeebaBackup\Administrator\Model\FilefiltersModel;
-use Akeeba\Engine\Platform;
-use Joomla\CMS\Factory;
-use Joomla\CMS\Filter\InputFilter;
 use RuntimeException;
 
 /**
  * Set or unset a filesystem filter
+ *
+ * @deprecated
  */
 class SetFSFilter extends AbstractTask
 {
@@ -32,84 +30,6 @@ class SetFSFilter extends AbstractTask
 	 */
 	public function execute(array $parameters = [])
 	{
-		$filter = InputFilter::getInstance();
-
-		// Get the passed configuration values
-		$defConfig = [
-			'profile' => 0,
-			'root'    => '[SITEROOT]',
-			'path'    => '',
-			'type'    => '',
-			'status'  => 1,
-		];
-
-		$defConfig = array_merge($defConfig, $parameters);
-
-		$profile = $filter->clean($defConfig['profile'], 'int');
-		$root    = $filter->clean($defConfig['root'], 'string');
-		$path    = $filter->clean($defConfig['path'], 'path');
-		$type    = $filter->clean($defConfig['type'], 'cmd');
-		$status  = $filter->clean($defConfig['status'], 'bool');
-
-		$crumbs = [];
-		$node   = '';
-
-		// We need a valid profile ID
-		if ($profile <= 0)
-		{
-			$profile = 1;
-		}
-
-		// We need a root
-		if (empty($root))
-		{
-			throw new RuntimeException('Unknown filesystem root', 500);
-		}
-
-		// We need a path
-		if (empty($path))
-		{
-			throw new RuntimeException('Unknown path', 500);
-		}
-
-		// Get the subdirectory and explode it to its parts
-		$path = trim($path, '/');
-
-		if (!empty($path))
-		{
-			$crumbs = explode('/', $root);
-			$node   = array_pop($crumbs);
-		}
-
-		if (empty($node))
-		{
-			throw new RuntimeException('Unknown path', 500);
-		}
-
-		// We need a table name
-		if (empty($type))
-		{
-			throw new RuntimeException('Filter type is mandatory', 500);
-		}
-
-		// Set the active profile
-		Factory::getApplication()->getSession()->set('akeebabackup.profile', $profile);
-
-		// Load the configuration
-		Platform::getInstance()->load_configuration($profile);
-
-		/** @var FilefiltersModel $model */
-		$model = $this->factory->createModel('Filefilters', 'Administrator', ['ignore_request' => true]);
-
-		if ($status)
-		{
-			$ret = $model->setFilter($root, $crumbs, $node, $type);
-		}
-		else
-		{
-			$ret = $model->remove($root, $crumbs, $node, $type);
-		}
-
-		return $ret;
+		throw new \RuntimeException('This method is no longer supported by the Akeeba Remote JSON API', 501);
 	}
 }

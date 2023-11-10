@@ -147,24 +147,22 @@ class RSFormProField
 	}
 	
 	// @desc Parses attributes from HTML code.
-	protected function parseAttributes($string) {
-		if (!isset($this->attr))
-		{
-			$this->attr = array();
-			$attr = array();
+	protected function parseAttributes($string)
+	{
+		$attrArray = array();
+		$attr = array();
 
-			// Let's grab all the key/value pairs using a regular expression
-			if (preg_match_all('/([\w:-]+)[\s]?(=[\s]?"([^"]*)")?/i', $string, $attr))
+		// Let's grab all the key/value pairs using a regular expression
+		if (preg_match_all('/([\w:-]+)[\s]?(=[\s]?"([^"]*)")?/i', $string, $attr))
+		{
+			$numPairs = count($attr[1]);
+			for ($i = 0; $i < $numPairs; $i++)
 			{
-				$numPairs = count($attr[1]);
-				for ($i = 0; $i < $numPairs; $i++)
-				{
-					$this->attr[$attr[1][$i]] = $attr[3][$i];
-				}
+				$attrArray[$attr[1][$i]] = $attr[3][$i];
 			}
 		}
 
-		return $this->attr;
+		return $attrArray;
 	}
 	
 	public function getAttributes()

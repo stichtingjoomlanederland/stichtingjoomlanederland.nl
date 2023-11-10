@@ -11,7 +11,7 @@ defined('_JEXEC') || die();
 use Joomla\CMS\Language\Text;
 
 ?>
-<form action="index.php?option=com_akeebabackup&view=Upload&task=upload&tmpl=component"
+<form action="index.php?option=com_akeebabackup&task=Upload.upload&tmpl=component"
 	  method="post" name="akeebauploadform">
 	<input type="hidden" name="id" value="<?= (int) $this->id ?>" />
 	<input type="hidden" name="part" value="-1" />

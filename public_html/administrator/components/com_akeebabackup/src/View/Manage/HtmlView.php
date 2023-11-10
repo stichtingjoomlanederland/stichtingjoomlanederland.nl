@@ -281,9 +281,9 @@ class HtmlView extends BaseHtmlView
 				// Show a tooltip, please
 				'tip'            => true,
 				// The x in the beginning prevents Joomla rendering its own icons. The rest is self-explanatory.
-				'active_class'   => 'x text-primary border-primary fa fa-snowflake',
+				'active_class'   => 'x text-primary border-primary fa fa-snowflake akeebabackup-icon-frozen',
 				// Ignored (we don't do disabled state toggles in Akeeba Backup)
-				'inactive_class' => 'x text-primary border-primary fa fa-snowflake',
+				'inactive_class' => 'x text-primary border-primary fa fa-snowflake akeebabackup-icon-frozen',
 			],
 			// Unfrozen record (DEFAULT STATE)
 			0 => [

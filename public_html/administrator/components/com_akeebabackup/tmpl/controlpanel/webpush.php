@@ -38,13 +38,13 @@ $this->document->addScriptOptions('com_akeebabackup.webPush', [
 		->getAsset('script', 'com_akeebabackup.webpush-worker')
 		->getUri('true'),
 	'subscribeUri'      => Route::_(
-		'index.php?option=com_akeebabackup&task=push.webpushsubscribe',
+		'index.php?option=com_akeebabackup&task=Push.webpushsubscribe',
 		false,
 		Route::TLS_IGNORE,
 		true
 	),
 	'unsubscribeUri'    => Route::_(
-		'index.php?option=com_akeebabackup&task=push.webpushunsubscribe',
+		'index.php?option=com_akeebabackup&task=Push.webpushunsubscribe',
 		false,
 		Route::TLS_IGNORE,
 		true
@@ -70,7 +70,7 @@ $this->document->getWebAssetManager()->useScript('com_akeebabackup.webpush');
 			</p>
 		</details>
 
-		<div class="alert alert-warning" id="webPushNotAvailable">
+		<div class="alert alert-warning d-none" id="webPushNotAvailable">
 			<h3 class="alert-heading"><?= Text::_('COM_AKEEBABACKUP_CONTROLPANEL_WEBPUSH_LBL_UNAVAILABLE_HEAD') ?></h3>
 			<p><?= Text::_('COM_AKEEBABACKUP_CONTROLPANEL_WEBPUSH_LBL_UNAVAILABLE_BODY') ?></p>
 		</div>

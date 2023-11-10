@@ -11,6 +11,7 @@ namespace Akeeba\Engine\Platform;
 // Protection against direct access
 defined('_JEXEC') || die();
 
+use Akeeba\Component\AkeebaBackup\Administrator\Helper\JoomlaPublicFolder;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Akeeba\Engine\Platform\Base as BasePlatform;
@@ -21,6 +22,7 @@ use JLoader;
 use Joomla\CMS\Access\Access;
 use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Date\Date;
 use Joomla\CMS\Factory as JoomlaFactory;
 use Joomla\CMS\Filesystem\Folder;
 use Joomla\CMS\Language\Text;
@@ -146,6 +148,25 @@ class Joomla extends BasePlatform
 	}
 
 	/**
+	 * Joomla 5+ with a custom public folder and Dereference Symlinks enabled
+	 *
+	 * @since  9.8.1
+	 */
+	public static function quirk_015()
+	{
+		$publicFolder = JoomlaPublicFolder::getPublicFolder();
+
+		if ($publicFolder === JPATH_ROOT)
+		{
+			return false;
+		}
+
+		$registry = Factory::getConfiguration();
+
+		return (bool) $registry->get('engine.archiver.common.dereference_symlinks', true);
+	}
+
+	/**
 	 * Set the database driver object to be used by this platform class
 	 *
 	 * @param   DatabaseInterface  $dbDriver
@@ -169,7 +190,7 @@ class Joomla extends BasePlatform
 		// If there is no DBO set we will go through the legacy part of the Joomla factory
 		if (is_null(self::$dbDriver))
 		{
-			self::$dbDriver = JoomlaFactory::getContainer()->get('DatabaseDriver');
+			self::$dbDriver = JoomlaFactory::getContainer()->get(DatabaseInterface::class);
 		}
 
 		return self::$dbDriver;
@@ -276,12 +297,15 @@ class Joomla extends BasePlatform
 
 		if (empty($stock_directories))
 		{
-			$app                                   = JoomlaFactory::getApplication();
-			$tmpdir                                = $app->get('tmp_path');
+			$app    = JoomlaFactory::getApplication();
+			$tmpdir = $app->get('tmp_path');
+            $host   = $this->get_host();
+
 			$stock_directories['[SITEROOT]']       = $this->get_site_root();
 			$stock_directories['[ROOTPARENT]']     = @realpath($this->get_site_root() . '/..');
 			$stock_directories['[SITETMP]']        = $tmpdir;
 			$stock_directories['[DEFAULT_OUTPUT]'] = $this->get_site_root() . '/administrator/components/com_akeebabackup/backup';
+			$stock_directories['[HOST]']           = empty($host) ? 'unknown_host' : $host;
 		}
 
 		return $stock_directories;
@@ -449,7 +473,7 @@ class Joomla extends BasePlatform
 	 */
 	public function get_timestamp_database($date = 'now')
 	{
-		return (clone JoomlaFactory::getDate($date))->toSql();
+		return (new Date($date))->toSql();
 	}
 
 	/**
@@ -1042,9 +1066,32 @@ class Joomla extends BasePlatform
 
 	public function apply_quirk_definitions()
 	{
-		Factory::getConfigurationChecks()->addConfigurationCheckDefinition('013', 'critical', 'COM_AKEEBABACKUP_CPANEL_WARNING_Q013', [
+		$configurationCheck = Factory::getConfigurationChecks();
+		$configurationCheck->addConfigurationCheckDefinition('013', 'critical', 'COM_AKEEBABACKUP_CPANEL_WARNING_Q013', [
 			Joomla::class, 'quirk_013',
 		]);
+		$configurationCheck->addConfigurationCheckDefinition('015', 'critical', 'COM_AKEEBABACKUP_CPANEL_WARNING_Q015', [
+			Joomla::class, 'quirk_015',
+		]);
+	}
+
+	/**
+	 * Returns additional data to put in the installation/extrainfo.json file in the backup archive.
+	 *
+	 * @return  array
+	 *
+	 * @since   9.8.1
+	 */
+	public function get_extra_info(): array
+	{
+		return [
+			// Does the site have a custom public directory?
+			'custom_public'  => JoomlaPublicFolder::hasCustomPublicFolderAutoIncluded(),
+			// Where Joomla files are saved in
+			'JPATH_ROOT'     => JPATH_ROOT,
+			// Where the custom root is placed in
+			'JPATH_PUBLIC'   => JoomlaPublicFolder::getPublicFolder(),
+		];
 	}
 
 	/**

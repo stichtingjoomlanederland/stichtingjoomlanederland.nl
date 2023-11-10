@@ -18,10 +18,20 @@ use Joomla\Database\DatabaseInterface;
 
 trait AkeebaEngineTrait
 {
-	public function loadAkeebaEngine(?DatabaseInterface $dbo = null, MVCFactoryInterface $factory = null)
+	public function loadAkeebaEngine(?DatabaseInterface $dbo = null, ?MVCFactoryInterface $factory = null)
 	{
 		$app = property_exists($this, 'app') ? $this->app : JoomlaFactory::getApplication();
-		$dbo = $dbo ?? $app->bootComponent('com_akeebabackup')->getContainer()->get('DatabaseDriver');
+
+		if (empty($dbo) || empty($factory))
+		{
+			$componentExtension = $app->bootComponent('com_akeebabackup');
+		}
+
+		$factory = $factory ?? $componentExtension->getMVCFactory();
+		$dbo = $dbo ?? $componentExtension->getContainer()->get(DatabaseInterface::class);
+
+		// Load Composer dependencies
+		$autoloader = require_once JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/autoload.php';
 
 		// Necessary defines for Akeeba Engine
 		if (!defined('AKEEBAENGINE'))
@@ -31,7 +41,7 @@ trait AkeebaEngineTrait
 
 		if (!defined('AKEEBAROOT'))
 		{
-			define('AKEEBAROOT', realpath(__DIR__ . '/../../engine'));
+			define('AKEEBAROOT', realpath(__DIR__ . '/../../vendor/akeeba/engine/engine'));
 		}
 
 		if (!defined('AKEEBA_CACERT_PEM'))
@@ -51,11 +61,11 @@ trait AkeebaEngineTrait
 			$app->getSession()->set('akeebabackup.profile', 1);
 		}
 
-		// Load Akeeba Engine
-		require_once __DIR__ . '/../../engine/Factory.php';
-
 		// Tell the Akeeba Engine where to load the platform from
 		Platform::addPlatform('joomla', __DIR__ . '/../../platform/Joomla');
+
+		// Apply a custom path for the encrypted settings key file
+		Factory::getSecureSettings()->setKeyFilename(JPATH_ADMINISTRATOR . '/components/com_akeebabackup/serverkey.php');
 
 		// Add our custom push notifications handler
 		Factory::setPushClass(PushMessages::class);

@@ -46,6 +46,7 @@ class RsformViewDirectory extends JViewLegacy
 			$this->emails		= $this->get('emails');
 			$this->fields		= RSFormProHelper::getDirectoryFields($this->formId);
 			$this->quickfields	= $this->get('QuickFields');
+			$this->allowedDateFields = $this->get('AllowedDateFields');
 
 			JToolbarHelper::title('RSForm! Pro <small>['.JText::sprintf('RSFP_EDITING_DIRECTORY', $this->get('formTitle')).']</small>','rsform');
 		}

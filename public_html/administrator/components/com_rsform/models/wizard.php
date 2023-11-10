@@ -83,7 +83,6 @@ class RsformModelWizard extends JModelAdmin
 						'CAPTION'           => '',
 						'LABEL'             => 'Send',
 						'RESET'             => 'NO',
-						'BUTTONTYPE'        => 'TYPEBUTTON',
 						'COMPONENTTYPE'     => RSFORM_FIELD_SUBMITBUTTON
 					)
 				);
@@ -159,7 +158,6 @@ class RsformModelWizard extends JModelAdmin
 						'CAPTION'           => '',
 						'LABEL'             => 'Confirm my order',
 						'RESET'             => 'NO',
-						'BUTTONTYPE'        => 'TYPEBUTTON',
 						'COMPONENTTYPE'     => RSFORM_FIELD_SUBMITBUTTON
 					)
 				);

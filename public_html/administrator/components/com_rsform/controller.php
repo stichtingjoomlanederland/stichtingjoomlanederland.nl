@@ -27,6 +27,10 @@ class RsformController extends JControllerLegacy
         JHtml::_('stylesheet', 'com_rsform/admin/jquery.tag-editor.css', array('relative' => true, 'version' => 'auto'));
         JHtml::_('stylesheet', 'com_rsform/rsicons.css', array('relative' => true, 'version' => 'auto'));
 
+		if (version_compare(JVERSION, '5.0', '>='))
+		{
+			JHtml::_('stylesheet', 'com_rsform/admin/style50.css', array('relative' => true, 'version' => 'auto'));
+		}
 		if (version_compare(JVERSION, '4.0', '>='))
 		{
 			JHtml::_('stylesheet', 'com_rsform/admin/style40.css', array('relative' => true, 'version' => 'auto'));

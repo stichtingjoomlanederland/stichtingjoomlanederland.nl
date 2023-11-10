@@ -194,7 +194,7 @@ $noPaymentProviders = ['internetkassa', 'omnikassa', 'ogone'];
                                     if ($entry->psp === 'mollie' && $entry->paymentId) {
                                         $link = HTMLHelper::_(
                                             'link',
-                                            'https://www.mollie.com/dashboard/payments/' . $entry->paymentId,
+                                            'https://my.mollie.com/dashboard/payments/' . $entry->paymentId,
                                             $entry->trans,
                                             'target="_blank"'
                                         );
@@ -235,7 +235,7 @@ $noPaymentProviders = ['internetkassa', 'omnikassa', 'ogone'];
 
                                     $layout = 'joomla.modal.main';
 
-                                    if (Version::MAJOR_VERSION === 4) {
+                                    if (Version::MAJOR_VERSION >= 4) {
                                         HTMLHelper::_('bootstrap.modal', '#log' . $entry->id);
                                         $layout = 'libraries.html.bootstrap.modal.main';
                                     }

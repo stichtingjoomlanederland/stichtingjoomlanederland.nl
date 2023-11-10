@@ -10,6 +10,7 @@ defined('_JEXEC') || die();
 
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Router\Route;
 
 /** @var  \Akeeba\Component\AkeebaBackup\Administrator\View\Configuration\HtmlView $this */
 
@@ -53,7 +54,7 @@ echo $this->loadAnyTemplate('commontemplates/folderbrowser');
 </div>
 
 <form name="adminForm" id="adminForm" method="post"
-	  action="index.php">
+	  action="<?= Route::_('index.php?option=com_akeebabackup&view=Configuration') ?>">
 
 	<div class="card">
 		<h3 class="card-header">
@@ -100,8 +101,6 @@ echo $this->loadAnyTemplate('commontemplates/folderbrowser');
     <div id="akeebagui">
     </div>
 
-	<input type="hidden" name="option" value="com_akeebabackup"/>
-	<input type="hidden" name="view" value="Configuration"/>
 	<input type="hidden" name="task" value=""/>
-	<input type="hidden" name="<?= \Joomla\CMS\Factory::getApplication()->getFormToken() ?>" value="1"/>
+	<?= HTMLHelper::_('form.token') ?>
 </form>

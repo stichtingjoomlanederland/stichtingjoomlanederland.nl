@@ -9,6 +9,7 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Controller;
 
 defined('_JEXEC') || die;
 
+use Akeeba\Component\AkeebaBackup\Administrator\Helper\JoomlaPublicFolder;
 use Akeeba\Component\AkeebaBackup\Administrator\Helper\Utils;
 use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerCustomACLTrait;
 use Akeeba\Component\AkeebaBackup\Administrator\Mixin\ControllerEventsTrait;
@@ -189,6 +190,8 @@ class ControlpanelController extends BaseController
 		$this->app->bootComponent('com_akeebabackup')
 		          ->getComponentParametersService()
 		          ->save($params);
+
+		JoomlaFactory::getApplication()->getSession()->set('akeebabackup.cpanel.newSecretWord', null);
 
 		$msg = Text::sprintf('COM_AKEEBABACKUP_CPANEL_MSG_FESECRETWORD_RESET', $newSecret);
 

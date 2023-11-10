@@ -7,15 +7,15 @@
 
 <extension type="plugin" group="actionlog" method="upgrade">
 	<name>PLG_ACTIONLOG_AKEEBABACKUP</name>
-	<version>9.5.1</version>
-	<creationDate>2023-03-09</creationDate>
+	<version>9.8.3</version>
+	<creationDate>2023-11-07</creationDate>
 	<author>Nicholas K. Dionysopoulos</author>
 	<authorEmail>nicholas@dionysopoulos.me</authorEmail>
 	<authorUrl>https://www.akeeba.com</authorUrl>
 	<copyright>Copyright (c)2006-2023 Nicholas K. Dionysopoulos</copyright>
 	<license>GNU General Public License version 3, or later</license>
 	<description>PLG_ACTIONLOG_AKEEBABACKUP_XML_DESCRIPTION</description>
-	<namespace path="src">Joomla\Plugin\Quickicon\AkeebaBackup</namespace>
+	<namespace path="src">Akeeba\Plugin\ActionLog\AkeebaBackup</namespace>
 
 	<files>
 		<folder plugin="akeebabackup">services</folder>

@@ -12,7 +12,6 @@ defined('_JEXEC') or die;
 
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
-use Joomla\CMS\Layout\LayoutHelper;
 
 /** @var JdidealgatewayViewEmails $this */
 
@@ -90,7 +89,17 @@ if ($this->emails && $this->canDo->get('core.create')) : ?>
 	?>
 
 	<form action="index.php?option=com_jdidealgateway&task=emails.testemail" method="post" class="form-horizontal">
-		<?php echo LayoutHelper::render('joomla.modal.main', $emailModalData); ?>
+        <?php
+        echo HTMLHelper::_(
+            'bootstrap.renderModal',
+            'testEmail',
+            [
+                'title'  => Text::_('COM_ROPAYMENTS_SEND_TESTMAIL'),
+                'footer' => $this->loadTemplate('email_footer')
+            ],
+            $this->loadTemplate('email_body')
+        );
+        ?>
 		<?php echo HTMLHelper::_('form.token'); ?>
 	</form>
 <?php endif;

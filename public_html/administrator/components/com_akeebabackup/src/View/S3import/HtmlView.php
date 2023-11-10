@@ -74,7 +74,11 @@ class HtmlView extends BaseHtmlView
 		$this->document
 			->addScriptOptions('akeebabackup.S3import.accessKey', $this->s3access)
 			->addScriptOptions('akeebabackup.S3import.secretKey', $this->s3secret)
-			->addScriptOptions('akeebabackup.S3import.importURL', Route::_('index.php?option=com_akeebabackup&view=S3import&task=dltoserver&part=-1&frag=-1&layout=downloading', false, Route::TLS_IGNORE, true));
+			->addScriptOptions('akeebabackup.S3import.importURL', Route::_(
+				sprintf(
+					"index.php?option=com_akeebabackup&view=S3import&task=dltoserver&part=-1&frag=-1&layout=downloading&%s=1",
+					Factory::getApplication()->getFormToken()
+				), false, Route::TLS_IGNORE, true));
 	}
 
 	public function onBeforeDltoserver()

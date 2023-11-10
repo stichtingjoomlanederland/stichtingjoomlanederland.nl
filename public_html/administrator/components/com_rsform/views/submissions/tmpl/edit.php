@@ -24,7 +24,7 @@ JHtml::_('behavior.keepalive');
 					echo JHtml::_('select.booleanlist', 'formStatic['.$header->value.']', '', $this->staticFields->{$header->value});
                     echo '<hr /><p><a class="btn btn-primary" href="' . JUri::root() . 'index.php?option=com_rsform&task=confirm&hash=' . md5($this->submission->SubmissionId . $this->submission->FormId . $this->submission->DateSubmitted) . '" target="_blank">' . JText::_('COM_RSFORM_CONFIRMATION_LINK') . '</a></p>';
 				}
-				elseif ($header->value === 'DateSubmitted')
+				elseif ($header->value === 'DateSubmitted' || $header->value === 'ConfirmedDate')
 				{
 					echo JHtml::_('calendar', $this->staticFields->{$header->value}, 'formStatic[' . $header->value . ']', $header->value, '%Y-%m-%d %H:%M:%S', array('showTime' => true));
 				}

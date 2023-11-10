@@ -19,6 +19,7 @@ use Joomla\CMS\Dispatcher\DispatcherInterface;
 use Joomla\CMS\Extension\BootableExtensionInterface;
 use Joomla\CMS\Extension\MVCComponent;
 use Joomla\CMS\HTML\HTMLRegistryAwareTrait;
+use Joomla\Database\DatabaseInterface;
 use Joomla\DI\Container;
 use Psr\Container\ContainerInterface;
 
@@ -79,7 +80,11 @@ class AkeebaBackupComponent extends MVCComponent implements
 	public function getDispatcher(CMSApplicationInterface $application): DispatcherInterface
 	{
 		$dispatcher = parent::getDispatcher($application);
-		$dispatcher->setDatabase($this->container->get('DatabaseDriver'));
+
+		if (method_exists($dispatcher, 'setDatabase'))
+		{
+			$dispatcher->setDatabase($this->container->get(DatabaseInterface::class));
+		}
 
 		return $dispatcher;
 	}

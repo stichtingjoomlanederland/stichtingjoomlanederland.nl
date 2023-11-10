@@ -9,6 +9,7 @@ defined('_JEXEC') || die();
 
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Router\Route;
 use Joomla\CMS\Uri\Uri as JUri;
 
 /** @var  \Akeeba\Component\AkeebaBackup\Administrator\View\Log\HtmlView  $this */
@@ -17,7 +18,8 @@ HTMLHelper::_('formbehavior.chosen');
 ?>
 
 <?php if(isset($this->logs) && count($this->logs)): ?>
-<form name="adminForm" id="adminForm" action="index.php" method="post"
+<form name="adminForm" id="adminForm" method="post"
+	  action="<?= Route::_('index.php?option=com_akeebabackup&view=Log') ?>"
 	class="d-flex flex-column gap-2 p-2 my-2 border bg-light">
     <div class="row row-cols-lg-auto gap-1 align-items-center">
 		<?php if(empty($this->tag)): ?>
@@ -56,9 +58,6 @@ HTMLHelper::_('formbehavior.chosen');
 	    <?php endif ?>
 	</div>
 
-
-	<input name="option" value="com_akeebabackup" type="hidden" />
-	<input name="view" value="Log" type="hidden" />
 	<?= HTMLHelper::_('form.token') ?>
 </form>
 <?php endif ?>

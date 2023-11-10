@@ -5,7 +5,7 @@
  * @license   GNU General Public License version 3, or later
  */
 
-namespace Joomla\Plugin\Console\AkeebaBackup\Extension;
+namespace Akeeba\Plugin\Console\AkeebaBackup\Extension;
 
 defined('_JEXEC') || die;
 
@@ -16,7 +16,7 @@ use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Filesystem\Folder;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\Event\SubscriberInterface;
-use Joomla\Plugin\Console\AkeebaBackup\Command\CommandFactoryInterface;
+use Akeeba\Plugin\Console\AkeebaBackup\Command\CommandFactoryInterface;
 use Throwable;
 
 class AkeebaBackup extends CMSPlugin implements SubscriberInterface

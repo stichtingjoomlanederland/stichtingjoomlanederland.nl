@@ -5,7 +5,7 @@
  * @license   GNU General Public License version 3, or later
  */
 
-namespace Joomla\Plugin\System\BackupOnUpdate\Extension;
+namespace Akeeba\Plugin\System\BackupOnUpdate\Extension;
 
 defined('_JEXEC') || die;
 
@@ -81,7 +81,7 @@ class BackupOnUpdate extends CMSPlugin implements SubscriberInterface, DatabaseA
 		// Make sure this is the back-end
 		try
 		{
-			$app = Factory::getApplication();
+			$app = $this->getApplication();
 		}
 		catch (Exception $e)
 		{
@@ -163,7 +163,7 @@ class BackupOnUpdate extends CMSPlugin implements SubscriberInterface, DatabaseA
 				Text::_('PLG_SYSTEM_BACKUPONUPDATE_DEFAULT_DESCRIPTION')
 			));
 
-			$jtoken = Factory::getSession()->getFormToken();
+			$jtoken = $this->getApplication()->getSession()->getFormToken();
 
 			// Get the return URL
 			$returnUri = new Uri(Uri::base() . 'index.php');

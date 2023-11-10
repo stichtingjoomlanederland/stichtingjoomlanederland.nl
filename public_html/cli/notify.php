@@ -76,6 +76,7 @@ else
 	try
 	{
 		$app = $container->get(SiteApplication::class);
+        Factory::$application = $app;
 	}
 	catch (Exception $exception)
 	{

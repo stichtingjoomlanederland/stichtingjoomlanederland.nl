@@ -69,7 +69,6 @@
 
 textarea[readonly] {
 	cursor: not-allowed;
-	background-color: #eeeeee;
 }
 
 joomla-tab > ul {

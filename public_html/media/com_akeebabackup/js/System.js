@@ -726,7 +726,14 @@ if (typeof akeebabackup.System === "undefined")
             {
                 if (msg.indexOf("<script") > -1)
                 {
-                    msg = "(HTML containing script tags)";
+                    try
+                    {
+                        msg = (new DOMParser().parseFromString(msg ?? "", "text/html")).textContent;
+                    }
+                    catch (e)
+                    {
+                        msg = "(HTML containing script tags)";
+                    }
                 }
 
                 return msg;

@@ -14,6 +14,9 @@ $mainframe = JFactory::getApplication();
 	<thead>
 		<tr>
 			<th></th>
+            <th class="center text-center">
+                <strong><?php echo JText::_('COM_RSFORM_DIRECTORY_FIELD_SORTING'); ?></strong>
+            </th>
 			<th class="center text-center">
 				<label class="checkbox inline" for="dirviewablecheck"><input type="checkbox" id="dirviewablecheck" onclick="dirSelectAll('dirviewable')" title="<?php echo JText::_('JGLOBAL_CHECK_ALL'); ?>" /> <strong><?php echo JText::_('RSFP_SUBM_DIR_LISTING'); ?></strong></label>
 			</th>
@@ -41,6 +44,27 @@ $mainframe = JFactory::getApplication();
 			<input type="hidden" name="dirorder[]" value="<?php echo $field->ordering; ?>" />
 			<input type="hidden" name="dircid[]" value="<?php echo $field->FieldId; ?>" />
 		</td>
+        <td class="center text-center">
+	        <?php
+	        if ($field->FieldId > 0)
+	        {
+		        ?>
+                <select name="dirsort[<?php echo $field->FieldId; ?>]">
+			        <?php
+			        $disabled = !in_array($field->FieldType, $this->allowedDateFields);
+			        $sorts = array(
+				        JHtml::_('select.option', 0, JText::_('COM_RSFORM_DIRECTORY_DEFAULT_SORTING_AS_STRING')),
+				        JHtml::_('select.option', 1, JText::_('COM_RSFORM_DIRECTORY_SORT_AS_NUMBER')),
+				        JHtml::_('select.option', 2, JText::_('COM_RSFORM_DIRECTORY_SORT_AS_DATE'), 'value', 'text', $disabled),
+			        );
+
+			        echo JHtml::_('select.options', $sorts, 'value', 'text', $field->sort);
+			        ?>
+                </select>
+		        <?php
+	        }
+	        ?>
+        </td>
 		<td class="center text-center">
 			<input type="checkbox" name="dirviewable[]" <?php echo $field->viewable ? 'checked="checked"' : ''; ?> value="<?php echo $field->FieldId; ?>" />
 		</td>

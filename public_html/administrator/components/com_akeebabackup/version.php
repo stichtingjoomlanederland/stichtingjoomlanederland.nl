@@ -12,5 +12,5 @@ defined('_JEXEC') or die();
 // defined('AKEEBADEBUG') || define('AKEEBADEBUG', 1);
 
 defined('AKEEBABACKUP_PRO') || define('AKEEBABACKUP_PRO', '1');
-defined('AKEEBABACKUP_VERSION') || define('AKEEBABACKUP_VERSION', '9.5.1');
-defined('AKEEBABACKUP_DATE') || define('AKEEBABACKUP_DATE', '2023-03-09');
+defined('AKEEBABACKUP_VERSION') || define('AKEEBABACKUP_VERSION', '9.8.3');
+defined('AKEEBABACKUP_DATE') || define('AKEEBABACKUP_DATE', '2023-11-07');

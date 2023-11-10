@@ -10,13 +10,10 @@ namespace Akeeba\Component\AkeebaBackup\Site\Model\Json\Task;
 // Protect from unauthorized access
 defined('_JEXEC') || die();
 
-use Akeeba\Component\AkeebaBackup\Administrator\Model\RegexfilefiltersModel;
-use Akeeba\Engine\Platform;
-use Joomla\CMS\Factory;
-use Joomla\CMS\Filter\InputFilter;
-
 /**
  * Get the regex filesystem filters
+ *
+ * @deprecated
  */
 class GetRegexFSFilters extends AbstractTask
 {
@@ -31,40 +28,6 @@ class GetRegexFSFilters extends AbstractTask
 	 */
 	public function execute(array $parameters = [])
 	{
-		$filter = InputFilter::getInstance();
-
-		// Get the passed configuration values
-		$defConfig = [
-			'profile' => 0,
-			'root'    => '[SITEROOT]',
-		];
-
-		$defConfig = array_merge($defConfig, $parameters);
-
-		$profile = $filter->clean($defConfig['profile'], 'int');
-		$root    = $filter->clean($defConfig['root'], 'string');
-
-		// We need a valid profile ID
-		if ($profile <= 0)
-		{
-			$profile = 1;
-		}
-
-		// We need a root
-		if (empty($root))
-		{
-			throw new \RuntimeException('Unknown database root', 500);
-		}
-
-		// Set the active profile
-		Factory::getApplication()->getSession()->set('akeebabackup.profile', $profile);
-
-		// Load the configuration
-		Platform::getInstance()->load_configuration($profile);
-
-		/** @var RegexfilefiltersModel $model */
-		$model = $this->factory->createModel('Regexfilefilters', 'Administrator', ['ignore_request' => true]);
-
-		return $model->get_regex_filters($root);
+		throw new \RuntimeException('This method is no longer supported by the Akeeba Remote JSON API', 501);
 	}
 }

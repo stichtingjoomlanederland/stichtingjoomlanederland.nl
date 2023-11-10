@@ -199,7 +199,9 @@ class FilefiltersModel extends BaseModel
 				break;
 
 			case 'tab':
-				$ret_array = $this->getFilters($action->root);
+				$ret_array = [
+					'list' => $this->getFilters($action->root)
+				];
 				break;
 
 			// Reset filters

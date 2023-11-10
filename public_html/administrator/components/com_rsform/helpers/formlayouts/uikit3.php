@@ -22,6 +22,7 @@ class RSFormProFormLayoutUIkit3 extends RSFormProFormLayout
 			$this->addStyleSheet('com_rsform/frameworks/uikit3/uikit-rtl.min.css');
 		} else {
 			$this->addStyleSheet('com_rsform/frameworks/uikit3/uikit.min.css');
+			$this->addStyleSheet('com_rsform/frameworks/uikit3/uikit-grid.css');
 		}
 
 		// Load jQuery

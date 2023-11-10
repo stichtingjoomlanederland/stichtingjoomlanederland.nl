@@ -24,7 +24,7 @@ use Joomla\CMS\Language\Text;
 
 		<?php // Warnings ?>
         <?php if($this->countWarnings): ?>
-            <div>
+            <div class="akeebabackup-engine-warnings-container">
                 <?= $this->detailsCell ?>
             </div>
             <hr />

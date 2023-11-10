@@ -9,6 +9,7 @@ defined('_JEXEC') || die();
 
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Router\Route;
 
 /** @var  $this  \Akeeba\Component\AkeebaBackup\Administrator\View\Backup\HtmlView */
 
@@ -55,9 +56,9 @@ echo $this->loadTemplate('script');
 			</div>
 		<?php endif ?>
 
-		<form action="index.php" method="post"
+		<form action="<?= Route::_('index.php?option=com_akeebabackup&view=Backup') ?>" method="post"
 			  name="flipForm" id="flipForm"
-			  class="d-md-flex flex-md-row justify-content-md-evenly align-items-center border border-1 bg-light border-rounded rounded-2 mt-1 mb-2 p-2"
+			  class="akeebabackup-profile-switch-container d-md-flex flex-md-row justify-content-md-evenly align-items-center border border-1 bg-light border-rounded rounded-2 mt-1 mb-2 p-2"
 			  autocomplete="off">
 
 			<div class="m-2">
@@ -76,8 +77,6 @@ echo $this->loadTemplate('script');
 					?></joomla-field-fancy-select>
 			</div>
 
-			<input type="hidden" name="option" value="com_akeebabackup"/>
-			<input type="hidden" name="view" value="Backup"/>
 			<input type="hidden" name="returnurl" value="<?= $this->escape($this->returnURL) ?>"/>
 			<input type="hidden" name="description" id="flipDescription" value=""/>
 			<input type="hidden" name="comment" id="flipComment" value=""/>
@@ -154,7 +153,7 @@ echo $this->loadTemplate('script');
 
         <div id="backup-progress-content" class="card-body">
             <div id="backup-steps"></div>
-            <div id="backup-status" class="mt-3 border rounded bg-light">
+            <div id="backup-status" class="mt-3 border rounded bg-light text-dark">
                 <div id="backup-step" class="p-1"></div>
                 <div id="backup-substep" class="p-1 text-muted border-top"></div>
             </div>

@@ -119,7 +119,9 @@ class HtmlView extends BaseHtmlView
 
 				// Get a JSON representation of the tabular filter data
 				$this->document
-					->addScriptOptions('akeebabackup.Filefilters.guiData', $model->getFilters($siteRoot))
+					->addScriptOptions('akeebabackup.Filefilters.guiData', [
+						'list' => $model->getFilters($siteRoot)
+					])
 					->addScriptOptions('akeebabackup.Filefilters.viewType', "tabular");
 
 				break;

@@ -8,6 +8,7 @@
 namespace Akeeba\Component\AkeebaBackup\Administrator\Model\UpgradeHandler;
 
 
+use Akeeba\Component\AkeebaBackup\Administrator\Helper\JoomlaPublicFolder;
 use Akeeba\Component\AkeebaBackup\Administrator\Model\UpgradeModel;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
@@ -167,6 +168,16 @@ class MigrateSettings
 		$this->migrateDefaultBackupFolder();
 
 		return true;
+	}
+
+	public function onInstall($type, $parent)
+	{
+		JoomlaPublicFolder::savePublicFolder();
+	}
+
+	public function onUpdate($type, $parent)
+	{
+		JoomlaPublicFolder::savePublicFolder();
 	}
 
 	/**

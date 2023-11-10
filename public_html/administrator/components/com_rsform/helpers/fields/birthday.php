@@ -13,6 +13,7 @@ require_once JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/fields/selectli
 class RSFormProFieldBirthDay extends RSFormProFieldSelectList
 {
 	protected $processing;
+	protected $hasAllFields = false;
 	
 	// backend preview
 	public function getPreviewInput()
@@ -177,7 +178,12 @@ class RSFormProFieldBirthDay extends RSFormProFieldSelectList
 			}
 			
 			$start 	= (int) $this->getProperty('STARTYEAR', 1970);
-			$end 	= (int) $this->getProperty('ENDYEAR', 2050);
+			$end 	= (int) $this->getProperty('ENDYEAR', 0);
+
+			if ($end === 0)
+			{
+				$end = JFactory::getDate()->format('Y');
+			}
 			
 			if ($start < $end) {
 				for ($i=$start; $i<=$end; $i++) {

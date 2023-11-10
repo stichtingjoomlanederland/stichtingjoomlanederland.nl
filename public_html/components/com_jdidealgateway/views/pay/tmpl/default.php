@@ -28,8 +28,7 @@ if ($silent) : ?>
 	<div style="display: none">
 <?php
 endif; ?>
-	<form name="adminForm" id="adminForm" method="post" class="form-validate" action="<?php
-	echo Route::_('index.php?option=com_jdidealgateway&task=pay.sendmoney'); ?>">
+	<form name="adminForm" id="adminForm" method="post" class="form-validate" action="<?php echo Route::_('index.php?option=com_jdidealgateway&task=pay.sendmoney&Itemid=' . $input->get('Itemid', 0)); ?>">
 		<fieldset>
 			<legend><?php
 				echo Text::_('COM_ROPAYMENTS_PAYMENT_FORM'); ?></legend>
@@ -75,12 +74,13 @@ endif; ?>
 			<?php
 			else : ?>
 				<script type="text/javascript">
-                  document.adminForm.submit()
+					window.addEventListener("DOMContentLoaded", () => document.adminForm.submit())
 				</script>
 			<?php
 			endif; ?>
 		</fieldset>
 		<input type="hidden" name="task" value="pay.sendmoney"/>
+		<input type="hidden" name="silent" value="<?php echo $silent ? 1 : 0; ?>"/>
 	</form>
 <?php
 if ($silent) : ?>

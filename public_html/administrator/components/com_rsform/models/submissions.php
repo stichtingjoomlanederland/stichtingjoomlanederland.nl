@@ -242,6 +242,8 @@ class RsformModelSubmissions extends JModelList
 					'UserId'           => $result->UserId,
 					'Lang'             => $result->Lang,
 					'confirmed'        => $result->confirmed ? JText::_('RSFP_YES') : JText::_('RSFP_NO'),
+					'ConfirmedIp'      => $result->ConfirmedIp,
+					'ConfirmedDate'    => $result->ConfirmedDate ? RSFormProHelper::getDate($result->ConfirmedDate) : '',
 					'SubmissionValues' => array(),
 				);
 			}
@@ -404,6 +406,8 @@ class RsformModelSubmissions extends JModelList
 		if ($this->addConfirmedHeader())
 		{
 			$headers[] = 'confirmed';
+			$headers[] = 'ConfirmedIp';
+			$headers[] = 'ConfirmedDate';
 		}
 
 		$results = array();
@@ -837,9 +841,16 @@ class RsformModelSubmissions extends JModelList
 		$form   = $app->input->post->get('form', array(), 'array');
         $static = $app->input->post->get('formStatic', array(), 'array');
         $files  = $app->input->files->get('upload', array(), 'array');
-		$date	= JFactory::getDate($static['DateSubmitted'], JFactory::getApplication()->get('offset'));
 
-		$static['DateSubmitted'] = $date->toSql();
+		$static['DateSubmitted'] = JFactory::getDate($static['DateSubmitted'], JFactory::getApplication()->get('offset'))->toSql();
+		if ($static['ConfirmedDate'])
+		{
+			$static['ConfirmedDate'] = JFactory::getDate($static['ConfirmedDate'], JFactory::getApplication()->get('offset'))->toSql();
+		}
+		else
+		{
+			$static['ConfirmedDate'] = null;
+		}
 
 		require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/submissions.php';
 		$submission = RSFormProSubmissionsHelper::getSubmission($cid);
@@ -919,7 +930,7 @@ class RsformModelSubmissions extends JModelList
 				$object->{$field} = $value;
             }
 
-            $db->updateObject('#__rsform_submissions', $object, array('SubmissionId'));
+            $db->updateObject('#__rsform_submissions', $object, array('SubmissionId'), true);
         }
 
 		// Checkboxes and other empty fields don't send a value, so just make sure we have them all here
@@ -1002,6 +1013,10 @@ class RsformModelSubmissions extends JModelList
 		if ($submission)
 		{
 			$submission->DateSubmitted = JHtml::_('date', $submission->DateSubmitted, 'Y-m-d H:i:s');
+			if ($submission->ConfirmedDate)
+			{
+				$submission->ConfirmedDate = JHtml::_('date', $submission->ConfirmedDate, 'Y-m-d H:i:s');
+			}
 		}
 		
 		return $submission;
@@ -1120,15 +1135,42 @@ class RsformModelSubmissions extends JModelList
 		return $this->previewHeaders;
 	}
 
-    public function confirm($cid)
+    public function confirm($formId, $cid)
 	{
-		$db = JFactory::getDbo();
-		$query = $db->getQuery(true)
-			->update($db->qn('#__rsform_submissions'))
-			->set($db->qn('confirmed') . ' = ' . $db->q(1))
+		$db         = JFactory::getDbo();
+		$app        = JFactory::getApplication();
+		$form       = RSFormProHelper::getForm($formId);
+		$ipAddress  = $form->KeepIP ? \Joomla\Utilities\IpHelper::getIp() : '0.0.0.0';
+		$query      = $db->getQuery(true);
+
+		$query->select('*')
+			->from($db->qn('#__rsform_submissions'))
 			->where($db->qn('SubmissionId') . ' IN (' . implode(',', $db->q($cid)) . ')');
 
-		return $db->setQuery($query)->execute();
+		if ($submissions = $db->setQuery($query)->loadObjectList())
+		{
+			foreach ($submissions as $submission)
+			{
+				$SubmissionId   = $submission->SubmissionId;
+				$hash           = md5($submission->SubmissionId . $formId . $submission->DateSubmitted);
+
+				$query->clear()
+					->update($db->qn('#__rsform_submissions'))
+					->set($db->qn('confirmed') . ' = ' . $db->q(1))
+					->set($db->qn('ConfirmedDate') . ' = ' . $db->q(JFactory::getDate()->toSql()))
+					->set($db->qn('ConfirmedIp') . ' = ' . $db->q($ipAddress))
+					->where($db->qn('SubmissionId') . ' = ' . $db->q($SubmissionId));
+				$db->setQuery($query);
+				$db->execute();
+
+				$app->triggerEvent('onRsformFrontendSubmissionConfirmation', array(array('SubmissionId' => $SubmissionId, 'hash' => $hash)));
+
+				if ($form->ConfirmSubmission && !empty($form->ConfirmSubmissionDefer) && json_decode($form->ConfirmSubmissionDefer))
+				{
+					RSFormProHelper::sendSubmissionEmails($SubmissionId);
+				}
+			}
+		}
 	}
 
 	public function saveColumns($formId, $staticcolumns, $columns)

@@ -1,8 +1,8 @@
 RO Payments
 Author: RolandD Cyber Produksi (contact@rolandd.com)
 Website: https://rolandd.com/
-Version: 8.2.0
-Date: 25 February 2023
+Version: 8.3.2
+Date: 30 October 2023
 
 Legenda:
 + Added
@@ -11,6 +11,37 @@ Legenda:
 / Changed
 
 Changelog
+Version 8.3.2 [ 2023-10-30 ]
+/ Make RO Payments Joomla 5 compatible
+/ Improved router handling of menu items
+* Fixed captcha not skipped in silent mode
+
+Version 8.3.1 [ 2023-09-22 ]
+* Fixed call to parameters in RSEventsPro
+/ PHP 8.2 fixes
+* Fixed set correct return type for getVariables in RO Payments checkout
+/ Fixed always update status in RSForms!Pro
+* Fixed loading RO Payments for Techjoomla extensions
+
+Version 8.3.0 [ 2023-08-23 ]
++ Added to update the Transaction ID field of RSForms!Pro
+/ Changed the link to the Mollie dashboard for a payment
+* Make sure the placeholder has a value in RSForms!Pro
+/ PHP 8.2 fixes
+/ Updated router for Joomla 4 to make sure it finds the correct menu item
+/ Improve waiting time for payment provider to send payment result
+/ Wait for the page to be loaded before sending the payment form in silent mode
+* Fixed payment form with URL values in Joomla 4
++ Added logging which webhook is sent to Mollie
++ Added option to update VirtueMart order status in case of failed payment status
+* Fixed client check in JoomDonation
++ Added currency to payment request for Event Booking
+* Fixed check if extension is installed but only on install
++ Added check if card value exists before adding it to admin order email
++ Added option to always update order in VirtueMart
++ Added option to update order regardless of status
+* Fixed update URL getting a duplicate update key
+
 Version 8.2.0 [ 2023-02-25 ]
 / Update Mollie API to version 2.50.0
 / Update Buckaroo API to version 1.3.0

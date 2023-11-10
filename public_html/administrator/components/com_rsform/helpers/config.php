@@ -7,13 +7,15 @@
 
 defined('_JEXEC') or die('Restricted access');
 
+use Joomla\CMS\Factory;
+
 class RSFormProConfig
 {
 	protected $config;
 	protected $db;
 	
 	public function __construct() {
-		$this->db = JFactory::getDbo();
+		$this->db = Factory::getDbo();
 		$this->load();
 	}
 	

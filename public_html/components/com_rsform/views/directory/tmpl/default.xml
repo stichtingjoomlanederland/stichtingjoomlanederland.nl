@@ -59,6 +59,8 @@
 				<option value="UserId">RSFP_USERID</option>
 				<option value="Lang">RSFP_LANG</option>
 				<option value="confirmed">RSFP_CONFIRMED</option>
+				<option value="ConfirmedIp">RSFP_CONFIRMEDIP</option>
+				<option value="ConfirmedDate">RSFP_CONFIRMEDDATE</option>
 			</field>
 			<field name="default_direction" type="list" default="desc" label="COM_RSFORM_DIR_DEFAULT_DIRECTION" description="COM_RSFORM_DIR_DEFAULT_DIRECTION_DESC">
 				<option value="desc">JGLOBAL_ORDER_DESCENDING</option>

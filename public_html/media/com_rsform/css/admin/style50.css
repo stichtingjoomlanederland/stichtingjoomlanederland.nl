@@ -1,0 +1,79 @@
+@media (prefers-color-scheme: dark) {
+    #rsfp-grid-loader {
+        background: var(--template-bg-dark-90);
+    }
+
+    .rsfp-grid-check-all,
+    .rsfp-grid-row,
+    .rsfp-grid-add-field,
+    .rsfp-grid-field {
+        background: #111111;
+        border-color: #4c4c4c;
+    }
+
+    .rsfp-grid-row [class*="rsfp-grid-column"] {
+        border-color: #4c4c4c;
+    }
+
+    ul.rsform_leftnav li a {
+        background-color: #0d0f0f;
+        border-color: #3b3b3b;
+        color: #cccccc;
+    }
+
+    ul.rsform_leftnav li a:hover,
+    ul#rsform_secondleftnav li a.active {
+        background: #060606;
+    }
+
+    ul.rsform_leftnav li.rsform_navtitle {
+        background-color: #dc7b2c;
+        color: #000;
+    }
+
+    div#propertiescontent {
+        background-color: #060606;
+        border-color: #181818;
+    }
+
+    .rsfp-dropdown-list-container ul {
+        background-color: #000;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .rsfp-dropdown-list-container ul li a {
+        color: #cccccc;
+    }
+
+    .rsfp-dropdown-list-container ul li a:hover,
+    #rsform_container .rsfp-dropdown-list-container ul li a:hover {
+        background-color: #dc7b2c;
+        color: #000;
+    }
+
+    #previewExportDiv {
+        background-color: #000;
+    }
+
+    #previewExportDiv pre {
+        color: #fff;
+    }
+
+    .dashboard-button:hover {
+        background-color: #d2935d;
+    }
+
+    .dashboard-button:hover a {
+        color: #000;
+    }
+
+    .dashboard-info {
+        color: #ccc;
+        background-color: #0f0f0f;
+        border-color: #272727;
+    }
+
+    .dashboard-table {
+        border-color: #222222;
+    }
+}

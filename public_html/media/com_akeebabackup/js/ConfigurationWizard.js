@@ -171,21 +171,21 @@ akeebabackup.Wizard.directories = function ()
         {act: "directories"},
         function (msg)
         {
-            if (msg)
+            if (msg?.status)
             {
                 var stepElement = document.getElementById("step-directory");
                 stepElement.classList.remove('bg-primary');
                 stepElement.classList.add('bg-success');
 
                 akeebabackup.Wizard.database();
+
+                return;
             }
-            else
-            {
-                document.getElementById("backup-progress-pane").style.display = "none";
-                document.getElementById("error-panel").style.display          = "block";
-                document.getElementById("backup-error-message").textContent   =
-                    Joomla.Text._("COM_AKEEBABACKUP_CONFWIZ_UI_CANTFIXDIRECTORIES");
-            }
+
+            document.getElementById("backup-progress-pane").style.display = "none";
+            document.getElementById("error-panel").style.display          = "block";
+            document.getElementById("backup-error-message").textContent   =
+                Joomla.Text._("COM_AKEEBABACKUP_CONFWIZ_UI_CANTFIXDIRECTORIES");
         },
         function ()
         {
@@ -216,21 +216,22 @@ akeebabackup.Wizard.database = function ()
         {act: "database"},
         function (msg)
         {
-            if (msg)
-            {
-                var stepElement = document.getElementById("step-dbopt");
-                stepElement.classList.remove('bg-primary');
-                stepElement.classList.add('bg-success');
+            // !!!! THIS CAN NEVER BE FALSE !!!!
+            // if (!msg)
+            // {
+            //     document.getElementById("backup-progress-pane").style.display = "none";
+            //     document.getElementById("error-panel").style.display          = "block";
+            //     document.getElementById("backup-error-message").textContent   =
+            //         Joomla.Text._("COM_AKEEBABACKUP_CONFWIZ_UI_CANTDBOPT");
+            //
+            //     return;
+            // }
 
-                akeebabackup.Wizard.maxExec();
-            }
-            else
-            {
-                document.getElementById("backup-progress-pane").style.display = "none";
-                document.getElementById("error-panel").style.display          = "block";
-                document.getElementById("backup-error-message").textContent   =
-                    Joomla.Text._("COM_AKEEBABACKUP_CONFWIZ_UI_CANTDBOPT");
-            }
+            var stepElement = document.getElementById("step-dbopt");
+            stepElement.classList.remove('bg-primary');
+            stepElement.classList.add('bg-success');
+
+            akeebabackup.Wizard.maxExec();
         },
         function ()
         {
@@ -275,7 +276,7 @@ akeebabackup.Wizard.maxExec = function ()
         {act: "maxexec", "seconds": exec_time},
         function (msg)
         {
-            if (msg)
+            if (msg?.status)
             {
                 // Success! Save this value.
                 akeebabackup.Wizard.maxExecApply(exec_time);
@@ -363,7 +364,7 @@ akeebabackup.Wizard.partSize = function ()
         {act: "partsize", blocks: block_size},
         function (msg)
         {
-            if (msg)
+            if (msg?.status)
             {
                 // We are done
                 var stepElement = document.getElementById("step-splitsize");
@@ -371,12 +372,12 @@ akeebabackup.Wizard.partSize = function ()
                 stepElement.classList.add('bg-success');
 
                 akeebabackup.Wizard.done();
+
+                return;
             }
-            else
-            {
-                // Let's try the next (lower) value
-                akeebabackup.Wizard.partSize();
-            }
+
+            // Let's try the next (lower) value
+            akeebabackup.Wizard.partSize();
         },
         function (msg)
         {

@@ -15,5 +15,5 @@ use Joomla\CMS\Language\Text;
 /** @var JdidealgatewayViewEmails $this */
 
 ?>
-<button type="button" class="btn btn-secondary" data-dismiss="modal"><?php echo Text::_('COM_ROPAYMENTS_MODAL_CLOSE'); ?></button>
+<button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal"><?php echo Text::_('COM_ROPAYMENTS_MODAL_CLOSE'); ?></button>
 <button type="submit" class="btn btn-success"><?php echo Text::_('COM_ROPAYMENTS_SEND_TESTMAIL'); ?></button>

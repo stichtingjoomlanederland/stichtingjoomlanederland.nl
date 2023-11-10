@@ -6,6 +6,7 @@
 */
 
 defined('_JEXEC') or die('Restricted access');
+$hasHttpHeadersPlugin = JPluginHelper::isEnabled('system', 'httpheaders');
 ?>
 <div class="<?php echo RSFormProAdapterGrid::row(); ?>">
 	<div class="<?php echo RSFormProAdapterGrid::column(12); ?>">
@@ -17,6 +18,12 @@ defined('_JEXEC') or die('Restricted access');
 				<legend class="rsfp-legend"><?php echo $field->title; ?></legend>
 				<div class="alert alert-info"><?php echo JText::_($field->description); ?></div>
 				<?php
+				if ($hasHttpHeadersPlugin)
+				{
+					?>
+					<div class="alert alert-warning"><?php echo JText::_('COM_RSFORM_ADD_NONCE_INSTRUCTIONS'); ?></div>
+					<?php
+				}
 				echo $field->input;
 			}
 			?>

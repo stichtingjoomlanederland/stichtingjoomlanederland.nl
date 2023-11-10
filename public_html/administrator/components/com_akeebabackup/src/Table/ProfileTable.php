@@ -9,6 +9,7 @@ namespace Akeeba\Component\AkeebaBackup\Administrator\Table;
 
 defined('_JEXEC') || die;
 
+use Akeeba\Component\AkeebaBackup\Administrator\Mixin\GetPropertiesAwareTrait;
 use Akeeba\Engine\Platform;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Table\Table;
@@ -23,6 +24,8 @@ use RuntimeException;
 #[\AllowDynamicProperties]
 class ProfileTable extends Table
 {
+	use GetPropertiesAwareTrait;
+
 	/**
 	 * Engine configuration data
 	 *
@@ -136,7 +139,9 @@ class ProfileTable extends Table
 		// You cannot delete the default record
 		if ($id <= 1)
 		{
-			throw new RuntimeException(Text::_('COM_AKEEBABACKUP_PROFILE_ERR_CANNOTDELETEDEFAULT'), 500);
+			$this->setError(Text::_('COM_AKEEBABACKUP_PROFILE_ERR_CANNOTDELETEDEFAULT'));
+
+			return false;
 		}
 
 		// If you're deleting the current backup profile we have to switch to the default profile (#1)
@@ -144,7 +149,9 @@ class ProfileTable extends Table
 
 		if ($id == $activeProfile)
 		{
-			throw new RuntimeException(Text::sprintf('COM_AKEEBABACKUP_PROFILE_ERR_CANNOTDELETEACTIVE', $id), 500);
+			$this->setError(Text::sprintf('COM_AKEEBABACKUP_PROFILE_ERR_CANNOTDELETEACTIVE', $id));
+
+			return false;
 		}
 
 		return parent::delete($pk);

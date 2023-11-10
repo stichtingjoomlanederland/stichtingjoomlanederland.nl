@@ -72,6 +72,11 @@ class PlgSystemJdidealgateway extends CMSPlugin
 			return true;
 		}
 
+        if (stristr($url, 'key='))
+        {
+            return true;
+        }
+
 		// Get the Download ID from component params
 		$downloadId = ComponentHelper::getParams($this->extension)->get('downloadid', '');
 

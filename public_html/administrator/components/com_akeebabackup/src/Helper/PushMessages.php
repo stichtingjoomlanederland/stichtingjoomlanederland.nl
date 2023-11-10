@@ -7,6 +7,8 @@
 
 namespace Akeeba\Component\AkeebaBackup\Administrator\Helper;
 
+defined('_JEXEC') || die;
+
 use Akeeba\Component\AkeebaBackup\Administrator\Model\PushModel;
 use Akeeba\Engine\Platform;
 use Akeeba\Engine\Util\PushMessagesInterface;
@@ -17,6 +19,7 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\User\User;
 use Joomla\CMS\User\UserFactoryInterface;
 use Joomla\Database\DatabaseDriver;
+use Joomla\Database\DatabaseInterface;
 
 /**
  * A replacement push notifications helper for the Akeeba Engine. This one is Web Push API aware.
@@ -247,7 +250,7 @@ class PushMessages implements PushMessagesInterface
 		try
 		{
 			/** @var DatabaseDriver $db */
-			$db    = Factory::getContainer()->get('DatabaseDriver');
+			$db    = Factory::getContainer()->get(DatabaseInterface::class);
 			$query = $db->getQuery(true)
 			            ->select($db->quoteName('user_id'))
 			            ->from($db->quoteName('#__user_profiles'))

@@ -32,18 +32,6 @@
       "version": "af7a0c957f81a0debb64996077ca02b799d1940c"
     },
     {
-      "name": "com_joomlaupdate.default",
-      "type": "script",
-      "uri": "com_joomlaupdate/default.min.js",
-      "dependencies": [
-        "com_joomlaupdate.default-es5"
-      ],
-      "attributes": {
-        "type": "module"
-      },
-      "version": "7cc7da6a4a2ceefeb50ec92847bcd6421b2fff28"
-    },
-    {
       "name": "com_joomlaupdate.default-es5",
       "type": "script",
       "uri": "com_joomlaupdate/default-es5.min.js",
@@ -54,7 +42,19 @@
         "defer": true,
         "nomodule": true
       },
-      "version": "e259b3b444988de5ccaeb8e57a04d75e12274a85"
+      "version": "7d3106f9e3fdc05b56e40415f4cd594bd7bc1367"
+    },
+    {
+      "name": "com_joomlaupdate.default",
+      "type": "script",
+      "uri": "com_joomlaupdate/default.min.js",
+      "dependencies": [
+        "com_joomlaupdate.default-es5"
+      ],
+      "attributes": {
+        "type": "module"
+      },
+      "version": "7a654e944bbda87556b88dbf74b558e6c73a91d2"
     }
   ]
 }

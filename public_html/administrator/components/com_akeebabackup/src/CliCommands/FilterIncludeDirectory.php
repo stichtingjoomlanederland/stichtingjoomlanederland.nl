@@ -21,7 +21,7 @@ use Akeeba\Engine\Util\RandomValue;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Factory\MVCFactoryAwareTrait;
 use Joomla\Console\Command\AbstractCommand;
-use Joomla\Plugin\Console\AkeebaBackup\Helper\UUID4;
+use Akeeba\Plugin\Console\AkeebaBackup\Helper\UUID4;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;

@@ -20,9 +20,9 @@ use Joomla\CMS\Language\Text;
 	</h3>
 
 	<div class="card-body">
-		<div class="d-flex flex-row flex-wrap align-items-stretch">
+		<div class="akeeba-cpanel-container d-flex flex-row flex-wrap align-items-stretch">
 			<?php foreach($this->quickIconProfiles as $qiProfile): ?>
-				<a class="text-center align-self-stretch btn btn-outline-success border-0" style="width: 10em"
+				<a class="akeeba-cpanel-button text-center align-self-stretch btn btn-outline-success border-0" style="width: 10em"
 				   href="index.php?option=com_akeebabackup&view=Backup&autostart=1&profileid=<?= (int) $qiProfile->id ?>&<?= Factory::getApplication()->getFormToken() ?>=1">
 					<div class="bg-success text-white d-block text-center p-3 h2">
 						<span class="fa fa-play"></span>

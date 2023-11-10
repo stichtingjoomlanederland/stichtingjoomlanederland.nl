@@ -81,8 +81,8 @@ JHtml::_('formbehavior.chosen', '.advancedSelect', null, array('disable_search_t
 		{
 			?>
 			<tr>
-				<td width="1%" nowrap="nowrap"><?php echo JHtml::_('grid.id', $i, $submissionId); ?></td>
-				<td><?php echo $this->pagination->getRowOffset($i); ?></td>
+				<td width="1%" nowrap="nowrap" class="text-center"><?php echo JHtml::_('grid.id', $i, $submissionId); ?></td>
+				<td class="text-center"><?php echo $this->pagination->getRowOffset($i); ?></td>
 				<?php
 				foreach ($this->staticHeaders as $header)
 				{

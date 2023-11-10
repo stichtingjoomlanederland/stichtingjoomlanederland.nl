@@ -48,7 +48,7 @@ class PlgsystemrsfpjdidealInstallerScript
 		}
 
 		// Check if RSForm! Pro is installed
-		if (ComponentHelper::isInstalled('com_rsform') === 0)
+		if ($parent === 'install' && ComponentHelper::isInstalled('com_rsform') === 0)
 		{
 			Factory::getApplication()->enqueueMessage(
 				Text::_('PLG_RSFP_PAYMENT_JDIDEAL_RSFORM_NOT_INSTALLED'),

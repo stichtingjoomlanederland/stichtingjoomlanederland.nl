@@ -24,7 +24,7 @@ use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 
 if (!class_exists(WebPush::class))
 {
-	\JLoader::registerNamespace('Akeeba\\WebPush', JPATH_ADMINISTRATOR . '/components/com_akeebabackup/webpush');
+	require_once JPATH_ADMINISTRATOR . '/components/com_akeebabackup/vendor/autoload.php';
 }
 
 /**

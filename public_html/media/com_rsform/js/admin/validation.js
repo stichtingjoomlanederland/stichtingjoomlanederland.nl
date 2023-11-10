@@ -16,6 +16,12 @@ RSFormPro.Validations = {
 			jQuery(this).val(jQuery(this).val().replace(/[^A-Za-z0-9]/g, ''));
 		});
 	},
+
+	TextareaSize: function() {
+		jQuery('#rsfp-tabs').on("keyup", '[data-properties="textareasize"]', function () {
+			jQuery(this).val(jQuery(this).val().replace(/[^0-9px%]/g, ''));
+		});
+	},
 	
 	Float: function () {
 		jQuery('#rsfp-tabs').on("keyup", '[data-properties="float"]', function () {
@@ -41,12 +47,14 @@ RSFormPro.Validations = {
 			jQuery('.fieldHasTooltip').popover({"html": true, "container": "body", "trigger": 'hover', 'title': getTitle, 'content': getContent});
 		}
 
-		function getTitle() {
-			return this.getAttribute('data-title');
+		function getTitle(el) {
+			var element = el || this;
+			return element.getAttribute('data-title');
 		}
 
-		function getContent() {
-			return this.getAttribute('data-content');
+		function getContent(el) {
+			var element = el || this;
+			return element.getAttribute('data-content');
 		}
 	},
 
@@ -124,6 +132,7 @@ jQuery(document).ready(function () {
     RSFormPro.Validations.Numeric();
     RSFormPro.Validations.Alphanumeric();
     RSFormPro.Validations.Float();
+    RSFormPro.Validations.TextareaSize();
 	/**
 	 * Bind the functions to the event created
 	 * in administrator\components\com_rsform\assets\js\script.js

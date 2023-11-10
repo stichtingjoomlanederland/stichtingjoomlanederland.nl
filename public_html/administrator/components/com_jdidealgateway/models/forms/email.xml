@@ -51,6 +51,6 @@
 			type="editor"
 			label="COM_ROPAYMENTS_EMAIL_BODY_LABEL"
 			description="COM_ROPAYMENTS_EMAIL_BODY_DESC"
-			filter="JComponentHelper::filterText"
+			filter="\Joomla\CMS\Component\ComponentHelper::filterText"
 			buttons="true"/>
 </form>

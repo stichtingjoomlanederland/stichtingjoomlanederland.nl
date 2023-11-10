@@ -75,7 +75,7 @@
                width="100%"
                height="250px"
                buttons="true"
-               filter="JComponentHelper::filterText"
+               filter="\Joomla\CMS\Component\ComponentHelper::filterText"
                hide="article,image,pagebreak,readmore"
                showon="message_type:0"
         />

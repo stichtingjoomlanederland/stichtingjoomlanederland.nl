@@ -85,7 +85,7 @@ class BackupDelete extends AbstractCommand
 		}
 
 		/** @var StatisticModel $model */
-		$model = $this->getMVCFactory()->createModel('Statistics', 'Administrator');
+		$model = $this->getMVCFactory()->createModel('Statistic', 'Administrator');
 		$ids = [$id];
 
 		try

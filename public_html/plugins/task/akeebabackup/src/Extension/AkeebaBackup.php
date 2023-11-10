@@ -5,7 +5,7 @@
  * @license   GNU General Public License version 3, or later
  */
 
-namespace Joomla\Plugin\Task\AkeebaBackup\Extension;
+namespace Akeeba\Plugin\Task\AkeebaBackup\Extension;
 
 defined('_JEXEC') or die;
 
@@ -292,7 +292,7 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface, DatabaseAwa
 
 		// Make sure Akeeba Backup is installed and enabled.
 		$component = ComponentHelper::isEnabled('com_akeebabackup')
-			? JoomlaFactory::getApplication()->bootComponent('com_akeebabackup')
+			? $this->getApplication()->bootComponent('com_akeebabackup')
 			: null;
 
 		if (!($component instanceof MVCFactoryServiceInterface))
@@ -436,7 +436,7 @@ class AkeebaBackup extends CMSPlugin implements SubscriberInterface, DatabaseAwa
 
 		// Make sure Akeeba Backup is installed and enabled.
 		$component = ComponentHelper::isEnabled('com_akeebabackup')
-			? JoomlaFactory::getApplication()->bootComponent('com_akeebabackup')
+			? $this->getApplication()->bootComponent('com_akeebabackup')
 			: null;
 
 		if (!($component instanceof MVCFactoryServiceInterface))

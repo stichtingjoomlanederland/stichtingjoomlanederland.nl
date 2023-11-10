@@ -361,10 +361,14 @@ class RsformController extends JControllerLegacy
 			{
 				$SubmissionId 	= $submission->SubmissionId;
 				$formId			= $submission->FormId;
+				$form           = RSFormProHelper::getForm($formId);
+				$ipAddress      = $form->KeepIP ?  \Joomla\Utilities\IpHelper::getIp() : '0.0.0.0';
 
 			    $query->clear()
                     ->update($db->qn('#__rsform_submissions'))
                     ->set($db->qn('confirmed') . ' = ' . $db->q(1))
+                    ->set($db->qn('ConfirmedDate') . ' = ' . $db->q(JFactory::getDate()->toSql()))
+                    ->set($db->qn('ConfirmedIp') . ' = ' . $db->q($ipAddress))
                     ->where($db->qn('SubmissionId') . ' = ' . $db->q($SubmissionId));
 				$db->setQuery($query);
 				$db->execute();
@@ -372,7 +376,6 @@ class RsformController extends JControllerLegacy
 				$app->triggerEvent('onRsformFrontendSubmissionConfirmation', array(array('SubmissionId' => $SubmissionId, 'hash' => $hash)));
 				$app->enqueueMessage(JText::_('RSFP_SUBMISSION_CONFIRMED'), 'notice');
 
-				$form = RSFormProHelper::getForm($formId);
 				if ($form->ConfirmSubmission && !empty($form->ConfirmSubmissionDefer) && json_decode($form->ConfirmSubmissionDefer))
 				{
 					RSFormProHelper::sendSubmissionEmails($SubmissionId);

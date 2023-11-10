@@ -129,11 +129,16 @@ class ConfigurationwizardModel extends BaseDatabaseModel
 
 		// Do I have to fall back to the default output directory?
 		$outputDirectory = $fixOut ? '[DEFAULT_OUTPUT]' : $outputDirectory;
+		$previousOutputDirectory = $engineConfig->get('akeeba.basic.output_directory', '', true);
 
 		$model->setState('engineconfig', [
 			'akeeba.basic.output_directory' => $outputDirectory,
 		]);
-		$model->saveEngineConfig();
+
+		if ($outputDirectory !== $previousOutputDirectory)
+		{
+			$model->saveEngineConfig();
+		}
 
 		/**
 		 * If we had to revert to the default output we will run ourselves again to make sure that the default backup
@@ -469,12 +474,12 @@ class ConfigurationwizardModel extends BaseDatabaseModel
 	/**
 	 * Executes the action requested through AJAX
 	 *
-	 * @return  bool
+	 * @return  array
 	 * @throws  Exception
 	 *
 	 * @noinspection PhpUnused
 	 */
-	public function runAjax(): bool
+	public function runAjax(): array
 	{
 		// Only allowed actions
 		$allowedActions = [
@@ -484,7 +489,7 @@ class ConfigurationwizardModel extends BaseDatabaseModel
 		// Get the requested action from the model state
 		$action = $this->getState('act');
 
-		$result = false;
+		$result = ['status' => false];
 
 		if (in_array($action, $allowedActions) && method_exists($this, $action))
 		{
@@ -497,10 +502,10 @@ class ConfigurationwizardModel extends BaseDatabaseModel
 	/**
 	 * Creates a dummy file of a given size. Remember to give the filesize query parameter in bytes!
 	 *
-	 * @return  bool
+	 * @return  array{status: bool}
 	 * @throws  Exception
 	 */
-	public function partsize(): bool
+	public function partsize(): array
 	{
 		$timer  = Factory::getTimer();
 		$blocks = JoomlaFactory::getApplication()->input->getInt('blocks', 1);
@@ -524,17 +529,17 @@ class ConfigurationwizardModel extends BaseDatabaseModel
 		// Enforce the min exec time
 		$timer->enforce_min_exec_time(false);
 
-		return $result;
+		return ['status' => $result];
 	}
 
 	/**
 	 * Pings the configuration wizard process and marks the current profile as configured
 	 *
-	 * @return  bool  TRUE, always
+	 * @return  array{status: bool}
 	 *
 	 * @noinspection PhpUnusedPrivateMethodInspection
 	 */
-	private function ping(): bool
+	private function ping(): array
 	{
 		// Get the profile ID
 		$profile_id = Platform::getInstance()->get_active_profile();
@@ -548,18 +553,18 @@ class ConfigurationwizardModel extends BaseDatabaseModel
 
 		Platform::getInstance()->save_configuration($profile_id);
 
-		return true;
+		return ['status' => true];
 	}
 
 	/**
 	 * Try different values of minimum execution time
 	 *
-	 * @return  bool  TRUE, always
+	 * @return  array{status: bool}
 	 * @throws  Exception
 	 *
 	 * @noinspection PhpUnusedPrivateMethodInspection
 	 */
-	private function minexec(): bool
+	private function minexec(): array
 	{
 		$seconds = JoomlaFactory::getApplication()->input
 			->get('seconds', '0.5', 'float');
@@ -573,18 +578,18 @@ class ConfigurationwizardModel extends BaseDatabaseModel
 			sleep($seconds);
 		}
 
-		return true;
+		return ['status' => true];
 	}
 
 	/**
 	 * Saves the AJAX preference and the minimum execution time
 	 *
-	 * @return  bool  TRUE, always
+	 * @return  array{status: bool}
 	 * @throws  Exception
 	 *
 	 * @noinspection PhpUnusedPrivateMethodInspection
 	 */
-	private function applyminexec(): bool
+	private function applyminexec(): array
 	{
 		// Get the user parameters
 		$minexec = JoomlaFactory::getApplication()->input
@@ -601,51 +606,51 @@ class ConfigurationwizardModel extends BaseDatabaseModel
 		$timer->enforce_min_exec_time(false);
 
 		// Done!
-		return true;
+		return ['status' => true];
 	}
 
 	/**
 	 * Try to make the directories writable or provide a set of writable directories
 	 *
-	 * @return  bool  TRUE if we coud fix the permissions of the directories
+	 * @return  array{status: bool}
 	 * @throws  Exception
 	 *
 	 * @noinspection PhpUnusedPrivateMethodInspection
 	 */
-	private function directories(): bool
+	private function directories(): array
 	{
 		$timer  = Factory::getTimer();
 		$result = $this->autofixDirectories();
 		$timer->enforce_min_exec_time(false);
 
-		return $result;
+		return ['status' => $result];
 	}
 
 	/**
 	 * Analyze the database and apply optimized database dump settings
 	 *
-	 * @return  bool  TRUE if we were successful
+	 * @return  array{status: bool}
 	 *
 	 * @noinspection PhpUnusedPrivateMethodInspection
 	 */
-	private function database(): bool
+	private function database(): array
 	{
 		$timer = Factory::getTimer();
 		$this->analyzeDatabase();
 		$timer->enforce_min_exec_time(false);
 
-		return true;
+		return ['status' => true];
 	}
 
 	/**
 	 * Try to apply a specific maximum execution time setting
 	 *
-	 * @return  bool
+	 * @return  array{status: bool}
 	 * @throws  Exception
 	 *
 	 * @noinspection PhpUnusedPrivateMethodInspection
 	 */
-	private function maxexec(): bool
+	private function maxexec(): array
 	{
 		$seconds = JoomlaFactory::getApplication()->input
 			->get('seconds', 30, 'int');
@@ -653,18 +658,18 @@ class ConfigurationwizardModel extends BaseDatabaseModel
 		$result  = $this->doNothing($seconds);
 		$timer->enforce_min_exec_time(false);
 
-		return $result;
+		return ['status' => $result];
 	}
 
 	/**
 	 * Save a specific maximum execution time preference to the database
 	 *
-	 * @return  bool
+	 * @return  array{status: bool}
 	 * @throws  Exception
 	 *
 	 * @noinspection PhpUnusedPrivateMethodInspection
 	 */
-	private function applymaxexec(): bool
+	private function applymaxexec(): array
 	{
 		// Get the user parameters
 		$maxexec = JoomlaFactory::getApplication()->input
@@ -684,6 +689,6 @@ class ConfigurationwizardModel extends BaseDatabaseModel
 		$timer->enforce_min_exec_time(false);
 
 		// Done!
-		return true;
+		return ['status' => true];
 	}
 }

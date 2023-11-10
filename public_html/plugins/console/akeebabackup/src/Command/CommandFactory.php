@@ -5,16 +5,27 @@
  * @license   GNU General Public License version 3, or later
  */
 
-namespace Joomla\Plugin\Console\AkeebaBackup\Command;
+namespace Akeeba\Plugin\Console\AkeebaBackup\Command;
 
 defined('_JEXEC') || die;
 
+use Joomla\Application\ApplicationInterface;
 use Joomla\CMS\MVC\Factory\MVCFactoryAwareTrait;
 use Joomla\Console\Command\AbstractCommand;
+use Joomla\Database\DatabaseAwareInterface;
+use Joomla\Database\DatabaseAwareTrait;
 
-class CommandFactory implements CommandFactoryInterface
+class CommandFactory implements CommandFactoryInterface, DatabaseAwareInterface
 {
 	use MVCFactoryAwareTrait;
+	use DatabaseAwareTrait;
+
+	private ApplicationInterface $app;
+
+	public function setApplication(ApplicationInterface $app)
+	{
+		$this->app = $app;
+	}
 
 	public function getCLICommand(string $commandName): AbstractCommand
 	{
@@ -39,6 +50,21 @@ class CommandFactory implements CommandFactoryInterface
 			$o->setMVCFactory($this->getMVCFactory());
 		}
 
+		if ($o instanceof DatabaseAwareInterface)
+		{
+			$o->setDatabase($this->getDatabase());
+		}
+
+		if (method_exists($o, 'setApplication'))
+		{
+			$o->setApplication($this->getApplication());
+		}
+
 		return $o;
+	}
+
+	private function getApplication(): ApplicationInterface
+	{
+		return $this->app;
 	}
 }

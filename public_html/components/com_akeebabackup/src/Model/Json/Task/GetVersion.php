@@ -29,7 +29,7 @@ class GetVersion extends AbstractTask
 		$edition = AKEEBABACKUP_PRO ? 'pro' : 'core';
 
 		return (object)[
-			'api'        => 500,
+			'api'        => 600,
 			'component'  => AKEEBABACKUP_VERSION,
 			'date'       => AKEEBABACKUP_DATE,
 			'edition'    => $edition

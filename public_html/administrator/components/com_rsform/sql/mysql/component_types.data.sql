@@ -15,6 +15,7 @@ INSERT IGNORE INTO `#__rsform_component_types` (`ComponentTypeId`, `ComponentTyp
 (13, 'submitButton', 1),
 (14, 'password', 1),
 (15, 'ticket', 1),
+(16, 'hashcash', 0),
 (41, 'pageBreak', 1),
 (211, 'birthDay', 1),
 (212, 'gmaps', 1);

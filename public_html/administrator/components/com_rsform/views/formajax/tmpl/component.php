@@ -17,7 +17,7 @@ $count = 0;
 				<?php echo $field->body; ?>
 				<?php continue; ?>
 			<?php } ?>
-			<div class="control-group" id="id<?php echo $field->name; ?>" <?php echo ($field->name == 'VALIDATIONMULTIPLE' ? ' style="display:none"' : ''); ?>>
+			<div class="control-group" id="id<?php echo $field->name; ?>">
 				<div class="control-label">
 					<?php echo $field->label; ?>
 				</div>

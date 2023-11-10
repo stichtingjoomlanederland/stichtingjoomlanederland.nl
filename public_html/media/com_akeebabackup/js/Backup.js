@@ -160,7 +160,7 @@ akeebabackup.Backup.renderBackupSteps = function (active_step)
 
     if (active_step == "")
     {
-        normal_class = "bg-light";
+        normal_class = "bg-light text-dark";
     }
 
     document.getElementById("backup-steps").innerHTML = "";
@@ -178,7 +178,7 @@ akeebabackup.Backup.renderBackupSteps = function (active_step)
 
         if (element[0] == active_step)
         {
-            normal_class = "bg-light";
+            normal_class = "bg-light text-dark";
             this_class   = "bg-primary text-white";
         }
         else

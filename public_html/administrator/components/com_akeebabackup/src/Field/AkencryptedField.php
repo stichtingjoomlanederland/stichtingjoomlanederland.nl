@@ -14,6 +14,7 @@ use Akeeba\Engine\Factory;
 use Exception;
 use Joomla\CMS\Factory as JoomlaFactory;
 use Joomla\CMS\Form\Field\TextField;
+use Joomla\Database\DatabaseInterface;
 
 class AkencryptedField extends TextField
 {
@@ -35,7 +36,7 @@ class AkencryptedField extends TextField
 		{
 			$dbo = method_exists($this, 'getDatabase')
 				? $this->getDatabase()
-				: JoomlaFactory::getApplication()->bootComponent('com_akeebabackup')->getContainer()->get('DatabaseDriver');
+				: JoomlaFactory::getApplication()->bootComponent('com_akeebabackup')->getContainer()->get(DatabaseInterface::class);
 
 			try
 			{
